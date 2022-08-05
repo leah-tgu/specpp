@@ -1,0 +1,56 @@
+<ivy-module version="2.0">
+    <info organisation="prom" module="estMiner" revision="latest">
+    	<description>
+    		Version VERSION
+    	</description>
+    </info>
+    <configurations>
+   		<conf name="base" description="Basic config for algorithm" transitive="true"/>
+   		<conf name="headless" description="Used for dependencies specific for headless mode" extends="base" transitive="true" />
+   		<conf name="promint" description="Used for dependencies specific for Prom Interface" extends="base" transitive="true"/>
+   		<conf name="testing" description="Used for dependencies required for easy GUI-less testing" extends="headless" transitive="true" />
+	</configurations>  
+	
+	<publications>
+		<artifact />
+	</publications>
+	
+    <dependencies defaultconf="headless">
+    	<!-- ProM dependencies. -->
+    	<!-- Please put every ProM dependency on a single line. -->
+    	<!-- ProM packages. -->
+		<dependency org="prom" name="ProM-Plugins" rev="latest" changing="true" transitive="true" conf="promint->default" />
+		<dependency org="prom" name="ProM-Framework" rev="latest" changing="true" transitive="true" conf="base->default" />
+		<dependency org="prom" name="ProM-Contexts" rev="latest" changing="true" transitive="true" conf="base->default" />
+		<dependency org="prom" name="Widgets" rev="latest" changing="true" transitive="true" conf="promint->default"/>
+		<dependency org="prom-libs" name="Uitopia" rev="0.6-20190913" changing="true" transitive="true" conf="promint->default" />
+		<dependency org="prom-libs" name="slickerbox" rev="1.0rc1" changing="true" transitive="true" conf="promint->default" />
+		<dependency org="prom-libs" name="OpenXES" rev="20181205" changing="true" transitive="true" conf="base->default" />
+		<dependency org="prom" name="XESLite" rev="latest" changing="true" transitive="true" conf="base->default" />
+    	<!-- Third party libraries. These may span multiple lines. -->
+		<dependency org="com.google.guava" name="guava" rev="28.1-jre" conf="base->default" />
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency org="org.apache.commons" name="commons-lang3" rev="3.9" conf="base->default"/> 
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
+		<dependency org="org.apache.commons" name="commons-math3" rev="3.6.1" conf="base->default"/>
+		<dependency org="net.sf.trove4j" name="trove4j" rev="3.0.3" conf="base->default"/>
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<dependency org="junit" name="junit" rev="4.13" conf="base->default"/>
+		<dependency org="net.sourceforge.argparse4j" name="argparse4j" rev="0.8.1" conf="headless->default"/>
+		<dependency org="com.google.code.gson" name="gson" rev="2.8.6" conf="base->default"/>
+		<!-- dependency org="org.sualk.fpgrowth" name="fpgrowth" rev="1.0.0" conf="base->default"/ -->
+		<!-- https://mvnrepository.com/artifact/org.jgrapht/jgrapht-core -->
+		<dependency conf="base->default" org="prom" name="GraphViz" rev="latest" changing="true" transitive="true" />
+		<dependency conf="base->default" org="prom" name="GraphVisualizers" rev="latest" changing="true" transitive="true" />
+		<dependency conf="base->default" org="prom" name="PetriNets" rev="latest" changing="true" transitive="true" />
+ 		<dependency conf="base->default" org="prom" name="AcceptingPetriNet" rev="latest" changing="true" transitive="true"/>
+       <dependency conf="base->default" org="prom" name="Log" rev="latest" changing="true" transitive="true" />
+       <dependency conf="base->default" org="prom" name="LogAbstractions" rev="latest" changing="true" transitive="true" />
+       <dependency conf="base->default" org="prom" name="ETConformance" rev="latest" changing="true" transitive="true" />
+       <dependency conf="base->default" org="prom" name="StochasticAwareConformanceChecking" rev="latest" changing="true" transitive="true" />
+       <dependency conf="base->default" org="prom" name="Alignment" rev="latest" changing="true" transitive="true" />
+       <dependency conf="base->default" org="net.sourceforge.argparse4j" name="argparse4j" rev="0.8.1"/>
+       <dependency conf="base->default" org="prom" name="XESLite" rev="latest" changing="true" transitive="true"/>
+
+	</dependencies>
+</ivy-module>

@@ -1,0 +1,32 @@
+<ivysettings>
+	<property name="repo.dir" value="C:/data/myIvyRepo"/>
+    <settings defaultResolver="default" />   
+	<property name="m2-pattern" value="${user.home}/.m2/repository/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]" override="false" />
+    <resolvers>
+		<filesystem name="internal">
+            <ivy pattern="${repo.dir}/[module]/ivy-[revision].xml" />
+            <artifact pattern="${repo.dir}/[module]/[artifact]-[revision].[ext]" />
+        </filesystem>
+        <url name="prom" checkmodified="true">
+            <ivy pattern="https://svn.win.tue.nl/repos/[organisation]/Releases/Packages/[module]/[revision]/ivy.xml" />
+            <artifact pattern="https://svn.win.tue.nl/repos/[organisation]/Releases/Packages/[module]/[revision]/[artifact]-[revision].[ext]" />
+        </url>
+        <url name="prom-libs">
+            <ivy pattern="https://svn.win.tue.nl/repos/prom/Libraries/[module]/[revision]/ivy.xml" />
+            <artifact pattern="https://svn.win.tue.nl/repos/prom/Libraries/[module]/[revision]/[artifact]-[revision].[ext]" />
+            <artifact pattern="https://svn.win.tue.nl/repos/prom/Libraries/[module]/[revision]/[artifact]_[revision].[ext]" />
+        </url>
+        <ibiblio name="maven2" m2compatible="true"/>
+		 <filesystem name="local-maven2" m2compatible="true" >
+			<artifact pattern="${m2-pattern}"/>
+			<ivy pattern="${m2-pattern}"/>
+		</filesystem>
+        <chain name="default" returnFirst="true">  
+        	<resolver ref="internal"/>
+            <resolver ref="prom" />  
+            <resolver ref="prom-libs" />  
+            <resolver ref="maven2" />  
+            <resolver ref="local-maven2" />
+        </chain>  
+    </resolvers>
+</ivysettings>
