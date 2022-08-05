@@ -16,7 +16,10 @@ public class PipeSystemFlusher {
 
     private static void handleObservable(Observable<?> observable, Set<Observable<?>> seen) {
         seen.add(observable);
-        if (observable instanceof Buffering) ((Buffering) observable).flushBuffer();
+        if (observable instanceof Buffering) {
+            Buffering buffering = (Buffering) observable;
+            if (buffering.isBufferNonEmpty()) buffering.flushBuffer();
+        }
         for (Observer<?> observer : observable.getObservers()) {
             if (observer instanceof Observable && !seen.contains(observer)) {
                 Observable<?> child = (Observable<?>) observer;

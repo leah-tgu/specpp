@@ -2,7 +2,6 @@ package org.processmining.estminer.specpp.datastructures.log.impls;
 
 import com.google.common.collect.Streams;
 import org.processmining.estminer.specpp.datastructures.BitMask;
-import org.processmining.estminer.specpp.datastructures.log.IndexedVariant;
 import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.Variant;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;

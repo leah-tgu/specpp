@@ -4,6 +4,7 @@ import org.processmining.estminer.specpp.base.Candidate;
 import org.processmining.estminer.specpp.base.Composition;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
+import org.processmining.estminer.specpp.componenting.system.ComponentInitializer;
 import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;

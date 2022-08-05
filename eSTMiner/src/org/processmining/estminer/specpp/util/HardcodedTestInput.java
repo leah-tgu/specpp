@@ -2,7 +2,7 @@ package org.processmining.estminer.specpp.util;
 
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
-import org.processmining.estminer.specpp.datastructures.InputDataBundle;
+import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 import org.processmining.estminer.specpp.datastructures.encoding.HashmapEncoding;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.Activity;

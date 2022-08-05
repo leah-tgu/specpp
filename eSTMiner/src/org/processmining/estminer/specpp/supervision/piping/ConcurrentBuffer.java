@@ -51,4 +51,9 @@ public class ConcurrentBuffer<E> implements Buffer<E>, ThreadsafeBuffer {
         return internal.size();
     }
 
+    @Override
+    public boolean isEmpty() {
+        return internal.isEmpty();
+    }
+
 }

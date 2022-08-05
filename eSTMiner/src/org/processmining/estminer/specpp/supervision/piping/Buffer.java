@@ -11,4 +11,6 @@ public interface Buffer<E> {
     Collection<E> drain();
 
     int size();
+
+    boolean isEmpty();
 }

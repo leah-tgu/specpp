@@ -7,6 +7,7 @@ import org.processmining.estminer.specpp.componenting.delegators.ContainerUtils;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingAdHocObservable;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingObservable;
 import org.processmining.estminer.specpp.componenting.supervision.ObserverRequirement;
+import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.datastructures.tree.base.GenerationConstraint;
 import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicComputationEvent;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
@@ -78,14 +79,15 @@ public class BaseSupervisor extends SchedulingSupervisor implements Monitoring {
     @Override
     public void init() {
         if (treeEvents.isSet()) {
-
             beginLaying().source(treeEvents)
                          .pipe(PipeWorks.concurrencyBridge())
                          .giveBackgroundThread()
                          .pipe(PipeWorks.summarizingBuffer(Transformers.eventCounter()))
                          .schedule(Duration.ofMillis(100))
-                         .<EventCountStatistics>export(p -> componentSystemAdapter().provide(observable("tree.events.count", EventCountStatistics.class, p)))
-                         .sink(PipeWorks.loggingSink(fl, "[\u27F3100ms] tree.event.count"))
+                         .sinks(PipeWorks.loggingSinks("[\u27F3100ms] tree.events.count", fl))
+                         .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
+                         .<EventCountStatistics>export(p -> componentSystemAdapter().provide(SupervisionRequirements.observable("tree.events.accumulation", EventCountStatistics.class, p)))
+                         .sinks(PipeWorks.loggingSinks("tree.events.accumulation", cl, fl))
                          .apply();
         }
 
@@ -93,11 +95,10 @@ public class BaseSupervisor extends SchedulingSupervisor implements Monitoring {
                      .giveBackgroundThread()
                      .pipe(performanceStatistics)
                      .schedule(Duration.ofMillis(100))
-                     .sink(PipeWorks.loggingSink(cl, "[\u27F3100ms] performance"))
+                     .sinks(PipeWorks.loggingSinks("[\u27F3100ms] performance", cl, fl))
                      .pipe(PipeWorks.accumulatingPipe(PerformanceStatistics::new))
                      .<PerformanceStatistics>export(p -> componentSystemAdapter().provide(observable("performance.accumulation", PerformanceStatistics.class, p)))
-                     .sink(PipeWorks.loggingSink(cl, "performance.accumulation"))
-                     .sink(PipeWorks.loggingSink(fl, "performance.accumulation"))
+                     .sinks(PipeWorks.loggingSinks("performance.accumulation", cl, fl))
                      .sink(accumulatedStatisticsMonitor)
                      .apply();
 
@@ -105,9 +106,9 @@ public class BaseSupervisor extends SchedulingSupervisor implements Monitoring {
             beginLaying().source(heuristicsEvents)
                          .pipe(PipeWorks.asyncSummarizingBuffer(Transformers.eventCounter()))
                          .schedule(Duration.ofMillis(100))
+                         .sink(PipeWorks.loggingSink("heuristic.count", fl))
                          .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
-                         .sink(PipeWorks.loggingSink(cl, "heuristics.count.accumulation"))
-                         .sink(PipeWorks.loggingSink(fl, "heuristics.count.accumulation"))
+                         .sinks(PipeWorks.loggingSinks("heuristics.count.accumulation", cl, fl))
                          .sink(accumulatedStatisticsMonitor)
                          .apply();
         }
@@ -117,10 +118,9 @@ public class BaseSupervisor extends SchedulingSupervisor implements Monitoring {
             beginLaying().source(composerConstraints)
                          .pipe(PipeWorks.asyncSummarizingBuffer(Transformers.eventCounter()))
                          .schedule(Duration.ofMillis(100))
-                         .sink(PipeWorks.loggingSink(cl, "[\u27F3100ms] composer.constraints.count"))
+                         .sinks(PipeWorks.loggingSinks("[\u27F3100ms] composer.constraints.count", fl))
                          .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
-                         .sink(PipeWorks.loggingSink(cl, "composer.constraints.count.accumulation"))
-                         .sink(PipeWorks.loggingSink(fl, "composer.constraints.count.accumulation"))
+                         .sinks(PipeWorks.loggingSinks("composer.constraints.count.accumulation", cl, fl))
                          .sink(accumulatedStatisticsMonitor)
                          .apply();
         }
@@ -129,10 +129,9 @@ public class BaseSupervisor extends SchedulingSupervisor implements Monitoring {
             beginLaying().source(proposerConstraints)
                          .pipe(PipeWorks.asyncSummarizingBuffer(Transformers.eventCounter()))
                          .schedule(Duration.ofMillis(100))
-                         .sink(PipeWorks.loggingSink(cl, "[\u27F3100ms] proposer.constraints.count"))
+                         .sinks(PipeWorks.loggingSinks("[\u27F3100ms] proposer.constraints.count", fl))
                          .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
-                         .sink(PipeWorks.loggingSink(cl, "proposer.constraints.count.accumulation"))
-                         .sink(PipeWorks.loggingSink(fl, "proposer.constraints.count.accumulation"))
+                         .sinks(PipeWorks.loggingSinks("proposer.constraints.count.accumulation", cl, fl))
                          .sink(accumulatedStatisticsMonitor)
                          .apply();
         }

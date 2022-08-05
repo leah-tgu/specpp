@@ -6,21 +6,22 @@ import org.processmining.estminer.specpp.base.impls.SpecPP;
 import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
-import org.processmining.estminer.specpp.datastructures.InputDataBundle;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.datastructures.util.TypedItem;
+import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 import org.processmining.estminer.specpp.supervision.Supervisor;
 import org.processmining.estminer.specpp.supervision.monitoring.*;
 import org.processmining.estminer.specpp.supervision.observations.Visualization;
 import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.supervision.traits.Monitoring;
 import org.processmining.estminer.specpp.util.FileUtils;
-import org.processmining.estminer.specpp.util.TestFactory;
+import org.processmining.estminer.specpp.util.VizUtils;
 import org.processmining.plugins.graphviz.visualisation.DotPanel;
 
 import javax.swing.*;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -57,6 +58,8 @@ public class SpecOpsSetup {
         try {
             ExecutorService executorService = Executors.newCachedThreadPool();
 
+            System.out.println("# Commencing SpecOps @" + LocalDateTime.now());
+            System.out.println("// ========================================= //");
             CompletableFuture<ProMPetrinetWrapper> future = specpp.future(executorService);
 
             // TODO MONITORING BULLSH1T. REDO REDO REDO
@@ -68,7 +71,7 @@ public class SpecOpsSetup {
                             JFreeChart jFreeChart = ((TimeSeriesMonitor<?>) monitor).getMonitoringState();
                             ChartPanel panel = new ChartPanel(jFreeChart);
                             charts.add(jFreeChart);
-                            TestFactory.showJPanel(panel);
+                            VizUtils.showJPanel(panel);
                         }
                     }
                 }
@@ -76,10 +79,14 @@ public class SpecOpsSetup {
 
             future.get();
 
+            System.out.println("// ========================================= //");
+            System.out.println("# Shutting Down SpecOps @" + LocalDateTime.now());
             specpp.stop();
+            System.out.println("# Shutdown SpecOps @" + LocalDateTime.now());
+            System.out.println("// ========================================= //");
 
             ProMPetrinetWrapper finalResult = specpp.getFinalResult();
-            TestFactory.visualizeProMPetrinet(finalResult);
+            VizUtils.visualizeProMPetrinet(finalResult);
 
 
             for (Supervisor supervisor : specpp.getSupervisors()) {
@@ -109,14 +116,13 @@ public class SpecOpsSetup {
     }
 
     public static void handleMonitoringResult(Object item) {
-        DebuggingSupervisor.debug("monitoring computations", item);
         if (item instanceof Visualization) {
-            TestFactory.showVisualization((Visualization<?>) item);
+            VizUtils.showVisualization((Visualization<?>) item);
             JComponent component = ((Visualization<?>) item).getComponent();
             if (component instanceof DotPanel) {
                 FileUtils.saveDot(((DotPanel) component).getDot());
             }
-        }
+        } else DebuggingSupervisor.debug("monitoring computations", item);
     }
 
 

@@ -11,6 +11,7 @@ import org.processmining.estminer.specpp.supervision.observations.TimedObservati
 import org.processmining.estminer.specpp.supervision.transformers.Transformers;
 import org.processmining.estminer.specpp.traits.Mergeable;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -20,8 +21,14 @@ public class PipeWorks {
     private PipeWorks() {
     }
 
-    public static <O extends Observation> Observer<O> loggingSink(Observer<? super LogMessage> ml, String source) {
+    public static <O extends Observation> Observer<O> loggingSink(String source, Observer<? super LogMessage> ml) {
         return o -> ml.observe(new LogMessage(source, o.toString()));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <O extends Observation> Observer<O>[] loggingSinks(String source, Observer<? super LogMessage>... mls) {
+        Observer<O>[] objects = Arrays.stream(mls).map(ml -> loggingSink(source, ml)).toArray(Observer[]::new);
+        return objects;
     }
 
     public static <O extends Observation> Observer<O> loggingSink(Observer<? super LogMessage> ml) {

@@ -17,9 +17,9 @@ public class NaivePlacemaker extends Placemaker {
         postLabels = encodings.post().domain().collect(Collectors.toMap(Transition::toString, t -> t));
     }
 
-    public class NaiveInPro extends InPro {
+    public class NaiveInProgress extends InProgress {
 
-        public NaiveInPro preset(String... labels) {
+        public NaiveInProgress preset(String... labels) {
             Transition[] ts = new Transition[labels.length];
             for (int i = 0; i < labels.length; i++) {
                 ts[i] = preLabels.get(labels[i]);
@@ -28,7 +28,7 @@ public class NaivePlacemaker extends Placemaker {
             return this;
         }
 
-        public NaiveInPro postset(String... labels) {
+        public NaiveInProgress postset(String... labels) {
             Transition[] ts = new Transition[labels.length];
             for (int i = 0; i < labels.length; i++) {
                 ts[i] = postLabels.get(labels[i]);
@@ -40,11 +40,11 @@ public class NaivePlacemaker extends Placemaker {
     }
 
     @Override
-    public NaiveInPro start() {
-        return new NaiveInPro();
+    public NaiveInProgress start() {
+        return new NaiveInProgress();
     }
 
-    public NaiveInPro preset(String... labels) {
+    public NaiveInProgress preset(String... labels) {
         return start().preset(labels);
     }
 

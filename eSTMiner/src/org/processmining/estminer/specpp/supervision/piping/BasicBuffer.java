@@ -38,4 +38,9 @@ public class BasicBuffer<E> implements Buffer<E> {
     public int size() {
         return buffer.size();
     }
+
+    @Override
+    public boolean isEmpty() {
+        return buffer.isEmpty();
+    }
 }

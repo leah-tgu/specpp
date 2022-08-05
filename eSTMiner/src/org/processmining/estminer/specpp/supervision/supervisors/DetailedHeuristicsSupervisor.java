@@ -44,7 +44,7 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
                      .split(lp -> lp.pipe(PipeWorks.asyncBuffer())
                                     .schedule(Duration.ofMillis(100))
                                     .pipe(PipeWorks.unpackingPipe())
-                                    .sink(PipeWorks.loggingSink(PipeWorks.fileLogger("heuristics"), "heuristics"))
+                                    .sink(PipeWorks.loggingSink("heuristics", PipeWorks.fileLogger("heuristics")))
                                     .apply())
                      .split(lp -> lp.pipe(PipeWorks.predicatePipe(e -> e instanceof HeuristicComputationEvent))
                                     .pipe(PipeWorks.timer())

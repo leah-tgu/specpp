@@ -6,6 +6,7 @@ import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.supervision.BackgroundTaskRunner;
 import org.processmining.estminer.specpp.supervision.RegularScheduler;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
+import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.supervision.traits.*;
 import org.processmining.estminer.specpp.traits.Triggerable;
 
@@ -71,7 +72,6 @@ public class LayingPipe {
     public LayingPipe split(Consumer<LayingPipe> splitPath) {
         LayingPipe lp = LayingPipe.inst(regularScheduler, backgroundTaskRunner);
         Observable<?> observable = lastObservable();
-        if (observable == null) throw new DisorderedPipeLaying();
         lp.source(observable);
         splitPath.accept(lp);
         return this;
@@ -80,13 +80,15 @@ public class LayingPipe {
     @SuppressWarnings("unchecked")
     public <O extends Observation> LayingPipe export(Consumer<Observable<O>> consumer) {
         Observable<?> observable = lastObservable();
-        if (observable == null) throw new DisorderedPipeLaying();
-        consumer.accept((Observable<O>) observable);
+        Observable<O> cast = (Observable<O>) observable;
+        if (cast == null) DebuggingSupervisor.debug("pipe laying export", "cast exception");
+        consumer.accept(cast);
         return this;
     }
 
     private Observable<?> lastObservable() {
-        return observables.peekLast();
+        if (observables.isEmpty()) throw new DisorderedPipeLaying();
+        return observables.getLast();
     }
 
     private void appendObservable(Observable<?> source) {
@@ -119,6 +121,13 @@ public class LayingPipe {
     public LayingPipe sink(Observer<?> sink) {
         ensureFittingDimensionality(lastObservable(), sink);
         appendObserver(sink);
+        return this;
+    }
+
+    public LayingPipe sinks(Observer<?>... sinks) {
+        for (Observer<?> s : sinks) {
+            sink(s);
+        }
         return this;
     }
 

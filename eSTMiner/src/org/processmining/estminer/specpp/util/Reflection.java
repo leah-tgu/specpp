@@ -24,9 +24,9 @@ public class Reflection {
     public static <T> T instance(Class<T> aClass, Object... args) {
         try {
             Constructor<?> constructor = suitableConstructor(aClass, args);
-            if (constructor != null) return (T) constructor.newInstance(args);
-            else return null;
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            if (constructor == null) throw new NoSuitableConstructorException();
+            return (T) constructor.newInstance(args);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NullPointerException e) {
             throw new RuntimeException(e);
         }
     }
@@ -37,5 +37,8 @@ public class Reflection {
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static class NoSuitableConstructorException extends RuntimeException {
     }
 }

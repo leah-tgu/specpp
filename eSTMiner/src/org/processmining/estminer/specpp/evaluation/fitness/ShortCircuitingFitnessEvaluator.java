@@ -8,7 +8,7 @@ import org.processmining.estminer.specpp.componenting.system.AbstractComponentSy
 import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.datastructures.BitMask;
-import org.processmining.estminer.specpp.datastructures.log.QuickReplay;
+import org.processmining.estminer.specpp.evaluation.markings.QuickReplay;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;

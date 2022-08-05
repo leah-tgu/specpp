@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdap
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.composition.PlaceComposerWithConcurrentImplicitnessTesting;
 import org.processmining.estminer.specpp.config.*;
-import org.processmining.estminer.specpp.datastructures.log.LogHistoryMaker;
+import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;

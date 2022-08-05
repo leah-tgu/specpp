@@ -45,4 +45,9 @@ public class CSVLogger<O extends Observation> implements AsyncObserver<O>, Buffe
     public void flushBuffer() {
         csvWriter.writeAll(buffer.drain());
     }
+
+    @Override
+    public boolean isBufferNonEmpty() {
+        return !buffer.isEmpty();
+    }
 }

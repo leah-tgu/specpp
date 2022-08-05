@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdap
 import org.processmining.estminer.specpp.config.Configurators;
 import org.processmining.estminer.specpp.config.GeneratingTreeConfiguration;
 import org.processmining.estminer.specpp.config.SupervisionConfiguration;
-import org.processmining.estminer.specpp.datastructures.log.LogHistoryMaker;
+import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.InstrumentedEnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.VariableExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceGenerator;

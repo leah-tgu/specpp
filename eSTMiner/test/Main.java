@@ -18,7 +18,8 @@ import org.processmining.estminer.specpp.evaluation.fitness.MarkingHistoryBasedF
 import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
 import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.FixedOrdering;
-import org.processmining.estminer.specpp.datastructures.InputDataBundle;
+import org.processmining.estminer.specpp.preprocessing.InputData;
+import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
 import org.processmining.estminer.specpp.datastructures.encoding.HashmapEncoding;
 import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
@@ -278,7 +279,7 @@ public class Main {
 
     @Test
     public void actualLog() {
-        InputDataBundle bundle = TestFactory.defaultInputBundle();
+        InputDataBundle bundle = InputData.sampleData().getData();
         System.out.println(bundle.getLog());
         System.out.println(bundle.getTransitionEncodings());
         System.out.println(bundle.getMapping());
@@ -286,7 +287,6 @@ public class Main {
         SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setupSpecOps(new BaseSpecOpsConfigBundle(), bundle);
 
         executeSpecOps(specPP);
-
     }
 
 

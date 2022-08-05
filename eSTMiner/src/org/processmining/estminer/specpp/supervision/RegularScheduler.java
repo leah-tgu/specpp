@@ -47,7 +47,7 @@ public class RegularScheduler implements StartStoppable, Joinable {
     @Override
     public void stop() {
         scheduledFutureList.forEach(sf -> sf.cancel(false));
-        tasksToSchedule.forEach(p -> scheduledExecutorService.submit(p.getT1()));
+        // tasksToSchedule.forEach(p -> scheduledExecutorService.submit(p.getT1()));
         scheduledExecutorService.shutdown();
     }
 

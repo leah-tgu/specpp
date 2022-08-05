@@ -23,19 +23,12 @@ public class DetailedTreeSupervisor extends MonitoringSupervisor {
 
     public DetailedTreeSupervisor() {
         componentSystemAdapter().require(SupervisionRequirements.observable("tree.events", TreeEvent.class), treeEvents)
-                                .require(SupervisionRequirements.adHocObservable("tree.stats", TreeStatsEvent.class), treeStats)
-                                .require(SupervisionRequirements.observable("tree.events.count", EventCountStatistics.class), treeCounts);
+                                .require(SupervisionRequirements.adHocObservable("tree.stats", TreeStatsEvent.class), treeStats);
         createMonitor("tree.leaves.count", new TimeSeriesMonitor<>("leaves.count", TimeSeriesMonitor.<LeafEvent<PlaceNode>>delta_accumulator()));
     }
 
     @Override
     protected void instantiateObservationHandling() {
-        beginLaying().source(treeCounts)
-                     .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
-                     .<EventCountStatistics>export(p -> componentSystemAdapter().provide(SupervisionRequirements.observable("tree.events.accumulation", EventCountStatistics.class, p)))
-                     .sink(PipeWorks.loggingSink(consoleLogger, "tree.events.accumulation"))
-                     .sink(PipeWorks.loggingSink(fileLogger, "tree.events.accumulation"))
-                     .apply();
 
         CSVLogger<LeafEvent<PlaceNode>> leafCountChanges = new CSVLogger<>("tree.csv", new String[]{"time", "place", "change", "tree.leaves.count delta"}, e -> new String[]{LocalDateTime.now().toString(), e.getSource()
                                                                                                                                                                                                               .getProperties().toString(), e.getClass().getSimpleName(), Integer.toString(e.getDelta())});

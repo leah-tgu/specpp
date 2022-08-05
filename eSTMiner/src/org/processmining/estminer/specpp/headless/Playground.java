@@ -3,13 +3,13 @@ package org.processmining.estminer.specpp.headless;
 import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.base.impls.SpecPP;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
+import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorCollection;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.SimpleBuilder;
-import org.processmining.estminer.specpp.datastructures.XLogDataSource;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
@@ -20,18 +20,24 @@ import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitne
 import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
 import org.processmining.estminer.specpp.evaluation.fitness.FullBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
+import org.processmining.estminer.specpp.orchestra.PreProcessingParameters;
+import org.processmining.estminer.specpp.orchestra.SpecOpsConfigBundle;
 import org.processmining.estminer.specpp.orchestra.SpecOpsSetup;
+import org.processmining.estminer.specpp.preprocessing.InputData;
+import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 import org.processmining.estminer.specpp.util.NaivePlacemaker;
-import org.processmining.estminer.specpp.util.TestFactory;
+import org.processmining.estminer.specpp.util.PublicPaths;
 
 import java.util.Arrays;
 
 public class Playground {
 
     public static void main(String[] args) {
-        XLogDataSource xLogDataSource = new XLogDataSource(TestFactory.LOG_4, true);
+        play(BaseSpecOpsConfigBundle::new, InputData.loadData(PublicPaths.SAMPLE_EVENTLOG_1, PreProcessingParameters.getDefault()));
+    }
 
-        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = SpecOpsSetup.specOps(BaseSpecOpsConfigBundle::new, xLogDataSource);
+    public static void play(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource) {
+        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = SpecOpsSetup.specOps(BaseSpecOpsConfigBundle::new, inputDataBundleSource);
 
         // ========================================= //
 

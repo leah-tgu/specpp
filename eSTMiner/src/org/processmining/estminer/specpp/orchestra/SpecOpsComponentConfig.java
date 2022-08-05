@@ -2,6 +2,7 @@ package org.processmining.estminer.specpp.orchestra;
 
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
+import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
@@ -16,18 +17,16 @@ import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrappe
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 
-import static org.processmining.estminer.specpp.componenting.data.StaticDataSource.of;
-
 public interface SpecOpsComponentConfig {
 
     default void registerConfigurations(ComponentRepository cr) {
         ComponentSystemAdapter csa = cr.componentSystemAdapter();
         DataSourceCollection dc = cr.dataSources();
-        dc.register(DataRequirements.EVALUATOR_CONFIG, of(getEvaluatorConfiguration(csa)));
-        dc.register(DataRequirements.SUPERVISOR_CONFIG, of(getSupervisionConfiguration(csa)));
-        dc.register(DataRequirements.proposerComposerConfiguration(), of(getProposerComposerConfiguration(csa)));
-        dc.register(DataRequirements.postprocessingConfiguration(), of(getPostProcessingConfiguration(csa)));
-        dc.register(DataRequirements.generatingTreeConfiguration(), of(getGeneratingTreeConfiguration(csa)));
+        dc.register(DataRequirements.EVALUATOR_CONFIG, StaticDataSource.of(getEvaluatorConfiguration(csa)));
+        dc.register(DataRequirements.SUPERVISOR_CONFIG, StaticDataSource.of(getSupervisionConfiguration(csa)));
+        dc.register(DataRequirements.proposerComposerConfiguration(), StaticDataSource.of(getProposerComposerConfiguration(csa)));
+        dc.register(DataRequirements.postprocessingConfiguration(), StaticDataSource.of(getPostProcessingConfiguration(csa)));
+        dc.register(DataRequirements.generatingTreeConfiguration(), StaticDataSource.of(getGeneratingTreeConfiguration(csa)));
     }
 
     EvaluatorConfiguration getEvaluatorConfiguration(ComponentSystemAdapter csa);

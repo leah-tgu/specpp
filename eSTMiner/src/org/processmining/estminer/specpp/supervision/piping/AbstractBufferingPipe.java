@@ -37,6 +37,11 @@ public abstract class AbstractBufferingPipe<I extends Observation, O extends Obs
     }
 
     @Override
+    public boolean isBufferNonEmpty() {
+        return !buffer.isEmpty();
+    }
+
+    @Override
     public void observe(I observation) {
         buffer(observation);
     }

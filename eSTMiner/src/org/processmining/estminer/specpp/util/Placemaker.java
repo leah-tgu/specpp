@@ -14,41 +14,41 @@ public class Placemaker {
         this.postEnc = encodings.post();
     }
 
-    public class InPro {
+    public class InProgress {
 
-        final BitEncodedSet<Transition> pre;
-        final BitEncodedSet<Transition> post;
+        final BitEncodedSet<Transition> preset;
+        final BitEncodedSet<Transition> postset;
 
-        public InPro() {
-            this.pre = BitEncodedSet.empty(preEnc);
-            this.post = BitEncodedSet.empty(postEnc);
+        public InProgress() {
+            this.preset = BitEncodedSet.empty(preEnc);
+            this.postset = BitEncodedSet.empty(postEnc);
         }
 
-        public InPro preset(Transition... pre) {
+        public InProgress preset(Transition... pre) {
             for (Transition t : pre) {
-                this.pre.add(t);
+                preset.add(t);
             }
             return this;
         }
 
-        public InPro postset(Transition... post) {
+        public InProgress postset(Transition... post) {
             for (Transition t : post) {
-                this.post.add(t);
+                postset.add(t);
             }
             return this;
         }
 
         public Place get() {
-            return new Place(pre, post);
+            return new Place(preset, postset);
         }
 
     }
 
-    public InPro start() {
-        return new InPro();
+    public InProgress start() {
+        return new InProgress();
     }
 
-    public InPro preset(Transition... pre) {
+    public InProgress preset(Transition... pre) {
         return start().preset(pre);
     }
 

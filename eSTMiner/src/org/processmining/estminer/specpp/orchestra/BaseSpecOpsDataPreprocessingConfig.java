@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
 import org.processmining.estminer.specpp.config.parameters.FitnessThresholds;
-import org.processmining.estminer.specpp.datastructures.InputDataBundle;
+import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.log.Log;

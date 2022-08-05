@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.componenting.data;
 
-import org.processmining.estminer.specpp.config.ComponentInitializer;
+import org.processmining.estminer.specpp.componenting.system.ComponentInitializer;
 
 public class ConfigurationRequirement<F extends ComponentInitializer> extends DataRequirement<F> {
 
