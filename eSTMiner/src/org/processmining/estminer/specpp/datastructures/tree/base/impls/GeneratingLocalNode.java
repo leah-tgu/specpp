@@ -4,6 +4,8 @@ import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGener
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 
+import java.util.Optional;
+
 public abstract class GeneratingLocalNode<P extends NodeProperties, S extends NodeState, N extends GeneratingLocalNode<P, S, N>> extends AbstractLocalNode<P, S, N> {
     private final LocalNodeGenerator<P, S, N> generator;
 
@@ -19,5 +21,16 @@ public abstract class GeneratingLocalNode<P extends NodeProperties, S extends No
     protected void updateState(S newState) {
         setState(newState);
     }
+
+
+    @Override
+    public boolean canExpand() {
+        return canExpandBasedOnState().orElseGet(this::canExpandBasedOnGenerator);
+    }
+
+    protected abstract Optional<Boolean> canExpandBasedOnState();
+
+    protected abstract boolean canExpandBasedOnGenerator();
+
 
 }

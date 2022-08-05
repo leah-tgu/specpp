@@ -5,6 +5,7 @@ import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdap
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.composition.PlaceComposerWithConcurrentImplicitnessTesting;
 import org.processmining.estminer.specpp.config.*;
+import org.processmining.estminer.specpp.evaluation.fitness.ShortCircuitingFitnessEvaluator;
 import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
@@ -39,7 +40,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     public EvaluatorConfiguration getEvaluatorConfiguration(ComponentSystemAdapter csa) {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
-                            .evaluatorProvider(MarkingHistoryBasedFitnessEvaluator::new)
+                            .evaluatorProvider(ShortCircuitingFitnessEvaluator::new)
                             .build(csa);
     }
 
@@ -55,7 +56,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     @Override
     public GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentSystemAdapter csa) {
         return Configurators.<PlaceNode, PlaceGenerator, DoubleScore>heuristicTree()
-                            .heuristic(HeuristicUtils::bfs)
+                            .heuristic(HeuristicUtils::dfs)
                             .heuristicExpansion(InstrumentedHeuristicTreeExpansion::new)
                             .enumeratingTree(InstrumentedEnumeratingTree::new)
                             .constrainableGenerator(new PlaceGenerator.Builder())

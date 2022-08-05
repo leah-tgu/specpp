@@ -16,6 +16,7 @@ import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableLocalNodeGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.base.GenerationConstraint;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.*;
+import org.processmining.estminer.specpp.datastructures.util.Pair;
 
 import java.util.Iterator;
 
@@ -84,6 +85,9 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
         return maxDepth;
     }
 
+    public boolean isBelowDepthLimit(PlaceNode node) {
+        return node.getDepth() < maxDepth;
+    }
 
     @Override
     public PlaceNode generateParent(PlaceNode child) {
@@ -128,23 +132,25 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
         boolean isParentRoot = pre.cardinality() + post.cardinality() == 1;
         return !isParentRoot && post.cardinality() == 1;
     }
-    // mutates node state, i.e. adds generated child
 
+    // mutates node state, i.e. adds generated child
     @Override
     public PlaceNode generateChild(PlaceNode parent) {
         Place place = parent.getProperties();
         PlaceState state = parent.getState();
 
-        if (hasPostsetChildren(place)) {
-            BitEncodedSet<Transition> postsetExpansions = possiblePostsetExpansions(place, state);
-            if (!postsetExpansions.isEmpty()) {
-                return parent.child(generatePostsetExpandedPlace(place, state, postsetExpansions));
+        if (isBelowDepthLimit(parent)) {
+            if (canHavePostsetChildren(place)) {
+                BitEncodedSet<Transition> possiblePostsetExpansions = possiblePostsetExpansions(place, state);
+                if (!possiblePostsetExpansions.isEmpty()) {
+                    return parent.child(generatePostsetExpandedPlace(place, state, possiblePostsetExpansions));
+                }
             }
-        }
-        if (hasPresetChildren(place)) {
-            BitEncodedSet<Transition> presetExpansions = possiblePresetExpansions(place, state);
-            if (!presetExpansions.isEmpty()) {
-                return parent.child(generatePresetExpandedPlace(place, state, presetExpansions));
+            if (canHavePresetChildren(place)) {
+                BitEncodedSet<Transition> possiblePresetExpansions = possiblePresetExpansions(place, state);
+                if (!possiblePresetExpansions.isEmpty()) {
+                    return parent.child(generatePresetExpandedPlace(place, state, possiblePresetExpansions));
+                }
             }
         }
 
@@ -152,26 +158,56 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
     }
 
     private Place generatePostsetExpandedPlace(Place parent, PlaceState parentState, BitEncodedSet<Transition> postsetExpansions) {
-        return new Place(parent.preset(), expandSet(parent.postset(), postsetExpansions, parentState.getPostsetChildrenMask()));
+        return new Place(parent.preset(), expandSet(parent.postset(), postsetExpansions, parentState.getPostsetMasks()));
     }
 
     private Place generatePresetExpandedPlace(Place parent, PlaceState parentState, BitEncodedSet<Transition> presetExpansions) {
-        return new Place(expandSet(parent.preset(), presetExpansions, parentState.getPresetChildrenMask()), parent.postset());
+        return new Place(expandSet(parent.preset(), presetExpansions, parentState.getPresetMasks()), parent.postset());
     }
 
-    private BitEncodedSet<Transition> expandSet(BitEncodedSet<Transition> baseSet, BitEncodedSet<Transition> possibleExpansions, BitMask actualExpansions) {
+    private BitEncodedSet<Transition> expandSet(BitEncodedSet<Transition> baseSet, BitEncodedSet<Transition> possibleExpansions, Pair<BitMask> actualExpansionMasks) {
         int i = possibleExpansions.minimalIndex();
-        actualExpansions.set(i);
+        actualExpansionMasks.first().set(i);
+
+        BitMask maxFutureExpansions = actualExpansionMasks.second();
+        updateAdditionalStateInfo(maxFutureExpansions, possibleExpansions.getBitMask());
+        maxFutureExpansions.clear(i);
+
         BitEncodedSet<Transition> copy = baseSet.copy();
         copy.addIndex(i);
         return copy;
+    }
+
+    private void updateAdditionalStateInfo(BitMask currentMaxFutureExpansions, BitMask maxFutureExpansions) {
+        currentMaxFutureExpansions.and(maxFutureExpansions);
+    }
+
+    private void updateAdditionalStateInfo(PlaceState placeState, BitMask maxFutureExpansions, boolean updatingPostset) {
+        if (updatingPostset) updateAdditionalStateInfo(placeState.getMaximalFuturePostsetChildrenMask(), maxFutureExpansions);
+        else updateAdditionalStateInfo(placeState.getMaximalFuturePresetChildrenMask(), maxFutureExpansions);
     }
 
     @Override
     public boolean hasChildrenLeft(PlaceNode parent) {
         PlaceState state = parent.getState();
         Place place = parent.getProperties();
-        return place.size() < getMaxDepth() && ((hasPostsetChildren(place) && !possiblePostsetExpansions(place, state).isEmpty()) || (hasPresetChildren(place) && !possiblePresetExpansions(place, state).isEmpty()));
+
+        int c = 0;
+
+        if (isBelowDepthLimit(parent)) {
+            if (canHavePostsetChildren(place)) {
+                BitEncodedSet<Transition> possiblePostsetExpansions = possiblePostsetExpansions(place, state);
+                updateAdditionalStateInfo(parent.getState(), possiblePostsetExpansions.getBitMask(), true);
+                c += possiblePostsetExpansions.cardinality();
+            }
+            if (canHavePresetChildren(place)) {
+                BitEncodedSet<Transition> possiblePresetExpansions = possiblePresetExpansions(place, state);
+                updateAdditionalStateInfo(parent.getState(), possiblePresetExpansions.getBitMask(), false);
+                c += possiblePresetExpansions.cardinality();
+            }
+        }
+
+        return c > 0;
     }
 
     private BitEncodedSet<Transition> possiblePostsetExpansions(Place place, PlaceState state) {
@@ -208,22 +244,24 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
         return new BitEncodedSet<>(transitions.getEncoding(), potentialChildrenMask(transitions));
     }
 
-    private boolean hasPostsetChildren(Place place) {
+    private boolean canHavePostsetChildren(Place place) {
         return place.preset().cardinality() > 0 || place.postset().cardinality() == 0;
     }
 
-    private boolean hasPresetChildren(Place place) {
+    private boolean canHavePresetChildren(Place place) {
         return place.postset().cardinality() == 1;
     }
 
 
     @Override
     public int potentialChildrenCount(PlaceNode parent) {
+        if (!isBelowDepthLimit(parent)) return 0;
+
         PlaceState state = parent.getState();
         Place place = parent.getProperties();
         int i = 0;
-        if (hasPostsetChildren(place)) i += possiblePostsetExpansions(place, state).cardinality();
-        if (hasPresetChildren(place)) i += possiblePostsetExpansions(place, state).cardinality();
+        if (canHavePostsetChildren(place)) i += possiblePostsetExpansions(place, state).cardinality();
+        if (canHavePresetChildren(place)) i += possiblePostsetExpansions(place, state).cardinality();
         return i;
     }
 
@@ -236,7 +274,7 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
 
         Iterator<PlaceNode> result = IteratorUtils.emptyIterator();
 
-        if (hasPostsetChildren(place)) {
+        if (canHavePostsetChildren(place)) {
             result = possiblePostsetExpansions(place, state).getBitMask().stream().mapToObj(poId -> {
                 BitEncodedSet<Transition> newPost = post.copy();
                 newPost.addIndex(poId);
@@ -244,7 +282,7 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
             }).iterator();
         }
 
-        if (hasPresetChildren(place)) {
+        if (canHavePresetChildren(place)) {
             result = IteratorUtils.chainedIterator(result, possiblePresetExpansions(place, state).getBitMask()
                                                                                                  .stream()
                                                                                                  .mapToObj(prId -> {

@@ -4,6 +4,7 @@ import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class PlaceNode extends GeneratingLocalNode<Place, PlaceState, PlaceNode> {
@@ -47,9 +48,16 @@ public class PlaceNode extends GeneratingLocalNode<Place, PlaceState, PlaceNode>
                                                                                   .cardinality() > 0;
     }
 
+
     @Override
-    public boolean canExpand() {
+    protected boolean canExpandBasedOnGenerator() {
         return getGenerator().hasChildrenLeft(this);
+    }
+
+    @Override
+    protected Optional<Boolean> canExpandBasedOnState() {
+        PlaceState state = getState();
+        return state.isCertainlyALeaf() ? Optional.of(Boolean.FALSE) : Optional.empty();
     }
 
     @Override

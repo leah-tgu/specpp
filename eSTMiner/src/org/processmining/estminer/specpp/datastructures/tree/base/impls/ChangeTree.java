@@ -42,10 +42,10 @@ public class ChangeTree<P extends NodeProperties> extends BiDiTreeImpl<Annotatab
                                                                        .build();
                 map.put(child, corrChild);
             } else if (event instanceof NodeExhaustionEvent) {
-                AnnotatableBiDiNodeImpl<String> affectedNode = map.get(source);
-                nodeFactory.newChildOf(affectedNode)
-                           .annotate("X")
-                           .build();
+                if (map.containsKey(source)) {
+                    AnnotatableBiDiNodeImpl<String> affectedNode = map.get(source);
+                    nodeFactory.newChildOf(affectedNode).annotate("X").build();
+                }
             }
         }
     }
