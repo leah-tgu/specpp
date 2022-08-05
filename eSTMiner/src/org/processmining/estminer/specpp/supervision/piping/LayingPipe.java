@@ -2,12 +2,12 @@ package org.processmining.estminer.specpp.supervision.piping;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.supervision.BackgroundTaskRunner;
 import org.processmining.estminer.specpp.supervision.RegularScheduler;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.traits.*;
 import org.processmining.estminer.specpp.traits.Triggerable;
-import org.processmining.estminer.specpp.util.datastructures.Tuple2;
 
 import java.time.Duration;
 import java.util.Deque;
@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 
 public class LayingPipe {
 
-    private Observable<?> source;
     private Object lastAddition;
 
     private RegularScheduler regularScheduler;
@@ -58,7 +57,6 @@ public class LayingPipe {
 
     public LayingPipe source(Observable<?> source) {
         if (!observables.isEmpty() || !observers.isEmpty()) throw new DisorderedPipeLaying();
-        this.source = source;
         appendObservable(source);
         return this;
     }

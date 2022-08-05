@@ -1,9 +1,9 @@
 package org.processmining.estminer.specpp.supervision.piping;
 
-import org.processmining.estminer.specpp.representations.tree.base.AnnotatableBiDiNode;
-import org.processmining.estminer.specpp.representations.tree.base.BiDiTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.AnnotatableBiDiNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.BiDiTree;
+import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.supervision.observations.Visualization;
-import org.processmining.estminer.specpp.util.datastructures.IndexedItem;
 import org.processmining.plugins.graphviz.dot.Dot;
 import org.processmining.plugins.graphviz.dot.DotNode;
 import org.processmining.plugins.graphviz.visualisation.DotPanel;

@@ -6,9 +6,9 @@ import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.system.ComponentType;
 import org.processmining.estminer.specpp.componenting.system.Requirement;
+import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
+import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
-import org.processmining.estminer.specpp.util.datastructures.NoRehashing;
-import org.processmining.estminer.specpp.util.datastructures.Tuple2;
 
 public class EvaluatorRequirement<I extends Evaluable, E extends Evaluation> extends NoRehashing<Tuple2<Class<I>, Class<E>>> implements Requirement<Evaluator<I, E>, EvaluatorRequirement<?, ?>> {
 

@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.componenting.data;
 
+import org.processmining.estminer.specpp.config.parameters.FitnessThresholds;
 import org.processmining.estminer.specpp.config.parameters.Parameters;
-import org.processmining.estminer.specpp.proposal.FitnessThresholds;
 
 public class ParameterRequirements {
 

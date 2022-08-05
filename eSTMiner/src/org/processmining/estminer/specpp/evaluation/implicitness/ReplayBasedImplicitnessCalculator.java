@@ -1,11 +1,11 @@
 package org.processmining.estminer.specpp.evaluation.implicitness;
 
-import org.processmining.estminer.specpp.representations.encoding.BitEncodedSet;
-import org.processmining.estminer.specpp.representations.encoding.MutatingSetOperations;
-import org.processmining.estminer.specpp.representations.log.impls.DenseVariantMarkingHistories;
-import org.processmining.estminer.specpp.representations.petri.Place;
-import org.processmining.estminer.specpp.representations.petri.Transition;
-import org.processmining.estminer.specpp.util.datastructures.Tuple2;
+import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
+import org.processmining.estminer.specpp.datastructures.encoding.MutatingSetOperations;
+import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.petri.Transition;
+import org.processmining.estminer.specpp.datastructures.util.Pair;
 
 import java.util.Map;
 
@@ -13,13 +13,13 @@ public class ReplayBasedImplicitnessCalculator {
 
 
     private static Place computeP3(Place p1, Place p2) {
-        Tuple2<BitEncodedSet<Transition>, BitEncodedSet<Transition>> pretuple = MutatingSetOperations.dualSetminus(p1.preset(), p2.preset());
-        Tuple2<BitEncodedSet<Transition>, BitEncodedSet<Transition>> posttuple = MutatingSetOperations.dualSetminus(p1.postset(), p2.postset());
+        Pair<BitEncodedSet<Transition>> preset_diffs = MutatingSetOperations.dualSetminus(p1.preset(), p2.preset());
+        Pair<BitEncodedSet<Transition>> postset_diffs = MutatingSetOperations.dualSetminus(p1.postset(), p2.postset());
 
-        BitEncodedSet<Transition> iip = pretuple.getT1();
-        BitEncodedSet<Transition> opo = posttuple.getT2();
-        BitEncodedSet<Transition> oop = posttuple.getT1();
-        BitEncodedSet<Transition> ipi = pretuple.getT2();
+        BitEncodedSet<Transition> iip = preset_diffs.first();
+        BitEncodedSet<Transition> opo = postset_diffs.second();
+        BitEncodedSet<Transition> oop = postset_diffs.first();
+        BitEncodedSet<Transition> ipi = preset_diffs.second();
 
         boolean isFeasible = !iip.intersects(opo) && !oop.intersects(ipi);
 

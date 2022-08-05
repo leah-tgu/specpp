@@ -1,5 +1,7 @@
 package org.processmining.estminer.specpp.supervision.observations;
 
+import java.util.Objects;
+
 public class DebugEvent implements Event {
 
     private final String text;
@@ -20,7 +22,7 @@ public class DebugEvent implements Event {
 
         DebugEvent that = (DebugEvent) o;
 
-        return text != null ? text.equals(that.text) : that.text == null;
+        return Objects.equals(text, that.text);
     }
 
     @Override

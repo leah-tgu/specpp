@@ -66,7 +66,7 @@ public class ComponentSystemAdapter implements RequiresComponents, ProvisionsCom
         if (frp != null) {
             List<FulfilledRequirement<?, R>> list = frp.multiSatisfyRequirement(requirement);
             for (FulfilledRequirement<?, R> f : list) {
-                if (!container.hasCapacityLeft()) return;
+                if (container.isFull()) return;
                 instantiateWith(requirement, container, f);
             }
         }
@@ -91,7 +91,6 @@ public class ComponentSystemAdapter implements RequiresComponents, ProvisionsCom
             absorb(frp);
         }
     }
-    // TODO the pain
 
     public <R extends Requirement<?, R>> boolean alreadySatisfies(FulfilledRequirement<?, R> fulfilledRequirement) {
         ComponentType componentType = fulfilledRequirement.componentType();

@@ -6,10 +6,11 @@ import org.processmining.estminer.specpp.base.impls.SpecPP;
 import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
-import org.processmining.estminer.specpp.representations.InputDataBundle;
-import org.processmining.estminer.specpp.representations.petri.PetriNet;
-import org.processmining.estminer.specpp.representations.petri.Place;
-import org.processmining.estminer.specpp.representations.petri.ProMPetrinetWrapper;
+import org.processmining.estminer.specpp.datastructures.InputDataBundle;
+import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.estminer.specpp.datastructures.util.TypedItem;
 import org.processmining.estminer.specpp.supervision.Supervisor;
 import org.processmining.estminer.specpp.supervision.monitoring.*;
 import org.processmining.estminer.specpp.supervision.observations.Visualization;
@@ -17,7 +18,6 @@ import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSuperv
 import org.processmining.estminer.specpp.supervision.traits.Monitoring;
 import org.processmining.estminer.specpp.util.FileUtils;
 import org.processmining.estminer.specpp.util.TestFactory;
-import org.processmining.estminer.specpp.util.datastructures.TypedItem;
 import org.processmining.plugins.graphviz.visualisation.DotPanel;
 
 import javax.swing.*;

@@ -1,13 +1,14 @@
 package org.processmining.estminer.specpp.proposal;
 
+import org.processmining.estminer.specpp.base.impls.GeneratingTreeProposer;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
 import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
-import org.processmining.estminer.specpp.est.PlaceNode;
-import org.processmining.estminer.specpp.representations.petri.Place;
-import org.processmining.estminer.specpp.representations.tree.base.ConstrainableLocalNodeGenerator;
-import org.processmining.estminer.specpp.representations.tree.base.GenerationConstraint;
-import org.processmining.estminer.specpp.representations.tree.base.impls.EnumeratingTree;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableLocalNodeGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.GenerationConstraint;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;

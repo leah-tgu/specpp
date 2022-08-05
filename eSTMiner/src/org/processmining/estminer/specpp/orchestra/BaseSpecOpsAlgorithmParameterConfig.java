@@ -4,9 +4,9 @@ import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
+import org.processmining.estminer.specpp.config.parameters.FitnessThresholds;
 import org.processmining.estminer.specpp.config.parameters.ParameterDefaults;
 import org.processmining.estminer.specpp.config.parameters.PlaceGeneratorParameters;
-import org.processmining.estminer.specpp.proposal.FitnessThresholds;
 
 public class BaseSpecOpsAlgorithmParameterConfig implements SpecOpsAlgorithmParameterConfig {
     @Override

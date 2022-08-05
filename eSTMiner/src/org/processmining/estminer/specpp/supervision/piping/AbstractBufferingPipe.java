@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.supervision.traits.ThreadsafeBuffer;
 
 public abstract class AbstractBufferingPipe<I extends Observation, O extends Observation> extends AbstractAsyncAwareObservable<O> implements ObservationPipe<I, O>, Buffering {
     protected final Buffer<I> buffer;
-    public boolean hasThreadsafeBuffer;
+    public final boolean hasThreadsafeBuffer;
 
     public AbstractBufferingPipe(boolean useThreadsafeBuffer) {
         this.buffer = useThreadsafeBuffer ? new ConcurrentBuffer<>() : new BasicBuffer<>();

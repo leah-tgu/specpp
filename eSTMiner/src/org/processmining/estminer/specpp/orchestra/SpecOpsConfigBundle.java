@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.orchestra;
 
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
-import org.processmining.estminer.specpp.representations.InputDataBundle;
+import org.processmining.estminer.specpp.datastructures.InputDataBundle;
 
 public class SpecOpsConfigBundle {
 

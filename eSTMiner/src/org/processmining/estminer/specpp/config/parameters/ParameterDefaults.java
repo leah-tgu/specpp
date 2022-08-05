@@ -3,8 +3,7 @@ package org.processmining.estminer.specpp.config.parameters;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
-import org.processmining.estminer.specpp.componenting.system.ProvidesParameters;
-import org.processmining.estminer.specpp.proposal.FitnessThresholds;
+import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 
 public class ParameterDefaults extends AbstractComponentSystemUser implements ProvidesParameters {
 

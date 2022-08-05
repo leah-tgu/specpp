@@ -10,11 +10,11 @@ import org.processmining.estminer.specpp.config.GeneratingTreeConfiguration;
 import org.processmining.estminer.specpp.config.PostProcessingConfiguration;
 import org.processmining.estminer.specpp.config.ProposerComposerConfiguration;
 import org.processmining.estminer.specpp.config.SupervisionConfiguration;
-import org.processmining.estminer.specpp.est.PlaceNode;
-import org.processmining.estminer.specpp.representations.petri.PetriNet;
-import org.processmining.estminer.specpp.representations.petri.Place;
-import org.processmining.estminer.specpp.representations.petri.ProMPetrinetWrapper;
-import org.processmining.estminer.specpp.representations.tree.nodegen.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 
 import static org.processmining.estminer.specpp.componenting.data.StaticDataSource.of;
 

@@ -22,8 +22,8 @@ public class ListContainer<T> implements Container<T> {
     }
 
     @Override
-    public boolean hasCapacityLeft() {
-        return true;
+    public boolean isFull() {
+        return false;
     }
 
     public List<T> getContents() {

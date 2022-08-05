@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.util;
 
-import org.processmining.estminer.specpp.representations.encoding.IntEncodings;
-import org.processmining.estminer.specpp.representations.petri.Transition;
+import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
+import org.processmining.estminer.specpp.datastructures.petri.Transition;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,10 +11,10 @@ public class NaivePlacemaker extends Placemaker {
     private final Map<String, Transition> preLabels;
     private final Map<String, Transition> postLabels;
 
-    public NaivePlacemaker(IntEncodings<Transition> encs) {
-        super(encs);
-        preLabels = encs.pre().domain().collect(Collectors.toMap(Transition::toString, t -> t));
-        postLabels = encs.post().domain().collect(Collectors.toMap(Transition::toString, t -> t));
+    public NaivePlacemaker(IntEncodings<Transition> encodings) {
+        super(encodings);
+        preLabels = encodings.pre().domain().collect(Collectors.toMap(Transition::toString, t -> t));
+        postLabels = encodings.post().domain().collect(Collectors.toMap(Transition::toString, t -> t));
     }
 
     public class NaiveInPro extends InPro {

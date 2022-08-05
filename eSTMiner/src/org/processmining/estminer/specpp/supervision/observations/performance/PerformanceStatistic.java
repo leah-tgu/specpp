@@ -13,7 +13,7 @@ public class PerformanceStatistic implements Statistic, Mergeable {
 
     private final List<PerformanceMeasurement> measurements;
     private final SummaryStatistics stats;
-    private final DecimalFormat decimalFormat = new DecimalFormat("0.###");
+    private static final DecimalFormat decimalFormat = new DecimalFormat("0.###");
 
     public PerformanceStatistic() {
         measurements = new ArrayList<>();
@@ -59,8 +59,12 @@ public class PerformanceStatistic implements Statistic, Mergeable {
 
     @Override
     public String toString() {
-        return "{\u03BC=" + durationToString(avg()) + "ms\u00B1" + durationToString(std()) + "ms" + " (" + durationToString(min()) + "ms-" + durationToString(max()) + "ms), \u03A3=" + sum().toString()
-                                                                                                                                                                                            .substring(2) + ", N=" + N() + "}";
+        Duration sum = sum();
+        long n = N();
+        int rate = (int) (1e3 * n / (double) sum.toMillis());
+        return "{\u03BC=" + durationToString(avg()) + "ms\u00B1" + durationToString(std()) + "ms" + " (" + durationToString(min()) + "ms-" + durationToString(max()) + "ms), \u03A3=" + sum.toString()
+                                                                                                                                                                                           .substring(2) + ", N=" + n + ", " + rate
+                + "it/s" + "}";
     }
 
     @Override

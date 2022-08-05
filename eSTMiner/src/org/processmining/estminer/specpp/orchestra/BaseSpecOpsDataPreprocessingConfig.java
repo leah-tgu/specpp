@@ -4,14 +4,14 @@ import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
-import org.processmining.estminer.specpp.proposal.FitnessThresholds;
-import org.processmining.estminer.specpp.representations.InputDataBundle;
-import org.processmining.estminer.specpp.representations.encoding.IntEncodings;
-import org.processmining.estminer.specpp.representations.log.Activity;
-import org.processmining.estminer.specpp.representations.log.Log;
-import org.processmining.estminer.specpp.representations.log.impls.LogEncoder;
-import org.processmining.estminer.specpp.representations.log.impls.MultiEncodedLog;
-import org.processmining.estminer.specpp.representations.petri.Transition;
+import org.processmining.estminer.specpp.config.parameters.FitnessThresholds;
+import org.processmining.estminer.specpp.datastructures.InputDataBundle;
+import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
+import org.processmining.estminer.specpp.datastructures.log.Activity;
+import org.processmining.estminer.specpp.datastructures.log.Log;
+import org.processmining.estminer.specpp.datastructures.log.impls.LogEncoder;
+import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
+import org.processmining.estminer.specpp.datastructures.petri.Transition;
 
 import java.util.Map;
 

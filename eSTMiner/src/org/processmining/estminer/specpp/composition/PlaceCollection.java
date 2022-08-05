@@ -6,10 +6,10 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvalu
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
+import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.evaluation.implicitness.ImplicitnessRating;
 import org.processmining.estminer.specpp.evaluation.implicitness.ReplayBasedImplicitnessCalculator;
-import org.processmining.estminer.specpp.representations.log.impls.DenseVariantMarkingHistories;
-import org.processmining.estminer.specpp.representations.petri.Place;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -18,7 +18,6 @@ public class ArrayListComposition<C extends Candidate> extends AbstractCompositi
         return ABSOLUTE_SIZE_LIMIT;
     }
 
-    @Override
     public boolean hasCapacityLeft() {
         return size() < ABSOLUTE_SIZE_LIMIT;
     }

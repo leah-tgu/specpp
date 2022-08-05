@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.evaluation.implicitness;
 
-import org.processmining.estminer.specpp.representations.petri.Place;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
 
 public class ReplaceExaminedPlace extends ReplaceableByImplicitness {
 

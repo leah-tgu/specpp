@@ -10,37 +10,37 @@ import org.processmining.estminer.specpp.componenting.supervision.FulfilledObser
 import org.processmining.estminer.specpp.componenting.supervision.ObservableRequirement;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
-import org.processmining.estminer.specpp.representations.tree.base.impls.*;
-import org.processmining.estminer.specpp.representations.tree.nodegen.PlaceGenerator;
-import org.processmining.estminer.specpp.est.PlaceNode;
-import org.processmining.estminer.specpp.evaluation.AggregatedBasicFitnessEvaluation;
-import org.processmining.estminer.specpp.evaluation.MarkingHistoryBasedFitnessEvaluator;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.*;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
+import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
 import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
-import org.processmining.estminer.specpp.representations.BitMask;
-import org.processmining.estminer.specpp.representations.encoding.FixedOrdering;
-import org.processmining.estminer.specpp.representations.InputDataBundle;
-import org.processmining.estminer.specpp.representations.encoding.BitEncodedSet;
-import org.processmining.estminer.specpp.representations.encoding.HashmapEncoding;
-import org.processmining.estminer.specpp.representations.encoding.IndexSubset;
-import org.processmining.estminer.specpp.representations.encoding.IntEncodings;
-import org.processmining.estminer.specpp.representations.log.Activity;
-import org.processmining.estminer.specpp.representations.log.Log;
-import org.processmining.estminer.specpp.representations.log.impls.DenseVariantMarkingHistories;
-import org.processmining.estminer.specpp.representations.log.impls.LogBuilderImpl;
-import org.processmining.estminer.specpp.representations.log.impls.VariantImpl;
-import org.processmining.estminer.specpp.representations.petri.PetriNet;
-import org.processmining.estminer.specpp.representations.petri.Place;
-import org.processmining.estminer.specpp.representations.petri.ProMPetrinetWrapper;
-import org.processmining.estminer.specpp.representations.petri.Transition;
-import org.processmining.estminer.specpp.representations.tree.base.*;
-import org.processmining.estminer.specpp.representations.vectorization.IVSComputations;
-import org.processmining.estminer.specpp.representations.vectorization.IntVectorStorage;
+import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.FixedOrdering;
+import org.processmining.estminer.specpp.datastructures.InputDataBundle;
+import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
+import org.processmining.estminer.specpp.datastructures.encoding.HashmapEncoding;
+import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
+import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
+import org.processmining.estminer.specpp.datastructures.log.Activity;
+import org.processmining.estminer.specpp.datastructures.log.Log;
+import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
+import org.processmining.estminer.specpp.datastructures.log.impls.LogBuilderImpl;
+import org.processmining.estminer.specpp.datastructures.log.impls.VariantImpl;
+import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.estminer.specpp.datastructures.petri.Transition;
+import org.processmining.estminer.specpp.datastructures.tree.base.*;
+import org.processmining.estminer.specpp.datastructures.vectorization.IVSComputations;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.*;
-import org.processmining.estminer.specpp.util.datastructures.Label;
-import org.processmining.estminer.specpp.util.datastructures.RegexLabel;
-import org.processmining.estminer.specpp.util.datastructures.Tuple2;
+import org.processmining.estminer.specpp.datastructures.util.Label;
+import org.processmining.estminer.specpp.datastructures.util.RegexLabel;
+import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,7 +48,7 @@ import java.util.stream.IntStream;
 
 import static org.processmining.estminer.specpp.orchestra.SpecOpsSetup.executeSpecOps;
 import static org.processmining.estminer.specpp.orchestra.SpecOpsSetup.setupSpecOps;
-import static org.processmining.estminer.specpp.util.HandcodedTestInput.getDummyInputBundle;
+import static org.processmining.estminer.specpp.util.HardcodedTestInput.getDummyInputBundle;
 
 public class Main {
 
@@ -146,16 +146,16 @@ public class Main {
 
     @Test
     public void traversal() {
-        AnnotatableBiDiNodeImpl<String> root = NodeFactory.annotatedRoot(JavaTypingUtils.castClass(AnnotatableBiDiNodeImpl.class), "a");
+        AnnotatableBiDiNodeImpl<String> root = ReflectiveNodeFactory.annotatedRoot(JavaTypingUtils.castClass(AnnotatableBiDiNodeImpl.class), "a");
         BiDiTree<AnnotatableBiDiNodeImpl<String>> tree = new BiDiTreeImpl<>(root);
 
         System.out.println(tree);
 
-        AnnotatableBiDiNodeImpl<String> b = NodeFactory.annotatedChildOf(root, "b");
-        NodeFactory.annotatedChildOf(root, "c");
-        NodeFactory.annotatedChildOf(b, "d");
-        AnnotatableBiDiNodeImpl<String> e = NodeFactory.annotatedChildOf(b, "e");
-        NodeFactory.annotatedChildOf(e, "f");
+        AnnotatableBiDiNodeImpl<String> b = ReflectiveNodeFactory.annotatedChildOf(root, "b");
+        ReflectiveNodeFactory.annotatedChildOf(root, "c");
+        ReflectiveNodeFactory.annotatedChildOf(b, "d");
+        AnnotatableBiDiNodeImpl<String> e = ReflectiveNodeFactory.annotatedChildOf(b, "e");
+        ReflectiveNodeFactory.annotatedChildOf(e, "f");
 
         System.out.println(tree);
     }
@@ -175,8 +175,8 @@ public class Main {
     @Test
     public void impliciticity() {
         String[] labels = {"a", "b", "c", "d", "e"};
-        Tuple2<IntEncodings<Transition>, Map<String, Transition>> tuple2 = HandcodedTestInput.setupTransitions(labels);
-        Map<String, Activity> as = HandcodedTestInput.setupActivities(labels);
+        Tuple2<IntEncodings<Transition>, Map<String, Transition>> tuple2 = HardcodedTestInput.setupTransitions(labels);
+        Map<String, Activity> as = HardcodedTestInput.setupActivities(labels);
         IntEncodings<Transition> encs = tuple2.getT1();
         Activity a = as.get("a");
         Activity b = as.get("b");
@@ -203,7 +203,7 @@ public class Main {
         Place p6 = maker.preset(ta, tb, tc, td).postset(tb, tc, td, te).get();
         Place p7 = maker.preset(ta).postset(te).get();
 
-        Map<Activity, Transition> mapping = HandcodedTestInput.setupMapping(as, ts);
+        Map<Activity, Transition> mapping = HardcodedTestInput.setupMapping(as, ts);
 
 
         MarkingHistoryBasedFitnessEvaluator ev = new MarkingHistoryBasedFitnessEvaluator();

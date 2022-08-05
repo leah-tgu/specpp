@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.supervision.monitoring;
 
+import org.processmining.estminer.specpp.datastructures.util.TypedItem;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
-import org.processmining.estminer.specpp.util.datastructures.TypedItem;
 
 import java.util.Collection;
 

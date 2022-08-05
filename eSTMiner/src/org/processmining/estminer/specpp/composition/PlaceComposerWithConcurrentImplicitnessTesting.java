@@ -5,10 +5,10 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvalu
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
-import org.processmining.estminer.specpp.est.ClinicallyUnderfedPlace;
-import org.processmining.estminer.specpp.evaluation.AggregatedBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
+import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.implicitness.*;
-import org.processmining.estminer.specpp.representations.petri.Place;
 
 public class PlaceComposerWithConcurrentImplicitnessTesting<I extends MutableCappedComposition<Place>> extends PlacesComposer<I> {
 

@@ -20,11 +20,9 @@ public class TimeSeriesMonitor<E extends Event> implements ChartingMonitor<E> {
     }
 
     private final TimeSeries timeSeries;
-    private final String label;
     private final ToIntFunction<E> mapper;
 
     public TimeSeriesMonitor(String label, ToIntFunction<E> mapper) {
-        this.label = label;
         this.mapper = mapper;
         timeSeries = new TimeSeries(label);
         TimeSeriesCollection ts = new TimeSeriesCollection(timeSeries);

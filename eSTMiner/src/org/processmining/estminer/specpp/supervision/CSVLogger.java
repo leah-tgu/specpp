@@ -13,16 +13,12 @@ import java.util.function.Function;
 
 public class CSVLogger<O extends Observation> implements AsyncObserver<O>, Buffering {
 
-    private final String fileName;
-    private final String[] columnLabels;
     private final Function<O, String[]> rowMapper;
     private final Buffer<String[]> buffer;
     private final CSVWriter csvWriter;
 
 
     public CSVLogger(String fileName, String[] columnLabels, Function<O, String[]> rowMapper) {
-        this.fileName = fileName;
-        this.columnLabels = columnLabels;
         this.rowMapper = rowMapper;
         buffer = new ConcurrentBuffer<>();
         csvWriter = new CSVWriter(FileUtils.createOutputFileWriter(fileName));

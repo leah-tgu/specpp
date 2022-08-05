@@ -10,7 +10,7 @@ import java.util.function.Function;
 public abstract class AbstractComposer<C extends Candidate, I extends MutableCappedComposition<C>, R extends Result> implements Composer<C, I, R> {
 
     protected final Function<? super I, R> assembleResult;
-    protected I composition;
+    protected final I composition;
 
     public AbstractComposer(I composition, Function<? super I, R> assembleResult) {
         this.composition = composition;

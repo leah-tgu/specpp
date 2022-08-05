@@ -1,10 +1,10 @@
 package org.processmining.estminer.specpp.config;
 
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.representations.tree.base.ExpansionStrategy;
-import org.processmining.estminer.specpp.representations.tree.base.TreeNode;
-import org.processmining.estminer.specpp.representations.tree.base.impls.EnumeratingTree;
-import org.processmining.estminer.specpp.representations.tree.base.traits.LocallyExpandable;
+import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
+import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 
 public class TreeConfiguration<N extends TreeNode & LocallyExpandable<N>> extends Configuration {
 

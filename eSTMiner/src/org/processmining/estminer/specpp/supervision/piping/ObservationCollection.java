@@ -15,6 +15,7 @@ public class ObservationCollection<O extends Observation> implements Collection<
     }
 
     @Override
+
     public boolean removeAll(Collection<?> c) {
         return internal.removeAll(c);
     }

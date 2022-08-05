@@ -11,6 +11,6 @@ public interface ProvisionsComponents {
 
     Map<ComponentType, FulfilledRequirementsCollection<?>> componentProvisions();
 
-    public <C, R extends Requirement<? extends C, R>> void fulfil(R requirement, Container<C> container);
+    <C, R extends Requirement<? extends C, R>> void fulfil(R requirement, Container<C> container);
 
 }

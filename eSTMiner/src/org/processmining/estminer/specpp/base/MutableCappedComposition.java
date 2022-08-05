@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.base;
 
-import org.processmining.estminer.specpp.traits.HasCapacity;
+import org.processmining.estminer.specpp.traits.IsSizeLimited;
 
-public interface MutableCappedComposition<C extends Candidate> extends Composition<C>, MutableSequentialCollection<C>, HasCapacity {
+public interface MutableCappedComposition<C extends Candidate> extends Composition<C>, MutableSequentialCollection<C>, IsSizeLimited {
 }

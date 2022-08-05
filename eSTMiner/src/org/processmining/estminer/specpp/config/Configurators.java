@@ -4,11 +4,11 @@ import org.processmining.estminer.specpp.base.Candidate;
 import org.processmining.estminer.specpp.base.Composition;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
-import org.processmining.estminer.specpp.representations.tree.base.LocalNodeGenerator;
-import org.processmining.estminer.specpp.representations.tree.base.TreeNode;
-import org.processmining.estminer.specpp.representations.tree.base.impls.GeneratingLocalNode;
-import org.processmining.estminer.specpp.representations.tree.base.traits.LocallyExpandable;
-import org.processmining.estminer.specpp.representations.tree.heuristic.NodeHeuristic;
+import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.NodeHeuristic;
 
 public class Configurators {
 

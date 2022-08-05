@@ -15,7 +15,6 @@ import org.processmining.estminer.specpp.util.Reflection;
 import java.util.LinkedList;
 import java.util.List;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
 public class EvaluatorConfiguration extends Configuration {
 
     private final ImmutableList<SimpleBuilder<ProvidesEvaluators>> evaluatorProviderBuilders;

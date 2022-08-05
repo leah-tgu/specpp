@@ -23,8 +23,4 @@ public abstract class SubSupervisor extends SchedulingSupervisor {
     protected abstract void instantiateObservationHandling();
 
 
-    @Override
-    public void stop() {
-        super.stop();
-    }
 }

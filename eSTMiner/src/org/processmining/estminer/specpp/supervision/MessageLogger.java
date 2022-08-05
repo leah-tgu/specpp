@@ -14,7 +14,7 @@ public abstract class MessageLogger implements AsyncObserver<LogMessage> {
     }
 
     private void log(LogMessage message) {
-        loggerInstance.log(message.getLoglevel(), message.toString());
+        loggerInstance.log(message.getLogLevel(), message.toString());
     }
 
     @Override

@@ -1,5 +1,7 @@
 package org.processmining.estminer.specpp.componenting.supervision;
 
+import org.processmining.estminer.specpp.datastructures.util.Label;
+import org.processmining.estminer.specpp.datastructures.util.RegexLabel;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.observations.Visualization;
 import org.processmining.estminer.specpp.supervision.piping.AdHocObservable;
@@ -7,8 +9,6 @@ import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.supervision.piping.ObservationPipe;
 import org.processmining.estminer.specpp.supervision.piping.Observer;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
-import org.processmining.estminer.specpp.util.datastructures.Label;
-import org.processmining.estminer.specpp.util.datastructures.RegexLabel;
 
 import javax.swing.*;
 
@@ -95,7 +95,7 @@ public class SupervisionRequirements {
     }
 
     public static <T extends JComponent> AdHocObservableRequirement<Visualization<T>> visualization(String label) {
-        return adHocObservable(label, JavaTypingUtils.<Visualization<T>>castClass(Visualization.class));
+        return adHocObservable(label, JavaTypingUtils.castClass(Visualization.class));
     }
 
     public static RegexLabel regex(String pattern) {

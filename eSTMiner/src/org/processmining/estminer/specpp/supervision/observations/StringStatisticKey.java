@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.supervision.observations;
 
-import org.processmining.estminer.specpp.util.datastructures.NoRehashing;
+import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
 
 public class StringStatisticKey extends NoRehashing<String> implements StatisticKey {
 

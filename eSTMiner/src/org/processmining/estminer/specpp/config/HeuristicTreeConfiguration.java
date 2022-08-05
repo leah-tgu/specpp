@@ -1,11 +1,11 @@
 package org.processmining.estminer.specpp.config;
 
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.representations.tree.base.*;
-import org.processmining.estminer.specpp.representations.tree.base.impls.EnumeratingTree;
-import org.processmining.estminer.specpp.representations.tree.base.impls.GeneratingLocalNode;
-import org.processmining.estminer.specpp.representations.tree.heuristic.HeuristicTreeExpansion;
-import org.processmining.estminer.specpp.representations.tree.heuristic.NodeHeuristic;
+import org.processmining.estminer.specpp.datastructures.tree.base.*;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.NodeHeuristic;
 
 public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends NodeHeuristic<H>> extends GeneratingTreeConfiguration<N, G> {
 

@@ -1,10 +1,10 @@
 package org.processmining.estminer.specpp.componenting.supervision;
 
+import org.processmining.estminer.specpp.datastructures.util.Label;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.piping.Observer;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 import org.processmining.estminer.specpp.util.PrintingUtils;
-import org.processmining.estminer.specpp.util.datastructures.Label;
 
 public class ObserverRequirement<O extends Observation> extends SupervisionRequirement implements RequiresObserver<O> {
 

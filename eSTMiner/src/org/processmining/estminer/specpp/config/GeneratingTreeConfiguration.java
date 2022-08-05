@@ -1,12 +1,12 @@
 package org.processmining.estminer.specpp.config;
 
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.representations.tree.base.ConstrainableLocalNodeGenerator;
-import org.processmining.estminer.specpp.representations.tree.base.ExpansionStrategy;
-import org.processmining.estminer.specpp.representations.tree.base.GenerationConstraint;
-import org.processmining.estminer.specpp.representations.tree.base.LocalNodeGenerator;
-import org.processmining.estminer.specpp.representations.tree.base.impls.EnumeratingTree;
-import org.processmining.estminer.specpp.representations.tree.base.impls.GeneratingLocalNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableLocalNodeGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
+import org.processmining.estminer.specpp.datastructures.tree.base.GenerationConstraint;
+import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
 
 public class GeneratingTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>> extends TreeConfiguration<N> {
 

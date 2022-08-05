@@ -3,16 +3,15 @@ package org.processmining.estminer.specpp.supervision.supervisors;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingAdHocObservable;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingObservable;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.est.PlaceNode;
-import org.processmining.estminer.specpp.representations.tree.events.HeuristicComputationEvent;
-import org.processmining.estminer.specpp.representations.tree.events.TreeHeuristicQueueingEvent;
-import org.processmining.estminer.specpp.representations.tree.events.TreeHeuristicsEvent;
-import org.processmining.estminer.specpp.representations.tree.heuristic.DoubleScore;
+import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicComputationEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.TreeHeuristicQueueingEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.TreeHeuristicsEvent;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.supervision.CSVLogger;
 import org.processmining.estminer.specpp.supervision.monitoring.TimeSeriesMonitor;
 import org.processmining.estminer.specpp.supervision.observations.HeuristicStatsEvent;
 import org.processmining.estminer.specpp.supervision.observations.TimedObservation;
-import org.processmining.estminer.specpp.supervision.piping.ConcurrencyBridge;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
@@ -23,7 +22,6 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
 
     private final DelegatingAdHocObservable<HeuristicStatsEvent> heuristicStats = new DelegatingAdHocObservable<>();
     private final DelegatingObservable<TreeHeuristicsEvent> heuristicsEvents = new DelegatingObservable<>();
-    private ConcurrencyBridge<TreeHeuristicsEvent> bridge;
 
     public DetailedHeuristicsSupervisor() {
         componentSystemAdapter().require(SupervisionRequirements.observable("heuristics.events", JavaTypingUtils.<HeuristicComputationEvent<DoubleScore>>castClass(HeuristicComputationEvent.class)), heuristicsEvents)
@@ -40,9 +38,8 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
                                                                                                                                                                                                                                  .getSource().toString(), e.getObservation()
                                                                                                                                                                                                                                                            .getHeuristic().toString()});
 
-        bridge = PipeWorks.concurrencyBridge();
         beginLaying().source(heuristicsEvents)
-                     .pipe(bridge)
+                     .pipe(PipeWorks.<TreeHeuristicsEvent>concurrencyBridge())
                      .giveBackgroundThread()
                      .split(lp -> lp.pipe(PipeWorks.asyncBuffer())
                                     .schedule(Duration.ofMillis(100))

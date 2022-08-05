@@ -2,15 +2,15 @@ package org.processmining.estminer.specpp.supervision.monitoring;
 
 import com.google.common.collect.ImmutableList;
 import org.processmining.estminer.specpp.config.parameters.TreeTrackerParameters;
-import org.processmining.estminer.specpp.representations.petri.Place;
-import org.processmining.estminer.specpp.representations.tree.base.PropertyNode;
-import org.processmining.estminer.specpp.representations.tree.base.impls.ChangeTree;
-import org.processmining.estminer.specpp.representations.tree.base.impls.TreePrinter;
-import org.processmining.estminer.specpp.representations.tree.events.TreeNodeEvent;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.tree.base.PropertyNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.ChangeTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.TreePrinter;
+import org.processmining.estminer.specpp.datastructures.tree.events.TreeNodeEvent;
+import org.processmining.estminer.specpp.datastructures.util.TypedItem;
 import org.processmining.estminer.specpp.supervision.observations.Visualization;
 import org.processmining.estminer.specpp.supervision.piping.TreeDrawer;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
-import org.processmining.estminer.specpp.util.datastructures.TypedItem;
 
 import java.util.Collection;
 

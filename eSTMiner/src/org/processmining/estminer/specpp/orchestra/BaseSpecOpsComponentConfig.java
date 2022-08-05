@@ -5,20 +5,20 @@ import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdap
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.composition.PlaceComposerWithConcurrentImplicitnessTesting;
 import org.processmining.estminer.specpp.config.*;
-import org.processmining.estminer.specpp.est.PlaceNode;
-import org.processmining.estminer.specpp.evaluation.MarkingHistoryBasedFitnessEvaluator;
-import org.processmining.estminer.specpp.evaluation.implicitness.ReplayBasedImplicitnessPostProcessing;
+import org.processmining.estminer.specpp.datastructures.log.LogHistoryMaker;
+import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.InstrumentedEnumeratingTree;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicUtils;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.InstrumentedHeuristicTreeExpansion;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
+import org.processmining.estminer.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
+import org.processmining.estminer.specpp.postprocessing.ProMConverter;
+import org.processmining.estminer.specpp.postprocessing.ReplayBasedImplicitnessPostProcessing;
 import org.processmining.estminer.specpp.proposal.ConstrainablePlaceProposer;
-import org.processmining.estminer.specpp.representations.log.LogHistoryMaker;
-import org.processmining.estminer.specpp.representations.petri.PetriNet;
-import org.processmining.estminer.specpp.representations.petri.Place;
-import org.processmining.estminer.specpp.representations.petri.ProMConverter;
-import org.processmining.estminer.specpp.representations.petri.ProMPetrinetWrapper;
-import org.processmining.estminer.specpp.representations.tree.base.impls.InstrumentedEnumeratingTree;
-import org.processmining.estminer.specpp.representations.tree.heuristic.DoubleScore;
-import org.processmining.estminer.specpp.representations.tree.heuristic.HeuristicUtils;
-import org.processmining.estminer.specpp.representations.tree.heuristic.InstrumentedHeuristicTreeExpansion;
-import org.processmining.estminer.specpp.representations.tree.nodegen.PlaceGenerator;
 import org.processmining.estminer.specpp.supervision.supervisors.*;
 
 public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {

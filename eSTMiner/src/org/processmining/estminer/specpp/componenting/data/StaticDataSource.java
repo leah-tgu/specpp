@@ -2,7 +2,7 @@ package org.processmining.estminer.specpp.componenting.data;
 
 public class StaticDataSource<T> implements DataSource<T> {
 
-    private T data;
+    private final T data;
 
     public StaticDataSource(T data) {
         this.data = data;

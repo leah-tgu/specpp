@@ -49,7 +49,6 @@ public abstract class FulfilledRequirementsCollection<R extends Requirement<?, R
                                       .orElseThrow(RequirementNotSatisfiableException::new);
     }
 
-    @SuppressWarnings("unchecked")
     public List<FulfilledRequirement<?, R>> multiSatisfyRequirement(R requirement) {
         if (!hasCorrectComponentType(requirement)) throw new RequirementNotSatisfiableException();
         return fulfilledRequirements().stream()

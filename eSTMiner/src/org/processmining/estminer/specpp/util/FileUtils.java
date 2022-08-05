@@ -40,7 +40,7 @@ public class FileUtils {
     }
 
     public static FileAppender createLogFileAppender(String loggerLabel) {
-        FileAppender fileAppender = null;
+        FileAppender fileAppender;
         try {
             fileAppender = new FileAppender(new SimpleLayout(), LOG_PATH + loggerLabel + FileMessageLogger.LOGFILE_SUFFIX, false);
         } catch (IOException e) {

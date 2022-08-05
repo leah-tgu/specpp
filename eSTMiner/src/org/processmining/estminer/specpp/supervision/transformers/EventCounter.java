@@ -1,12 +1,12 @@
 package org.processmining.estminer.specpp.supervision.transformers;
 
+import org.processmining.estminer.specpp.datastructures.util.Counter;
 import org.processmining.estminer.specpp.supervision.observations.ClassStatisticKey;
 import org.processmining.estminer.specpp.supervision.observations.Count;
 import org.processmining.estminer.specpp.supervision.observations.Event;
 import org.processmining.estminer.specpp.supervision.observations.EventCountStatistics;
 import org.processmining.estminer.specpp.supervision.piping.ObservationSummarizer;
 import org.processmining.estminer.specpp.supervision.piping.Observations;
-import org.processmining.estminer.specpp.util.datastructures.Counter;
 
 import java.util.Map;
 

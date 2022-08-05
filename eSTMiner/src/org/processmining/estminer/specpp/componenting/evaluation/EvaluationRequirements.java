@@ -3,11 +3,11 @@ package org.processmining.estminer.specpp.componenting.evaluation;
 import org.processmining.estminer.specpp.base.Evaluable;
 import org.processmining.estminer.specpp.base.Evaluation;
 import org.processmining.estminer.specpp.base.Evaluator;
-import org.processmining.estminer.specpp.evaluation.AggregatedBasicFitnessEvaluation;
-import org.processmining.estminer.specpp.evaluation.FullBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.FullBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.implicitness.ImplicitnessRating;
-import org.processmining.estminer.specpp.representations.log.impls.DenseVariantMarkingHistories;
-import org.processmining.estminer.specpp.representations.petri.Place;
 
 public class EvaluationRequirements {
 

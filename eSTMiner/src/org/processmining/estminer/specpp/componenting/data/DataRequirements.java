@@ -5,15 +5,15 @@ import org.processmining.estminer.specpp.base.Composition;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.config.*;
-import org.processmining.estminer.specpp.representations.BitMask;
-import org.processmining.estminer.specpp.representations.encoding.IntEncodings;
-import org.processmining.estminer.specpp.representations.log.Log;
-import org.processmining.estminer.specpp.representations.log.impls.MultiEncodedLog;
-import org.processmining.estminer.specpp.representations.petri.Transition;
-import org.processmining.estminer.specpp.representations.tree.base.LocalNodeGenerator;
-import org.processmining.estminer.specpp.representations.tree.base.TreeNode;
-import org.processmining.estminer.specpp.representations.tree.base.impls.GeneratingLocalNode;
-import org.processmining.estminer.specpp.representations.tree.base.traits.LocallyExpandable;
+import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
+import org.processmining.estminer.specpp.datastructures.log.Log;
+import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
+import org.processmining.estminer.specpp.datastructures.petri.Transition;
+import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 public class DataRequirements {

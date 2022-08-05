@@ -2,7 +2,7 @@ package org.processmining.estminer.specpp.componenting.supervision;
 
 import org.processmining.estminer.specpp.componenting.system.ComponentType;
 import org.processmining.estminer.specpp.componenting.system.Requirement;
-import org.processmining.estminer.specpp.util.datastructures.Label;
+import org.processmining.estminer.specpp.datastructures.util.Label;
 
 public abstract class SupervisionRequirement implements Requirement<Object, SupervisionRequirement> {
 

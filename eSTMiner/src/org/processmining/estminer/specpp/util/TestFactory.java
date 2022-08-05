@@ -1,8 +1,8 @@
 package org.processmining.estminer.specpp.util;
 
-import org.processmining.estminer.specpp.representations.InputDataBundle;
-import org.processmining.estminer.specpp.representations.XLogDataSource;
-import org.processmining.estminer.specpp.representations.petri.ProMPetrinetWrapper;
+import org.processmining.estminer.specpp.datastructures.InputDataBundle;
+import org.processmining.estminer.specpp.datastructures.XLogDataSource;
+import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.supervision.observations.Visualization;
 import org.processmining.graphvisualizers.algorithms.GraphVisualizerAlgorithm;
 

@@ -6,7 +6,7 @@ public interface Container<T> {
 
     boolean isEmpty();
 
-    boolean hasCapacityLeft();
+    boolean isFull();
 
     default boolean isNonEmpty() {
         return !isEmpty();

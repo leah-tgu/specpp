@@ -14,8 +14,8 @@ public interface Delegator<T> extends Container<T> {
     }
 
     @Override
-    default boolean hasCapacityLeft() {
-        return !isSet();
+    default boolean isFull() {
+        return isSet();
     }
 
     @Override

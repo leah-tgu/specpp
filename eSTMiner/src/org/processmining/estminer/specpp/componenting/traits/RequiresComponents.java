@@ -18,7 +18,7 @@ public interface RequiresComponents {
                                                                                        .entrySet()) {
             for (FulfilledRequirement<?, R> fulfilledRequirement : exposer.fulfilledRequirements()) {
                 instantiateWith(entry.getKey(), entry.getValue(), fulfilledRequirement);
-                if (!entry.getValue().hasCapacityLeft()) break;
+                if (entry.getValue().isFull()) break;
             }
         }
     }
@@ -39,7 +39,7 @@ public interface RequiresComponents {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     default <R extends Requirement<?, R>> void instantiateWith(Requirement<?, ?> requirement, Container<?> container, FulfilledRequirement<?, R> fulfilledRequirement) {
-        if (!container.hasCapacityLeft()) return;
+        if (container.isFull()) return;
         R r = (R) requirement;
         if (canBeSatisfiedBy(r, fulfilledRequirement)) {
             ((Container) container).addContent(fulfilledRequirement.getContent());

@@ -1,8 +1,8 @@
 package org.processmining.estminer.specpp.supervision;
 
+import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.traits.Joinable;
 import org.processmining.estminer.specpp.traits.StartStoppable;
-import org.processmining.estminer.specpp.util.datastructures.Tuple2;
 
 import java.time.Duration;
 import java.util.LinkedList;

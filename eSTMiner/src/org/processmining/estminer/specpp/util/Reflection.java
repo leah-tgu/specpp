@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
+@SuppressWarnings("unchecked")
 public class Reflection {
 
     public static <T> Constructor<?> suitableConstructor(Class<T> aClass, Object... args) {
@@ -29,18 +30,6 @@ public class Reflection {
             throw new RuntimeException(e);
         }
     }
-
-    /*
-    public static <T, A> T instance(Class<T> aClass, A argument) {
-        return instance(aClass, argument);
-    }
-
-    public static <T, A, B> T instance(Class<T> aClass, A argumentA, B argumentB) {
-        return instance(aClass, argumentA, argumentB);
-
-    }
-    */
-
 
     public static <T> T instance(Class<T> aClass) {
         try {
