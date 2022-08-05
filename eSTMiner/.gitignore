@@ -7,3 +7,5 @@ bin/
 report/
 dist/
 .idea/
+/src/org/processmining/estminer/specpp/util/PrivatePaths.java
+/src/org/processmining/estminer/specpp/headless/PrivatePlayground.java
