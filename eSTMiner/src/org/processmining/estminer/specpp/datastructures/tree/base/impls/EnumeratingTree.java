@@ -33,9 +33,9 @@ public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends 
 
     protected final N expandNode(N node) {
         N child = node.generateChild();
+        nodeExpanded(node, child);
         insertNewNode(child);
         softExpand(child);
-        nodeExpanded(node, child);
         return child;
     }
 
@@ -43,7 +43,6 @@ public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends 
         addLeaf(node);
         expansionStrategy.registerNode(node);
     }
-
 
     protected boolean addLeaf(N node) {
         return leaves.add(node);

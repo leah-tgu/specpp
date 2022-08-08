@@ -1,15 +1,14 @@
 package org.processmining.estminer.specpp.datastructures.tree.nodegen;
 
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
-import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwareBuilder;
 import org.processmining.estminer.specpp.config.parameters.PlaceGeneratorParameters;
 import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
-import org.processmining.estminer.specpp.datastructures.encoding.IntEncoding;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
@@ -18,13 +17,31 @@ import org.processmining.estminer.specpp.datastructures.tree.base.GenerationCons
 import org.processmining.estminer.specpp.datastructures.tree.constraints.*;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
 
-import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Stream;
 
-public class PlaceGenerator extends AbstractComponentSystemUser implements ConstrainableLocalNodeGenerator<Place, PlaceState, PlaceNode, GenerationConstraint> {
+/**
+ * Contains the entire logic for generating child (and in the future parent) local nodes.
+ * Relies only on the state of a given node and the global preset- & postset transition orderings to deterministically compute its children while respecting all received constraints.
+ * Guarantees to generate all possible nodes that satisfy the incoming constraints, provided that the constraints monotonically shrink the set of future nodes.
+ * That is, if constraints loosen the requirements and allow previously excluded nodes to be generated, these may not be correctly returned.
+ */
+public class PlaceGenerator implements ConstrainableLocalNodeGenerator<Place, PlaceState, PlaceNode, GenerationConstraint> {
+
+
+    public enum ExpansionType {
+        Postset, Preset;
+    }
+
+    private final DepthLimiter depthLimiter;
 
     private final WiringTester wiringTester;
     private final TransitionBlacklister transitionBlacklister;
+
     private final IntEncodings<Transition> transitionEncodings;
+    private final List<PotentialSetExpansionsFilter> potentialExpansionFilters;
+    private final List<ExpansionStopper> expansionStoppers;
 
     public static class Builder extends ComponentSystemAwareBuilder<PlaceGenerator> {
 
@@ -48,49 +65,33 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
         this(transitionEncodings, PlaceGeneratorParameters.getDefault());
     }
 
+
     public PlaceGenerator(IntEncodings<Transition> transitionEncodings, PlaceGeneratorParameters parameters) {
         this.transitionEncodings = transitionEncodings;
-        maxDepth = parameters.getMaxTreeDepth();
-        wiringTester = new WiringTester();
+        potentialExpansionFilters = new LinkedList<>();
         transitionBlacklister = new TransitionBlacklister(transitionEncodings);
+        potentialExpansionFilters.add(transitionBlacklister);
+        wiringTester = new WiringTester();
+        potentialExpansionFilters.add(wiringTester);
+        expansionStoppers = new LinkedList<>();
+        depthLimiter = new DepthLimiter(parameters.getMaxTreeDepth());
+        expansionStoppers.add(depthLimiter);
     }
 
-    protected IntEncoding<Transition> getPresetEncoding() {
-        return transitionEncodings.getPresetEncoding();
-    }
-
-    protected IntEncoding<Transition> getPostsetEncoding() {
-        return transitionEncodings.getPostsetEncoding();
-    }
-
+    /**
+     * @return an empty root node corresponding to the place {@code (∅|∅)} without any existing children
+     */
     @Override
     public PlaceNode generateRoot() {
-        return PlaceNode.root(new Place(BitEncodedSet.empty(getPresetEncoding()), BitEncodedSet.empty(getPostsetEncoding())), this);
+        BitEncodedSet<Transition> preset = BitEncodedSet.empty(transitionEncodings.pre());
+        BitEncodedSet<Transition> postset = BitEncodedSet.empty(transitionEncodings.post());
+        return PlaceNode.root(Place.of(preset, postset), PlaceState.withPotentialExpansions(getStaticPotentialExpansions(preset), getStaticPotentialExpansions(postset)), this);
     }
 
-    public enum SetExpansionPriority {
-        Preset, Postset
-
-    }
-    //private final SetExpansionPriority priority;
-
-    private int maxDepth;
-
-
-    protected void setMaxDepth(int maxDepth) {
-        this.maxDepth = maxDepth;
-    }
-
-    public int getMaxDepth() {
-        return maxDepth;
-    }
-
-    public boolean isBelowDepthLimit(PlaceNode node) {
-        return node.getDepth() < maxDepth;
-    }
 
     @Override
     public PlaceNode generateParent(PlaceNode child) {
+        /*
         Place place = child.getProperties();
         BitEncodedSet<Transition> pre = place.preset(), post = place.postset();
 
@@ -116,8 +117,11 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
         Place parent = new Place(pre, post);
 
         return child.parent(parent, PlaceState.inst(presetChildrenMask, postsetChildrenMask), parent.isEmpty());
+        */
+        throw new NotImplementedException("the current implementation does not support constraints");
     }
 
+    /*
     private static BitMask allYoungerSiblings(BitEncodedSet<Transition> set) {
         return set.kMaxRangeMask(1);
     }
@@ -133,175 +137,200 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
         return !isParentRoot && post.cardinality() == 1;
     }
 
-    // mutates node state, i.e. adds generated child
+*/
+
+
     @Override
     public PlaceNode generateChild(PlaceNode parent) {
-        Place place = parent.getProperties();
-        PlaceState state = parent.getState();
-
-        if (isBelowDepthLimit(parent)) {
-            if (canHavePostsetChildren(place)) {
-                BitEncodedSet<Transition> possiblePostsetExpansions = possiblePostsetExpansions(place, state);
-                if (!possiblePostsetExpansions.isEmpty()) {
-                    return parent.child(generatePostsetExpandedPlace(place, state, possiblePostsetExpansions));
-                }
-            }
-            if (canHavePresetChildren(place)) {
-                BitEncodedSet<Transition> possiblePresetExpansions = possiblePresetExpansions(place, state);
-                if (!possiblePresetExpansions.isEmpty()) {
-                    return parent.child(generatePresetExpandedPlace(place, state, possiblePresetExpansions));
-                }
-            }
-        }
-
-        return null;
+        Pair<BitMask> potentialExpansions = computePotentialExpansions(parent);
+        return makeChild(parent, potentialExpansions, !potentialExpansions.second()
+                                                                          .isEmpty() ? ExpansionType.Postset : ExpansionType.Preset);
     }
 
-    private Place generatePostsetExpandedPlace(Place parent, PlaceState parentState, BitEncodedSet<Transition> postsetExpansions) {
-        return new Place(parent.preset(), expandSet(parent.postset(), postsetExpansions, parentState.getPostsetMasks()));
+    /**
+     * Creates the next child node to the given parent according to the potential expansion sets.
+     * Mutates the internal state of the parent to mark the child's existence.
+     * The child's potential expansions are set equal to its parent's minus itself.
+     *
+     * @param parent              the parent node whose next child is to be generated
+     * @param potentialExpansions the pair of potential (preset, postset)-expansions
+     * @param expansionType       whether to expand the {@code ExpansionType.Preset} or {@code ExpansionType.Postset}
+     * @return the generated child node
+     */
+    protected PlaceNode makeChild(PlaceNode parent, Pair<BitMask> potentialExpansions, ExpansionType expansionType) {
+        BitMask relevant = expansionType == ExpansionType.Postset ? potentialExpansions.second() : potentialExpansions.first();
+        int i = relevant.nextSetBit(0);
+        Place place = parent.getPlace();
+        BitEncodedSet<Transition> presetCopy = place.preset().copy(), postsetCopy = place.postset().copy();
+        if (expansionType == ExpansionType.Postset) postsetCopy.addIndex(i);
+        else presetCopy.addIndex(i);
+        parent.getState().getActualExpansions(expansionType).set(i);
+        parent.getState().getPotentialExpansions(expansionType).clear(i);
+        relevant.clear(i);
+
+        BitMask childPotentialPresetExpansions = potentialExpansions.first(), childPotentialPostsetExpansions = potentialExpansions.second();
+        if (!canHavePresetChildren(place)) childPotentialPresetExpansions = getStaticPotentialExpansions(presetCopy);
+        if (!canHavePostsetChildren(place)) childPotentialPostsetExpansions = getStaticPotentialExpansions(postsetCopy);
+
+        PlaceState childState = PlaceState.withPotentialExpansions(childPotentialPresetExpansions, childPotentialPostsetExpansions);
+        Place childPlace = new Place(presetCopy, postsetCopy);
+        return parent.makeChild(childPlace, childState);
     }
 
-    private Place generatePresetExpandedPlace(Place parent, PlaceState parentState, BitEncodedSet<Transition> presetExpansions) {
-        return new Place(expandSet(parent.preset(), presetExpansions, parentState.getPresetMasks()), parent.postset());
-    }
-
-    private BitEncodedSet<Transition> expandSet(BitEncodedSet<Transition> baseSet, BitEncodedSet<Transition> possibleExpansions, Pair<BitMask> actualExpansionMasks) {
-        int i = possibleExpansions.minimalIndex();
-        actualExpansionMasks.first().set(i);
-
-        BitMask maxFutureExpansions = actualExpansionMasks.second();
-        updateAdditionalStateInfo(maxFutureExpansions, possibleExpansions.getBitMask());
-        maxFutureExpansions.clear(i);
-
-        BitEncodedSet<Transition> copy = baseSet.copy();
-        copy.addIndex(i);
-        return copy;
-    }
-
-    private void updateAdditionalStateInfo(BitMask currentMaxFutureExpansions, BitMask maxFutureExpansions) {
-        currentMaxFutureExpansions.and(maxFutureExpansions);
-    }
-
-    private void updateAdditionalStateInfo(PlaceState placeState, BitMask maxFutureExpansions, boolean updatingPostset) {
-        if (updatingPostset) updateAdditionalStateInfo(placeState.getMaximalFuturePostsetChildrenMask(), maxFutureExpansions);
-        else updateAdditionalStateInfo(placeState.getMaximalFuturePresetChildrenMask(), maxFutureExpansions);
-    }
-
+    /**
+     * @param parent
+     * @return whether {@code parent} has any possible children as computed by {@code computePotentialExpansions()}
+     * @see #computePotentialExpansions(PlaceNode)
+     */
     @Override
     public boolean hasChildrenLeft(PlaceNode parent) {
+        Pair<BitMask> possibleExpansions = computePotentialExpansions(parent);
+        return !possibleExpansions.first().isEmpty() || !possibleExpansions.second().isEmpty();
+    }
+
+    /**
+     * Computes potential preset and postset expansions using all available constraints.
+     * Internally updates the queried node state with the computed result.
+     * By design of the constraint system, potential expansions are monotonically decreasing subsets.
+     *
+     * @param parent node whose possible expansions are to be computes for
+     * @return pair(presetExpansions, postsetExpansions)
+     */
+    protected Pair<BitMask> computePotentialExpansions(PlaceNode parent) {
         PlaceState state = parent.getState();
-        Place place = parent.getProperties();
 
-        int c = 0;
+        if (!expansionStoppers.stream().allMatch(es -> es.allowedToExpand(parent))) {
+            state.getPotentialPresetExpansions().clear();
+            state.getPotentialPostsetExpansions().clear();
+            return new Pair<>(new BitMask(), new BitMask());
+        } else {
+            Place place = parent.getPlace();
+            BitMask possiblePresetExpansions = new BitMask(), possiblePostsetExpansions = new BitMask();
+            if (canHavePostsetChildren(place))
+                possiblePostsetExpansions = computeFilteredPotentialExpansions(state, ExpansionType.Postset);
+            if (canHavePresetChildren(place))
+                possiblePresetExpansions = computeFilteredPotentialExpansions(state, ExpansionType.Preset);
+            return new Pair<>(possiblePresetExpansions, possiblePostsetExpansions);
+        }
+    }
 
-        if (isBelowDepthLimit(parent)) {
-            if (canHavePostsetChildren(place)) {
-                BitEncodedSet<Transition> possiblePostsetExpansions = possiblePostsetExpansions(place, state);
-                updateAdditionalStateInfo(parent.getState(), possiblePostsetExpansions.getBitMask(), true);
-                c += possiblePostsetExpansions.cardinality();
-            }
-            if (canHavePresetChildren(place)) {
-                BitEncodedSet<Transition> possiblePresetExpansions = possiblePresetExpansions(place, state);
-                updateAdditionalStateInfo(parent.getState(), possiblePresetExpansions.getBitMask(), false);
-                c += possiblePresetExpansions.cardinality();
-            }
+
+    /**
+     * Computes potential expansions for the specified expansion type.
+     * Mutates the state it is querying.
+     *
+     * @param state         NodeState which is queried and updated
+     * @param expansionType the expansion type
+     * @return potential expansions represented by a bitmask
+     */
+    private BitMask computeFilteredPotentialExpansions(PlaceState state, ExpansionType expansionType) {
+        BitMask potentialExpansions = expansionType == ExpansionType.Postset ? state.getPotentialPostsetExpansions() : state.getPotentialPresetExpansions();
+
+        for (PotentialSetExpansionsFilter filter : potentialExpansionFilters) {
+            filter.filterPotentialSetExpansions(potentialExpansions, expansionType);
         }
 
-        return c > 0;
+        return potentialExpansions.copy();
     }
 
-    private BitEncodedSet<Transition> possiblePostsetExpansions(Place place, PlaceState state) {
-        return possiblePlaceExpansions(place, state, true);
-    }
-
-    private BitEncodedSet<Transition> possiblePresetExpansions(Place place, PlaceState state) {
-        return possiblePlaceExpansions(place, state, false);
-    }
-
-    private BitEncodedSet<Transition> possiblePlaceExpansions(Place place, PlaceState state, boolean isPostsetExpansion) {
-        BitEncodedSet<Transition> expansions = potentialChildrenSet(isPostsetExpansion ? place.postset() : place.preset());
-        expansions.clearMask(isPostsetExpansion ? state.getPostsetChildrenMask() : state.getPresetChildrenMask());
-
-        transitionBlacklister.filterPotentialSetExpansions(expansions, isPostsetExpansion);
-        wiringTester.filterPotentialSetExpansions(expansions, isPostsetExpansion);
-
-        return expansions;
-    }
-
-    public void cullPresetChildren(PlaceNode node) {
-        node.getState().setPresetChildrenMask(potentialChildrenMask(node.getProperties().preset()));
-    }
-
-    public void cullPostsetChildren(PlaceNode node) {
-        node.getState().setPostsetChildrenMask(potentialChildrenMask(node.getProperties().postset()));
-    }
-
-    private BitMask potentialChildrenMask(BitEncodedSet<Transition> transitions) {
+    /**
+     * The potential expansions statically determined solely by the transition set ordering.
+     * All transitions greater than the maximum of {@code transitions} are potential expansions.
+     *
+     * @param transitions ordered subset of transitions
+     * @return potential expansions represented by a bitmask
+     */
+    private BitMask getStaticPotentialExpansions(BitEncodedSet<Transition> transitions) {
         return transitions.kMaxRangeMask(1);
     }
 
-    private BitEncodedSet<Transition> potentialChildrenSet(BitEncodedSet<Transition> transitions) {
-        return new BitEncodedSet<>(transitions.getEncoding(), potentialChildrenMask(transitions));
-    }
-
+    /**
+     * @param place
+     * @return whether {@code place} is allowed to have postset expansion children
+     */
     private boolean canHavePostsetChildren(Place place) {
         return place.preset().cardinality() > 0 || place.postset().cardinality() == 0;
     }
 
+    /**
+     * @param place
+     * @return whether {@code place} is allowed to have preset expansion children
+     */
     private boolean canHavePresetChildren(Place place) {
         return place.postset().cardinality() == 1;
     }
 
 
+    /**
+     * The number of, at this point, potential children as computed by {@code potentialChildren}.
+     *
+     * @param parent
+     * @return
+     * @see #potentialChildren(PlaceNode)
+     */
     @Override
     public int potentialChildrenCount(PlaceNode parent) {
-        if (!isBelowDepthLimit(parent)) return 0;
-
-        PlaceState state = parent.getState();
-        Place place = parent.getProperties();
-        int i = 0;
-        if (canHavePostsetChildren(place)) i += possiblePostsetExpansions(place, state).cardinality();
-        if (canHavePresetChildren(place)) i += possiblePostsetExpansions(place, state).cardinality();
-        return i;
+        Pair<BitMask> pair = computePotentialExpansions(parent);
+        return pair.first().cardinality() + pair.second().cardinality();
     }
 
+    /**
+     * Provides a lazily computed iterator of at this point considered potential children.
+     * It may be used by tree expansion heuristics.
+     *
+     * @param parent
+     * @return
+     */
     @Override
     public Iterable<PlaceNode> potentialChildren(PlaceNode parent) {
+        Place place = parent.getPlace();
         PlaceState state = parent.getState();
-        Place place = parent.getProperties();
-        BitEncodedSet<Transition> pre = place.preset();
-        BitEncodedSet<Transition> post = place.postset();
 
-        Iterator<PlaceNode> result = IteratorUtils.emptyIterator();
+        Pair<BitMask> pair = computePotentialExpansions(parent);
 
-        if (canHavePostsetChildren(place)) {
-            result = possiblePostsetExpansions(place, state).getBitMask().stream().mapToObj(poId -> {
-                BitEncodedSet<Transition> newPost = post.copy();
-                newPost.addIndex(poId);
-                return parent.child(new Place(pre, newPost));
-            }).iterator();
-        }
+        Stream<PlaceNode> postsetExpansionsStream = pair.second().stream().mapToObj(i -> {
+            BitEncodedSet<Transition> preCopy = place.preset().copy();
+            BitEncodedSet<Transition> postCopy = place.postset().copy();
+            postCopy.addIndex(i);
+            BitMask preExp = state.getPotentialPresetExpansions().copy();
+            BitMask postExp = state.getPotentialPostsetExpansions().copy();
+            postExp.clear(i);
+            return parent.makeChild(Place.of(preCopy, postCopy), PlaceState.withPotentialExpansions(preExp, postExp));
+        });
 
-        if (canHavePresetChildren(place)) {
-            result = IteratorUtils.chainedIterator(result, possiblePresetExpansions(place, state).getBitMask()
-                                                                                                 .stream()
-                                                                                                 .mapToObj(prId -> {
-                                                                                                     BitEncodedSet<Transition> newPre = pre.copy();
-                                                                                                     newPre.addIndex(prId);
-                                                                                                     return parent.child(new Place(newPre, post));
-                                                                                                 })
-                                                                                                 .iterator());
-        }
-        return IteratorUtils.asIterable(result);
+        Stream<PlaceNode> presetExpansionsStream = pair.first().stream().mapToObj(i -> {
+            BitEncodedSet<Transition> preCopy = place.preset().copy();
+            BitEncodedSet<Transition> postCopy = place.postset().copy();
+            preCopy.addIndex(i);
+            BitMask preExp = state.getPotentialPresetExpansions().copy();
+            BitMask postExp = state.getPotentialPostsetExpansions().copy();
+            preExp.clear(i);
+            return parent.makeChild(Place.of(preCopy, postCopy), PlaceState.withPotentialExpansions(preExp, postExp));
+        });
+
+        return IteratorUtils.asIterable(IteratorUtils.chainedIterator(postsetExpansionsStream.iterator(), presetExpansionsStream.iterator()));
     }
 
 
+    /**
+     * Receives and internally applies generation constraints with {@code ExpansionStopper}s and {@code PotentialSetExpansionsFilter}s.
+     * In particular, those are
+     * <pre>
+     *     {@code DepthConstraints} into the {@code depthLimiter}
+     *     {@code WiringConstraints} into the {@code wiringTester}
+     *     {@code BlacklistTransition} into the {@code transitionBlacklister}
+     *      {@code CullPostsetChildren} into {@code cullChildren()}
+     * </pre>
+     *
+     * @param constraint
+     * @see ExpansionStopper
+     * @see PotentialSetExpansionsFilter
+     */
     @Override
     public void acceptConstraint(GenerationConstraint constraint) {
-        if (constraint instanceof DepthConstraint)
-            setMaxDepth(Math.min(getMaxDepth(), ((DepthConstraint) (constraint)).getDepth()));
+        if (constraint instanceof DepthConstraint) depthLimiter.setMaxDepth(((DepthConstraint) constraint).getDepth());
         else if (constraint instanceof CullPostsetChildren)
-            cullPostsetChildren(((CullPostsetChildren) constraint).getAffectedNode());
+            cullChildren(((CullPostsetChildren) constraint).getAffectedNode(), ExpansionType.Postset);
         else if (constraint instanceof WiringConstraint) {
             if (constraint instanceof AddWiredPlace)
                 wiringTester.wire(((WiringConstraint) constraint).getAffectedCandidate());
@@ -310,6 +339,10 @@ public class PlaceGenerator extends AbstractComponentSystemUser implements Const
         } else if (constraint instanceof BlacklistTransition) {
             transitionBlacklister.blacklist(((BlacklistTransition) constraint).getTransition());
         }
+    }
+
+    public void cullChildren(PlaceNode node, ExpansionType expansionType) {
+        node.getState().getPotentialExpansions(expansionType).clear();
     }
 
 

@@ -2,67 +2,96 @@ package org.processmining.estminer.specpp.datastructures.tree.nodegen;
 
 import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
-import org.processmining.estminer.specpp.datastructures.util.Pair;
 import org.processmining.estminer.specpp.traits.ProperlyPrintable;
 
+import java.util.BitSet;
+import java.util.Objects;
+
+/**
+ * This class represents the local state of a {@code PlaceNode}.
+ * It is mutable and used by the {@code PlaceGenerator} to determine the next unseen child node to generate. The state object will be modified in the aforementioned process.
+ * While the {@code actualPresetExpansions} and {@code actualPostsetExpansions} are kept updated at all times (excl. multi-threaded use), their potential counterparts, may overestimate the real potential expansions when constraints change.
+ *
+ * @see #actualPresetExpansions
+ * @see #actualPostsetExpansions
+ * @see #potentialPresetExpansions
+ * @see #potentialPostsetExpansions
+ * @see NodeState
+ */
 public class PlaceState implements NodeState, ProperlyPrintable {
 
-    private BitMask presetChildrenMask, postsetChildrenMask;
-    private BitMask maximalFuturePresetChildrenMask, maximalFuturePostsetChildrenMask;
+    /**
+     * A bitmask of the currently known potential preset expansions.
+     * It may be updated by the {@code PlaceGenerator} to serve as information for heuristics.
+     */
+    private final BitMask potentialPresetExpansions;
+    /**
+     * A bitmask of the currently known potential postset expansions.
+     * It may be updated by the {@code PlaceGenerator} to serve as information for heuristics.
+     */
+    private final BitMask potentialPostsetExpansions;
+    /**
+     * A bitmask of the already created preset expansions.
+     * It is updated by the {@code PlaceGenerator} when children of the corresponding tree node are generated.
+     */
+    private final BitMask actualPresetExpansions;
+    /**
+     * A bitmask of the already created postset expansions.
+     * It is updated by the {@code PlaceGenerator} when children of the corresponding tree node are generated.
+     */
+    private final BitMask actualPostsetExpansions;
 
-    public PlaceState(BitMask presetChildrenMask, BitMask postsetChildrenMask) {
-        this.presetChildrenMask = presetChildrenMask;
-        this.postsetChildrenMask = postsetChildrenMask;
-        maximalFuturePresetChildrenMask = new BitMask();
-        maximalFuturePostsetChildrenMask = new BitMask();
+    protected PlaceState(BitMask actualPresetExpansions, BitMask actualPostsetExpansions, BitMask potentialPresetExpansions, BitMask potentialPostsetExpansions) {
+        this.potentialPresetExpansions = potentialPresetExpansions;
+        this.potentialPostsetExpansions = potentialPostsetExpansions;
+        this.actualPresetExpansions = actualPresetExpansions;
+        this.actualPostsetExpansions = actualPostsetExpansions;
     }
 
-    public BitMask getMaximalFuturePresetChildrenMask() {
-        return maximalFuturePresetChildrenMask;
+    public static PlaceState withPotentialExpansions(BitMask potentialPresetExpansions, BitMask potentialPostsetExpansions) {
+        return new PlaceState(new BitMask(), new BitMask(), potentialPresetExpansions, potentialPostsetExpansions);
     }
 
-    public BitMask getMaximalFuturePostsetChildrenMask() {
-        return maximalFuturePostsetChildrenMask;
-    }
-
-    public BitMask getPresetChildrenMask() {
-        return presetChildrenMask;
-    }
-
-    public BitMask getPostsetChildrenMask() {
-        return postsetChildrenMask;
-    }
-
-    public void setPresetChildrenMask(BitMask presetChildrenMask) {
-        this.presetChildrenMask = presetChildrenMask;
-    }
-
-    public void setPostsetChildrenMask(BitMask postsetChildrenMask) {
-        this.postsetChildrenMask = postsetChildrenMask;
-    }
-
-    protected PlaceState() {
-        this(new BitMask(), new BitMask());
-    }
-
-    public static PlaceState inst(BitMask presetChildrenMask, BitMask postsetChildrenMask) {
-        return new PlaceState(presetChildrenMask, postsetChildrenMask);
-    }
-
-    public static PlaceState initialState() {
-        return new PlaceState();
-    }
-
-    public Pair<BitMask> getPresetMasks() {
-        return new Pair<>(presetChildrenMask, maximalFuturePresetChildrenMask);
-    }
-
-    public Pair<BitMask> getPostsetMasks() {
-        return new Pair<>(presetChildrenMask, maximalFuturePresetChildrenMask);
-    }
-
+    /**
+     * @return whether the potential expansions indicate that a future expansion is at all possible
+     */
     public boolean isCertainlyALeaf() {
-        return false;// maximalFuturePresetChildrenMask.isEmpty() && maximalFuturePostsetChildrenMask.isEmpty();
+        return potentialPresetExpansions.isEmpty() && potentialPostsetExpansions.isEmpty();
+    }
+
+    /**
+     * @return whether state describes a node with currently no children
+     */
+    public boolean isCurrentlyALeaf() {
+        return actualPresetExpansions.isEmpty() && actualPostsetExpansions.isEmpty();
+    }
+
+    public BitMask getPotentialPresetExpansions() {
+        return potentialPresetExpansions;
+    }
+
+    public BitMask getPotentialPostsetExpansions() {
+        return potentialPostsetExpansions;
+    }
+
+    public BitMask getActualPresetExpansions() {
+        return actualPresetExpansions;
+    }
+
+    public BitMask getActualPostsetExpansions() {
+        return actualPostsetExpansions;
+    }
+
+    public int computeActualChildrenCount() {
+        return actualPresetExpansions.cardinality() + actualPostsetExpansions.cardinality();
+    }
+
+    public BitSet getActualExpansions(PlaceGenerator.ExpansionType expansionType) {
+        return expansionType == PlaceGenerator.ExpansionType.Preset ? actualPresetExpansions : actualPostsetExpansions;
+    }
+
+    public BitSet getPotentialExpansions(PlaceGenerator.ExpansionType expansionType) {
+        return expansionType == PlaceGenerator.ExpansionType.Preset ? potentialPresetExpansions : potentialPostsetExpansions;
     }
 
     @Override
@@ -72,19 +101,24 @@ public class PlaceState implements NodeState, ProperlyPrintable {
 
         PlaceState that = (PlaceState) o;
 
-        if (!presetChildrenMask.equals(that.presetChildrenMask)) return false;
-        return postsetChildrenMask.equals(that.postsetChildrenMask);
+        if (!Objects.equals(potentialPresetExpansions, that.potentialPresetExpansions)) return false;
+        if (!Objects.equals(potentialPostsetExpansions, that.potentialPostsetExpansions)) return false;
+        if (!Objects.equals(actualPresetExpansions, that.actualPresetExpansions)) return false;
+        return Objects.equals(actualPostsetExpansions, that.actualPostsetExpansions);
     }
 
     @Override
     public int hashCode() {
-        int result = presetChildrenMask.hashCode();
-        result = 31 * result + postsetChildrenMask.hashCode();
+        int result = potentialPresetExpansions != null ? potentialPresetExpansions.hashCode() : 0;
+        result = 31 * result + (potentialPostsetExpansions != null ? potentialPostsetExpansions.hashCode() : 0);
+        result = 31 * result + (actualPresetExpansions != null ? actualPresetExpansions.hashCode() : 0);
+        result = 31 * result + (actualPostsetExpansions != null ? actualPostsetExpansions.hashCode() : 0);
         return result;
     }
 
+
     @Override
     public String toString() {
-        return "PlaceState{" + "presetChildrenMask=" + presetChildrenMask + ", postsetChildrenMask=" + postsetChildrenMask + '}';
+        return "PlaceState{" + "actualPresetExpansions=" + actualPresetExpansions + ", actualPostsetExpansions=" + actualPostsetExpansions + ";" + "potentialFuturePresetExpansions=" + potentialPresetExpansions + ", potentialFuturePostsetExpansions=" + potentialPostsetExpansions + "}";
     }
 }

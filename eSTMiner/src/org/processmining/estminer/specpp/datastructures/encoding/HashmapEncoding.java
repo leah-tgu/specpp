@@ -11,6 +11,10 @@ import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+/**
+ * Represents an {@code IntEncoding<T>} with an internal HashMap.
+ * @param <T> domain of this encoding
+ */
 public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Copyable<HashmapEncoding<T>>, ProperlyPrintable {
 
     protected final BiMap<T, Integer> internal;
@@ -25,10 +29,10 @@ public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Cop
         internal = builder.build();
     }
 
-    public HashmapEncoding(List<T> items) {
+    public HashmapEncoding(List<T> orderedDistinctItems) {
         ImmutableBiMap.Builder<T, Integer> builder = ImmutableBiMap.builder();
-        for (int i = 0; i < items.size(); i++) {
-            builder.put(items.get(i), i);
+        for (int i = 0; i < orderedDistinctItems.size(); i++) {
+            builder.put(orderedDistinctItems.get(i), i);
         }
         internal = builder.build();
     }

@@ -3,6 +3,12 @@ package org.processmining.estminer.specpp.datastructures.encoding;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
 import org.processmining.estminer.specpp.traits.Copyable;
 
+/**
+ * Specifies mutating set operations on sets.
+ * The static definitions allow non mutating application of these methods on copyable implementations.
+ *
+ * @param <T>
+ */
 public interface MutatingSetOperations<T extends MutatingSetOperations<T>> {
 
 

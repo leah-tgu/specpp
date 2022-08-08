@@ -11,13 +11,12 @@ public abstract class AbstractLocalNode<P extends NodeProperties, S extends Node
     private final P properties;
     private S state;
 
-    private final int globalId, depth;
+    private final int depth;
 
-    public AbstractLocalNode(boolean isRoot, P properties, S initialState, int globalId, int depth) {
+    public AbstractLocalNode(boolean isRoot, P properties, S initialState, int depth) {
         this.isRoot = isRoot;
         this.properties = properties;
         this.state = initialState;
-        this.globalId = globalId;
         this.depth = depth;
     }
 
@@ -44,10 +43,6 @@ public abstract class AbstractLocalNode<P extends NodeProperties, S extends Node
         return depth;
     }
 
-    public int getGlobalId() {
-        return globalId;
-    }
-
     @Override
     public boolean canContract() {
         return !isRoot();
@@ -62,7 +57,6 @@ public abstract class AbstractLocalNode<P extends NodeProperties, S extends Node
         AbstractLocalNode<?, ?, ?> that = (AbstractLocalNode<?, ?, ?>) o;
 
         if (isRoot != that.isRoot) return false;
-        if (globalId != that.globalId) return false;
         if (depth != that.depth) return false;
         return properties.equals(that.properties);
     }
@@ -71,14 +65,13 @@ public abstract class AbstractLocalNode<P extends NodeProperties, S extends Node
     public int hashCode() {
         int result = (isRoot ? 1 : 0);
         result = 31 * result + properties.hashCode();
-        result = 31 * result + globalId;
         result = 31 * result + depth;
         return result;
     }
 
     @Override
     public String toString() {
-        return "(id=" + globalId + ",d=" + depth + ",props=" + properties + ",state=" + state + ")";
+        return "(d=" + depth + ", props=" + properties + ", state=" + state + ")";
     }
 
 }

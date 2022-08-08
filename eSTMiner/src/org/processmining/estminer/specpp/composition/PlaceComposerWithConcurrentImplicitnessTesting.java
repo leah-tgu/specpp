@@ -10,6 +10,15 @@ import org.processmining.estminer.specpp.datastructures.tree.constraints.Clinica
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.implicitness.*;
 
+/**
+ * This class extends the base {@code PlaceComposer} with concurrent implicit place removal.
+ * It additionally requires an {@code implicitnessEvaluator} that calculates an {@code ImplicitnessRating} to decide whether to accept or reject a new candidate, or whether to replace an existing, i.e., previously accepted, candidate.
+ *
+ * @param <I> the type of the internally used {@code Composition}
+ * @see PlacesComposer
+ * @see ImplicitnessRating
+ * @see EvaluationRequirements#PLACE_IMPLICITNESS
+ */
 public class PlaceComposerWithConcurrentImplicitnessTesting<I extends MutableCappedComposition<Place>> extends PlacesComposer<I> {
 
     protected final DelegatingEvaluator<Place, ImplicitnessRating> implicitnessEvaluator = new DelegatingEvaluator<>(p -> BooleanImplicitness.NOT_IMPLICIT);

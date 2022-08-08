@@ -38,7 +38,6 @@
 		<dependency org="junit" name="junit" rev="4.13" conf="base->default"/>
 		<dependency org="net.sourceforge.argparse4j" name="argparse4j" rev="0.8.1" conf="headless->default"/>
 		<dependency org="com.google.code.gson" name="gson" rev="2.8.6" conf="base->default"/>
-		<!-- dependency org="org.sualk.fpgrowth" name="fpgrowth" rev="1.0.0" conf="base->default"/ -->
 		<!-- https://mvnrepository.com/artifact/org.jgrapht/jgrapht-core -->
 		<dependency conf="base->default" org="prom" name="GraphViz" rev="latest" changing="true" transitive="true" />
 		<dependency conf="base->default" org="prom" name="GraphVisualizers" rev="latest" changing="true" transitive="true" />

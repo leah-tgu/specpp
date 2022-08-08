@@ -9,8 +9,8 @@ import java.util.Optional;
 public abstract class GeneratingLocalNode<P extends NodeProperties, S extends NodeState, N extends GeneratingLocalNode<P, S, N>> extends AbstractLocalNode<P, S, N> {
     private final LocalNodeGenerator<P, S, N> generator;
 
-    public GeneratingLocalNode(boolean isRoot, P nodeProperties, S nodeState, LocalNodeGenerator<P, S, N> generator, int globalId, int depth) {
-        super(isRoot, nodeProperties, nodeState, globalId, depth);
+    public GeneratingLocalNode(boolean isRoot, P nodeProperties, S nodeState, LocalNodeGenerator<P, S, N> generator, int depth) {
+        super(isRoot, nodeProperties, nodeState, depth);
         this.generator = generator;
     }
 
@@ -24,7 +24,7 @@ public abstract class GeneratingLocalNode<P extends NodeProperties, S extends No
 
 
     @Override
-    public boolean canExpand() {
+    public final boolean canExpand() {
         return canExpandBasedOnState().orElseGet(this::canExpandBasedOnGenerator);
     }
 

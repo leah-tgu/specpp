@@ -12,7 +12,19 @@ import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
+import org.processmining.estminer.specpp.base.Proposer;
 
+/**
+ * The base implementation of a {@code Proposer} for candidates of type {@code Place}.
+ * It internally uses an {@code EnumeratingTree} to deterministically propose all valid place candidates that the underlying tree provides.
+ * The tree itself uses an {@code ExpansionStrategy} to determine which nodes to expand next and this class's {@code ConstrainableLocalNodeGenerator} to calculate the child nodes.
+ * This class participates in the componenting system to provide {@code PerformanceEvent} measurements for {@code proposeCandidate()}.
+ *
+ * @see Proposer
+ * @see Place
+ * @see EnumeratingTree
+ * @see ConstrainableLocalNodeGenerator
+ */
 public class PlaceProposer extends GeneratingTreeProposer<Place, PlaceNode, ConstrainableLocalNodeGenerator<Place, ?, PlaceNode, GenerationConstraint>> implements UsesComponentSystem {
 
     protected final ComponentSystemAdapter componentSystemAdapter = new ComponentSystemAdapter();

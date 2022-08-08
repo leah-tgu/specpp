@@ -17,7 +17,18 @@ import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitne
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
+import org.processmining.estminer.specpp.base.ConstrainingComposer;
 
+/**
+ * The base implementation of a {@code Composer} for candidates of type {@code Place}.
+ * This class participates in the componenting system to require a place fitness evaluator and fitness thresholds to base its {@code deliberateAcceptance(Place)} on.
+ * Further, it provides {@code PerformanceEvent} measurements of its decision-making process of accepting or rejecting a candidate place.
+ * It internally employs a mutable composition object which in turn allows it to retroactively revoke acceptance of a candidate. (<it>this is used in implicit place removal</it>)
+ * It publishes constraints when places are accepted, their acceptance is revoked and when a place meets the {@code FitnessThresholds} child pruning threshold.
+ *
+ * @param <I> the type of the internally used {@code Composition}
+ * @see AbstractConstrainingComposer
+ */
 public class PlacesComposer<I extends MutableCappedComposition<Place>> extends AbstractConstrainingComposer<Place, I, PetriNet> {
 
 

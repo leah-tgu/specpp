@@ -15,7 +15,6 @@ import org.processmining.estminer.specpp.datastructures.tree.base.GenerationCons
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.CullPostsetChildren;
-import org.processmining.estminer.specpp.datastructures.tree.constraints.WiredPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.WiringConstraint;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
@@ -25,6 +24,14 @@ import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
+/**
+ * This is the base implementation of a <it>constrainable</it> place proposer.
+ * It may receive {@code CandidateConstraint} events and in turn publishes {@code GenerationConstraint} events that may in turn be used by the {@code constrainable generator}.
+ *
+ * @see PlaceProposer
+ * @see CandidateConstraint
+ * @see ConstrainableLocalNodeGenerator
+ */
 public class ConstrainablePlaceProposer extends PlaceProposer implements ConstrainableProposer<Place, CandidateConstraint<Place>>, ConstraintPublisher<GenerationConstraint> {
 
     private final EventSupervision<GenerationConstraint> evs;
@@ -63,9 +70,9 @@ public class ConstrainablePlaceProposer extends PlaceProposer implements Constra
 
     @Override
     public void acceptConstraint(CandidateConstraint<Place> candidateConstraint) {
-        if (candidateConstraint instanceof WiredPlace)
-            evs.observe(new WiringConstraint(getPreviousProposedNode().getProperties()));
-        else if (candidateConstraint instanceof ClinicallyUnderfedPlace)
+        if (candidateConstraint instanceof WiringConstraint) {
+            evs.observe((GenerationConstraint) candidateConstraint);
+        } else if (candidateConstraint instanceof ClinicallyUnderfedPlace)
             evs.observe(new CullPostsetChildren(getPreviousProposedNode()));
     }
 

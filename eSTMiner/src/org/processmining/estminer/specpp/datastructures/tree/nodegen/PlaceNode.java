@@ -5,31 +5,32 @@ import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGener
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
 
 import java.util.Optional;
-import java.util.UUID;
 
+/**
+ * This class represents a tree node containing a {@code Place} together with a {@code PlaceState} that indicates already generated children nodes.
+ * It is an implementation of a {@code GeneratingLocalNode}, that is, it does not hold references to any other nodes and instead employs only its local state and a {@code PlaceGenerator} to compute unseen children.
+ * @see Place
+ * @see PlaceState
+ * @see GeneratingLocalNode
+ * @see PlaceGenerator
+ */
 public class PlaceNode extends GeneratingLocalNode<Place, PlaceState, PlaceNode> {
 
-    public PlaceNode(Place place, PlaceState state, LocalNodeGenerator<Place, PlaceState, PlaceNode> generator, boolean isRoot, int globalId, int depth) {
-        super(isRoot, place, state, generator, globalId, depth);
+    protected PlaceNode(Place place, PlaceState state, LocalNodeGenerator<Place, PlaceState, PlaceNode> generator, boolean isRoot, int depth) {
+        super(isRoot, place, state, generator, depth);
     }
 
-    public static PlaceNode root(Place place, LocalNodeGenerator<Place, PlaceState, PlaceNode> generator) {
-        return new PlaceNode(place, PlaceState.initialState(), generator, true, 0, 0);
+    protected static PlaceNode root(Place place, PlaceState state, LocalNodeGenerator<Place, PlaceState, PlaceNode> generator) {
+        return new PlaceNode(place, state, generator, true, 0);
     }
 
-    public PlaceNode child(Place childPlace, PlaceState childState) {
-        return new PlaceNode(childPlace, childState, getGenerator(), false, UUID.randomUUID()
-                                                                                .hashCode(), getDepth() + 1);
+
+    public PlaceNode makeChild(Place childPlace, PlaceState childState) {
+        return new PlaceNode(childPlace, childState, getGenerator(), false, getDepth() + 1);
     }
 
-    public PlaceNode child(Place childPlace) {
-        return new PlaceNode(childPlace, PlaceState.initialState(), getGenerator(), false, UUID.randomUUID()
-                                                                                               .hashCode(), getDepth() + 1);
-    }
-
-    public PlaceNode parent(Place parentPlace, PlaceState parentState, boolean isRoot) {
-        return new PlaceNode(parentPlace, parentState, getGenerator(), isRoot, UUID.randomUUID()
-                                                                                   .hashCode(), getDepth() - 1);
+    public Place getPlace() {
+        return getProperties();
     }
 
     @Override
@@ -44,10 +45,8 @@ public class PlaceNode extends GeneratingLocalNode<Place, PlaceState, PlaceNode>
 
     @Override
     public boolean didExpand() {
-        return getState().getPostsetChildrenMask().cardinality() > 0 || getState().getPresetChildrenMask()
-                                                                                  .cardinality() > 0;
+        return !getState().isCurrentlyALeaf();
     }
-
 
     @Override
     protected boolean canExpandBasedOnGenerator() {
@@ -64,5 +63,4 @@ public class PlaceNode extends GeneratingLocalNode<Place, PlaceState, PlaceNode>
     public PlaceNode generateChild() {
         return getGenerator().generateChild(this);
     }
-
 }

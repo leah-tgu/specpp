@@ -14,6 +14,19 @@ import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 import java.util.function.Function;
 
+/**
+ * The abstract base class of a {@code ConstrainingComposer} for candidates of type {@code C}.
+ * It internally employs a candidate collection of type {@code I} which serves as its growing intermediate result.
+ * The final result of type {@code R} can be computed on demand.
+ * <p>
+ * This class participates in the componenting system to provide {@code CandidateConstraint} events.
+ *
+ * @param <C>
+ * @param <I>
+ * @param <R>
+ * @see ConstrainingComposer
+ * @see CandidateConstraint
+ */
 public abstract class AbstractConstrainingComposer<C extends Candidate, I extends MutableCappedComposition<C>, R extends Result> extends AbstractComposer<C, I, R> implements ConstrainingComposer<C, I, R, CandidateConstraint<C>>, UsesComponentSystem {
 
     protected final ComponentSystemAdapter componentSystemAdapter = new ComponentSystemAdapter();

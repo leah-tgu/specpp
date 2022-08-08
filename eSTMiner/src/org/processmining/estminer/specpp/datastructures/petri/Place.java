@@ -8,6 +8,16 @@ import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.ProperlyHashable;
 import org.processmining.estminer.specpp.traits.ProperlyPrintable;
 
+/**
+ * A class representing a Petri net place as a combination of its preset and postset.
+ * The sets are represented as ordered subsets of all possible transitions that may occur in the preset and postset respectively.
+ * A place lifts {@code NonMutatingSetOperations} these pairs by component wise application.
+ * Places are marked as proposal candidates {@code Candidate} and node properties {@code NodeProperties} of trees.
+ *
+ * @see NonMutatingSetOperations
+ * @see Candidate
+ * @see NodeProperties
+ */
 public class Place implements Candidate, NodeProperties, ProperlyHashable, ProperlyPrintable, Copyable<Place>, NonMutatingSetOperations<Place> {
 
     private final BitEncodedSet<Transition> ingoingTransitions, outgoingTransitions;
@@ -17,8 +27,12 @@ public class Place implements Candidate, NodeProperties, ProperlyHashable, Prope
         this.outgoingTransitions = outgoingTransitions;
     }
 
+    public static Place of(BitEncodedSet<Transition> ingoingTransitions, BitEncodedSet<Transition> outgoingTransitions) {
+        return new Place(ingoingTransitions, outgoingTransitions);
+    }
+
     public boolean isEmpty() {
-        return ingoingTransitions.cardinality() == 0 && outgoingTransitions.cardinality() == 0;
+        return ingoingTransitions.isEmpty() && outgoingTransitions.isEmpty();
     }
 
     public BitEncodedSet<Transition> preset() {
