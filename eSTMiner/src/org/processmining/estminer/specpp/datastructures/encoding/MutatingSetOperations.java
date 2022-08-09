@@ -46,6 +46,14 @@ public interface MutatingSetOperations<T extends MutatingSetOperations<T>> {
         return new Pair<>(r1, r2);
     }
 
+    static <T extends MutatingSetOperations<T> & Copyable<T>> Pair<T> dualIntersection(T s1, T s2) {
+        T r1 = s1.copy();
+        T r2 = s2.copy();
+        r1.intersection(s2);
+        r2.intersection(s1);
+        return new Pair<>(r1, r2);
+    }
+
     @SafeVarargs
     static <T extends MutatingSetOperations<T> & Copyable<T>> T intersection(T... sets) {
         assert sets.length >= 1;

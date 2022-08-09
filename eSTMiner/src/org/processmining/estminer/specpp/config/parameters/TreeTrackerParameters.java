@@ -10,7 +10,7 @@ public class TreeTrackerParameters implements Parameters {
     private final int drawNodeLimit;
 
     public static TreeTrackerParameters getDefault() {
-        return new TreeTrackerParameters(0, 4, 1_000_000_000L, 100, 1000);
+        return new TreeTrackerParameters(0, 3, 1_000_000_000L, 100, 100);
     }
 
     public TreeTrackerParameters(int fromLevel, int toLevel, long eventLimit, long printNodeLimit, int drawNodeLimit) {

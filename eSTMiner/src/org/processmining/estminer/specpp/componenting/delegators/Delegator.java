@@ -15,8 +15,9 @@ public interface Delegator<T> extends Container<T> {
 
     @Override
     default boolean isFull() {
-        return isSet();
+        return false;
     }
+    // TODO maybe, just maybe thoroughly think about this
 
     @Override
     default boolean isEmpty() {

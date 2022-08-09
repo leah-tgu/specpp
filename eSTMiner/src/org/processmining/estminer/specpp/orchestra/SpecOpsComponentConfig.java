@@ -1,12 +1,12 @@
 package org.processmining.estminer.specpp.orchestra;
 
+import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.GeneratingTreeConfiguration;
 import org.processmining.estminer.specpp.config.PostProcessingConfiguration;
 import org.processmining.estminer.specpp.config.ProposerComposerConfiguration;
@@ -14,7 +14,7 @@ import org.processmining.estminer.specpp.config.SupervisionConfiguration;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
-import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 
 public interface SpecOpsComponentConfig {
@@ -33,7 +33,7 @@ public interface SpecOpsComponentConfig {
 
     SupervisionConfiguration getSupervisionConfiguration(ComponentSystemAdapter csa);
 
-    ProposerComposerConfiguration<Place, PlaceCollection, PetriNet> getProposerComposerConfiguration(ComponentSystemAdapter csa);
+    ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(ComponentSystemAdapter csa);
 
     PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(ComponentSystemAdapter csa);
 

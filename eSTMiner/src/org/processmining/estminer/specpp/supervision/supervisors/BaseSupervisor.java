@@ -42,7 +42,7 @@ public class BaseSupervisor extends SchedulingSupervisor implements Monitoring {
         componentSystemAdapter().provide(pipe("performance", PerformanceEvent.class, PerformanceStatistics.class, performanceStatistics))
                                 .require(observable("tree.events", TreeEvent.class), treeEvents)
                                 .require(adHocObservable("tree.stats", TreeStatsEvent.class), treeStats)
-                                .require(observable(regex("^\\w+.performance$"), PerformanceEvent.class), ContainerUtils.observeResults(performanceEventConcurrencyBridge))
+                                .require(observable(regex("^.+\\.performance$"), PerformanceEvent.class), ContainerUtils.observeResults(performanceEventConcurrencyBridge))
                                 .require(observable("tree.performance", PerformanceEvent.class), treePerformance)
                                 .require(observable("proposer.performance", PerformanceEvent.class), proposerPerformance)
                                 .require(observable("evaluator.performance", PerformanceEvent.class), evaluatorPerformance)

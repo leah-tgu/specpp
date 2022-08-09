@@ -4,6 +4,8 @@ import org.processmining.estminer.specpp.base.CandidateEvaluation;
 import org.processmining.estminer.specpp.base.Evaluable;
 import org.processmining.estminer.specpp.datastructures.util.EnumFractions;
 
+import java.util.Arrays;
+
 public class AggregatedBasicFitnessEvaluation extends EnumFractions<BasicVariantFitnessStatus> implements CandidateEvaluation, Evaluable {
 
 

@@ -60,7 +60,7 @@ public class ObservationPipeRequirement<I extends Observation, O extends Observa
 
     @Override
     public String toString() {
-        return "ObservationPipeRequirement(" + PrintingUtils.quote(label) + ", " + observedClass.getSimpleName() + ", " + observableClass.getSimpleName() + ")";
+        return "ObservationPipeRequirement(" + label + ", " + observedClass.getSimpleName() + ", " + observableClass.getSimpleName() + ")";
     }
 
     public FulfilledObservationPipeRequirement<I, O> fulfilWith(ObservationPipe<I, O> pipe) {

@@ -1,103 +1,102 @@
 package org.processmining.estminer.specpp.supervision.piping;
 
+import org.processmining.estminer.specpp.componenting.delegators.AbstractDelegator;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Spliterator;
 
-public class ObservationCollection<O extends Observation> implements Collection<O>, Observations<O> {
-
-    private final Collection<O> internal;
+public class ObservationCollection<O extends Observation> extends AbstractDelegator<Collection<O>> implements Collection<O>, Observations<O> {
 
     public ObservationCollection(Collection<O> internal) {
-        this.internal = internal;
+        super(internal);
     }
 
     @Override
 
     public boolean removeAll(Collection<?> c) {
-        return internal.removeAll(c);
+        return delegate.removeAll(c);
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        return internal.retainAll(c);
+        return delegate.retainAll(c);
     }
 
     @Override
     public void clear() {
-        internal.clear();
+        delegate.clear();
     }
 
     @Override
     public boolean equals(Object o) {
-        return internal.equals(o);
+        return delegate.equals(o);
     }
 
     @Override
     public int hashCode() {
-        return internal.hashCode();
+        return delegate.hashCode();
     }
 
     @Override
     public Spliterator<O> spliterator() {
-        return internal.spliterator();
+        return delegate.spliterator();
     }
 
     @Override
     public int size() {
-        return internal.size();
+        return delegate.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return internal.isEmpty();
+        return delegate.isEmpty();
     }
 
     @Override
     public boolean contains(Object o) {
-        return internal.contains(o);
+        return delegate.contains(o);
     }
 
     @Override
     public Iterator<O> iterator() {
-        return internal.iterator();
+        return delegate.iterator();
     }
 
     @Override
     public Object[] toArray() {
-        return internal.toArray();
+        return delegate.toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        return internal.toArray(a);
+        return delegate.toArray(a);
     }
 
     @Override
     public boolean add(O o) {
-        return internal.add(o);
+        return delegate.add(o);
     }
 
     @Override
     public boolean remove(Object o) {
-        return internal.remove(o);
+        return delegate.remove(o);
     }
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        return internal.containsAll(c);
+        return delegate.containsAll(c);
     }
 
     @Override
     public boolean addAll(Collection<? extends O> c) {
-        return internal.addAll(c);
+        return delegate.addAll(c);
     }
 
     @Override
     public String toString() {
-        return internal.toString();
+        return delegate.toString();
     }
 
 }

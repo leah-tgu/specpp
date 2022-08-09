@@ -2,6 +2,7 @@ package org.processmining.estminer.specpp.composition;
 
 import org.processmining.estminer.specpp.base.ExaminingComposition;
 import org.processmining.estminer.specpp.base.impls.ArrayListComposition;
+import org.processmining.estminer.specpp.base.impls.LightweightPlaceCollection;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
@@ -14,7 +15,7 @@ import org.processmining.estminer.specpp.evaluation.implicitness.ReplayBasedImpl
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlaceCollection extends ArrayListComposition<Place> implements ExaminingComposition<Place>, ProvidesEvaluators {
+public class PlaceCollection extends LightweightPlaceCollection implements ExaminingComposition<Place>, ProvidesEvaluators {
     private final DelegatingEvaluator<Place, DenseVariantMarkingHistories> historyMaker = EvaluationRequirements.PLACE_MARKING_HISTORY.emptyDelegator();
     private final Map<Place, DenseVariantMarkingHistories> histories;
 

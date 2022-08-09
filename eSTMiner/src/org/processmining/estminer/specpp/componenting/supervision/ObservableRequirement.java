@@ -4,7 +4,6 @@ import org.processmining.estminer.specpp.datastructures.util.Label;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
-import org.processmining.estminer.specpp.util.PrintingUtils;
 
 public class ObservableRequirement<O extends Observation> extends SupervisionRequirement implements RequiresObservable<O> {
 
@@ -48,7 +47,7 @@ public class ObservableRequirement<O extends Observation> extends SupervisionReq
 
     @Override
     public String toString() {
-        return "ObservableRequirement(" + PrintingUtils.quote(label) + ", " + observableClass.getSimpleName() + ")";
+        return "ObservableRequirement(" + label + ", " + observableClass.getSimpleName() + ")";
     }
 
     public FulfilledObservableRequirement<O> fulfilWith(Observable<O> observable) {

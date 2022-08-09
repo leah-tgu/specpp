@@ -1,6 +1,7 @@
 package org.processmining.estminer.specpp.evaluation.fitness;
 
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
+import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
@@ -8,11 +9,11 @@ import org.processmining.estminer.specpp.componenting.system.AbstractComponentSy
 import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.datastructures.BitMask;
-import org.processmining.estminer.specpp.evaluation.markings.QuickReplay;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
+import org.processmining.estminer.specpp.evaluation.markings.QuickReplay;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
@@ -30,6 +31,11 @@ public class ShortCircuitingFitnessEvaluator extends AbstractComponentSystemUser
 
     private final TimeStopper timeStopper = new TimeStopper();
     private BitMask consideredVariants;
+
+    public ShortCircuitingFitnessEvaluator(DataSource<MultiEncodedLog> multiEncodedLogDataSource, DataSource<BitMask> variantSubsetSource) {
+        this.multiEncodedLogSource.setDelegate(multiEncodedLogDataSource);
+        this.variantSubsetSource.setDelegate(variantSubsetSource);
+    }
 
     public ShortCircuitingFitnessEvaluator() {
         componentSystemAdapter().require(DataRequirements.CONSIDERED_VARIANTS, variantSubsetSource)

@@ -10,7 +10,7 @@ public class InputData {
 
 
     public static DataSource<InputDataBundle> sampleData() {
-        return loadData(PublicPaths.SAMPLE_EVENTLOG_1, PreProcessingParameters.getDefault());
+        return loadData(PublicPaths.SAMPLE_EVENTLOG_2, PreProcessingParameters.getDefault());
     }
     public static DataSource<InputDataBundle> loadData(String logPath, PreProcessingParameters parameters) {
         return new XLogBasedInputDataBundle(logPath, parameters);

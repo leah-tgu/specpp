@@ -86,12 +86,12 @@ public class PlaceState implements NodeState, ProperlyPrintable {
         return actualPresetExpansions.cardinality() + actualPostsetExpansions.cardinality();
     }
 
-    public BitSet getActualExpansions(PlaceGenerator.ExpansionType expansionType) {
-        return expansionType == PlaceGenerator.ExpansionType.Preset ? actualPresetExpansions : actualPostsetExpansions;
+    public BitMask getActualExpansions(MonotonousPlaceGenerator.ExpansionType expansionType) {
+        return expansionType == MonotonousPlaceGenerator.ExpansionType.Preset ? actualPresetExpansions : actualPostsetExpansions;
     }
 
-    public BitSet getPotentialExpansions(PlaceGenerator.ExpansionType expansionType) {
-        return expansionType == PlaceGenerator.ExpansionType.Preset ? potentialPresetExpansions : potentialPostsetExpansions;
+    public BitMask getPotentialExpansions(MonotonousPlaceGenerator.ExpansionType expansionType) {
+        return expansionType == MonotonousPlaceGenerator.ExpansionType.Preset ? potentialPresetExpansions : potentialPostsetExpansions;
     }
 
     @Override

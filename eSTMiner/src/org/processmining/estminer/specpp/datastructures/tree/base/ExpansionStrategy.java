@@ -8,6 +8,6 @@ public interface ExpansionStrategy<N extends TreeNode & LocallyExpandable<N>> ex
 
     boolean hasNextExpansion();
 
-    void deregisterPreviousProposal();
+    N deregisterPreviousProposal();
 
 }

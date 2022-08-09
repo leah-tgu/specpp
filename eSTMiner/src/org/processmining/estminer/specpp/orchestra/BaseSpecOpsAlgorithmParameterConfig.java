@@ -14,6 +14,8 @@ public class BaseSpecOpsAlgorithmParameterConfig implements SpecOpsAlgorithmPara
         DataSourceCollection dc = cr.parameters();
         cr.absorb(new ParameterDefaults());
         dc.register(ParameterRequirements.FITNESS_THRESHOLDS, StaticDataSource.of(FitnessThresholds.exhaustive(1)));
-        dc.register(ParameterRequirements.parameters("placegenerator.parameters", PlaceGeneratorParameters.class), StaticDataSource.of(new PlaceGeneratorParameters(5)));
+        dc.register(ParameterRequirements.parameters("placegenerator.parameters", PlaceGeneratorParameters.class),
+                StaticDataSource.of(
+                        new PlaceGeneratorParameters(Integer.MAX_VALUE, true, false, false, false)));
     }
 }

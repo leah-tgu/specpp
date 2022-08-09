@@ -9,7 +9,7 @@ public class DepthConstraint implements GenerationConstraint {
         this.maxDepth = maxDepth;
     }
 
-    public int getDepth() {
+    public int getDepthLimit() {
         return maxDepth;
     }
 }

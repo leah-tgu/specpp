@@ -2,7 +2,6 @@ package org.processmining.estminer.specpp.util;
 
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
-import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 import org.processmining.estminer.specpp.datastructures.encoding.HashmapEncoding;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
@@ -10,6 +9,7 @@ import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.impls.*;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
+import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 
 import java.util.*;
 
@@ -77,8 +77,8 @@ public class HardcodedTestInput {
         return builder.build();
     }
 
-    public static Map<Activity, Transition> setupMapping(Map<String, Activity> activities, Map<String, Transition> transitions) {
-        Map<Activity, Transition> activityTransitionMapping = new HashMap<>();
+    public static BidiMap<Activity, Transition> setupMapping(Map<String, Activity> activities, Map<String, Transition> transitions) {
+        BidiMap<Activity, Transition> activityTransitionMapping = new DualHashBidiMap<>();
         for (Map.Entry<String, Activity> entry : activities.entrySet()) {
             activityTransitionMapping.put(entry.getValue(), transitions.get(entry.getKey()));
         }
@@ -88,7 +88,7 @@ public class HardcodedTestInput {
     public static InputDataBundle getDummyInputBundle(String... labels) {
         Tuple2<IntEncodings<Transition>, Map<String, Transition>> tTuple = setupTransitions(labels);
         Map<String, Activity> activities = setupActivities(labels);
-        Map<Activity, Transition> mapping = setupMapping(activities, tTuple.getT2());
+        BidiMap<Activity, Transition> mapping = setupMapping(activities, tTuple.getT2());
         Log log = setupLog(activities);
         IntEncodings<Transition> transitionEncodings = tTuple.getT1();
         return new InputDataBundle(log, transitionEncodings, mapping);

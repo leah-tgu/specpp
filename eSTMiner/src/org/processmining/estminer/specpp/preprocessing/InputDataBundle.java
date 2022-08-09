@@ -1,5 +1,6 @@
 package org.processmining.estminer.specpp.preprocessing;
 
+import org.apache.commons.collections4.BidiMap;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.log.Log;
@@ -10,10 +11,10 @@ import java.util.Map;
 public class InputDataBundle {
 
     private final Log log;
-    private final Map<Activity, Transition> mapping;
+    private final BidiMap<Activity, Transition> mapping;
     private final IntEncodings<Transition> transitionEncodings;
 
-    public InputDataBundle(Log log, IntEncodings<Transition> transitionEncodings, Map<Activity, Transition> mapping) {
+    public InputDataBundle(Log log, IntEncodings<Transition> transitionEncodings, BidiMap<Activity, Transition> mapping) {
         this.log = log;
         this.mapping = mapping;
         this.transitionEncodings = transitionEncodings;
@@ -23,7 +24,7 @@ public class InputDataBundle {
         return log;
     }
 
-    public Map<Activity, Transition> getMapping() {
+    public BidiMap<Activity, Transition> getMapping() {
         return mapping;
     }
 

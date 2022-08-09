@@ -1,27 +1,35 @@
 package org.processmining.estminer.specpp.postprocessing;
 
-import org.apache.commons.collections4.IteratorUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.math3.util.Combinations;
-import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.processmining.estminer.specpp.base.PostProcessor;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Set;
 
 public class SelfLoopPlaceMerger implements PostProcessor<PetriNet, PetriNet> {
     @Override
-    public PetriNet postProcess(PetriNet result) {
-        Set<Place> places = result.getPlaces();
+    public PetriNet postProcess(PetriNet input) {
+        Set<Place> places = input.getPlaces();
+        Set<Place> result = new HashSet<>();
 
-        // TODO implement
+        LinkedList<Place> list = new LinkedList<>(places);
 
-        for (Place place : places) {
+        while (list.size() > 1) {
+            Place first = list.removeFirst();
+            Place noSelfLoops = first.nonSelfLoops();
+            Optional<Place> optional = list.stream().filter(p -> noSelfLoops.setEquality(p.nonSelfLoops())).findFirst();
 
+            if (optional.isPresent()) {
+                list.remove(optional.get());
+                list.addFirst(first.union(optional.get()));
+            } else result.add(first);
         }
+        if (!list.isEmpty()) result.add(list.remove());
 
-        throw new NotImplementedException();
+        return new PetriNet(result);
     }
 
 

@@ -42,8 +42,8 @@ public class VariableExpansion<N extends TreeNode & LocallyExpandable<N>> implem
     }
 
     @Override
-    public void deregisterPreviousProposal() {
-        dequeue.get();
+    public N deregisterPreviousProposal() {
+        return dequeue.get();
     }
 
     @Override

@@ -35,7 +35,7 @@ public class AdHocObservableRequirement<O extends Observation> extends Observabl
 
     @Override
     public String toString() {
-        return "AdHocObservableRequirement(" + PrintingUtils.quote(label) + ", " + getObservableClass().getSimpleName() + ")";
+        return "AdHocObservableRequirement(" + label + ", " + getObservableClass().getSimpleName() + ")";
     }
 
     public FulfilledAdHocObservableRequirement<O> fulfilWith(AdHocObservable<O> observable) {

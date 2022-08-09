@@ -1,13 +1,13 @@
 package org.processmining.estminer.specpp.base.impls;
 
+import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.base.MutableCappedComposition;
 
 import java.util.ArrayList;
 
-public class ArrayListComposition<C extends Candidate> extends AbstractComposition<C, ArrayList<C>> implements MutableCappedComposition<C> {
+public class ArrayListComposition<C extends Candidate> extends AbstractComposition<C, ArrayList<C>> implements AdvancedComposition<C> {
 
-    public static final int ABSOLUTE_SIZE_LIMIT = 100000;
+    public static final int ABSOLUTE_SIZE_LIMIT = 1_000_000;
 
     public ArrayListComposition() {
         super(ArrayList::new);

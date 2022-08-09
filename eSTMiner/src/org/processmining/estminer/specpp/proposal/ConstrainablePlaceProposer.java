@@ -16,7 +16,7 @@ import org.processmining.estminer.specpp.datastructures.tree.base.impls.Enumerat
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.CullPostsetChildren;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.WiringConstraint;
-import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
@@ -52,8 +52,8 @@ public class ConstrainablePlaceProposer extends PlaceProposer implements Constra
 
     public static class Builder extends ComponentSystemAwareBuilder<ConstrainablePlaceProposer> {
 
-        private final DelegatingDataSource<GeneratingTreeConfiguration<PlaceNode, PlaceGenerator>> delegatingDataSource = DataRequirements.<PlaceNode, PlaceGenerator>generatingTreeConfiguration()
-                                                                                                                                          .emptyDelegator();
+        private final DelegatingDataSource<GeneratingTreeConfiguration<PlaceNode, MonotonousPlaceGenerator>> delegatingDataSource = DataRequirements.<PlaceNode, MonotonousPlaceGenerator>generatingTreeConfiguration()
+                                                                                                                                                    .emptyDelegator();
 
         public Builder() {
             componentSystemAdapter().require(DataRequirements.generatingTreeConfiguration(), delegatingDataSource);
@@ -61,7 +61,7 @@ public class ConstrainablePlaceProposer extends PlaceProposer implements Constra
 
         @Override
         protected ConstrainablePlaceProposer buildIfFullySatisfied() {
-            GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> config = delegatingDataSource.getData();
+            GeneratingTreeConfiguration<PlaceNode, MonotonousPlaceGenerator> config = delegatingDataSource.getData();
             return new ConstrainablePlaceProposer(config.createGenerator(), config.createTree());
         }
 

@@ -1,10 +1,10 @@
 package org.processmining.estminer.specpp.composition;
 
-import org.processmining.estminer.specpp.base.MutableCappedComposition;
+import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
+import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
-import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
@@ -13,21 +13,25 @@ import org.processmining.estminer.specpp.evaluation.implicitness.*;
 /**
  * This class extends the base {@code PlaceComposer} with concurrent implicit place removal.
  * It additionally requires an {@code implicitnessEvaluator} that calculates an {@code ImplicitnessRating} to decide whether to accept or reject a new candidate, or whether to replace an existing, i.e., previously accepted, candidate.
+ * This requirement is fulfilled locally by the given place composition.
  *
  * @param <I> the type of the internally used {@code Composition}
  * @see PlacesComposer
  * @see ImplicitnessRating
  * @see EvaluationRequirements#PLACE_IMPLICITNESS
+ * @see PlaceCollection
  */
-public class PlaceComposerWithConcurrentImplicitnessTesting<I extends MutableCappedComposition<Place>> extends PlacesComposer<I> {
+public class PlaceComposerWithConcurrentImplicitnessTesting<I extends AdvancedComposition<Place>> extends PlacesComposer<I> {
 
     protected final DelegatingEvaluator<Place, ImplicitnessRating> implicitnessEvaluator = new DelegatingEvaluator<>(p -> BooleanImplicitness.NOT_IMPLICIT);
 
     public PlaceComposerWithConcurrentImplicitnessTesting(I placeComposition) {
         super(placeComposition);
         componentSystemAdapter().require(EvaluationRequirements.PLACE_IMPLICITNESS, implicitnessEvaluator);
-        if (placeComposition instanceof ProvidesEvaluators)
-            componentSystemAdapter().fulfilFrom(((UsesComponentSystem) placeComposition).componentSystemAdapter());
+        if (placeComposition instanceof ProvidesEvaluators) {
+            ComponentSystemAdapter evc = ((ProvidesEvaluators) placeComposition).componentSystemAdapter();
+            componentSystemAdapter().fulfilFrom(evc);
+        }
     }
 
     @Override
@@ -35,6 +39,7 @@ public class PlaceComposerWithConcurrentImplicitnessTesting<I extends MutableCap
         AggregatedBasicFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
         if (meetsUnderfedThreshold(fitness)) {
             publishConstraint(new ClinicallyUnderfedPlace(candidate));
+            return false;
         } else if (meetsFitnessThreshold(fitness)) {
             ImplicitnessRating rating = implicitnessEvaluator.eval(candidate);
             if (rating instanceof ReplaceExaminedPlace) {
@@ -48,8 +53,8 @@ public class PlaceComposerWithConcurrentImplicitnessTesting<I extends MutableCap
                 return true;
             } else if (rating instanceof ReplacementPlaceInfeasible) return true;
             else if (rating instanceof BooleanImplicitness) return rating == BooleanImplicitness.NOT_IMPLICIT;
-        }
-        return false;
+            else return false;
+        } else return false;
     }
 
 

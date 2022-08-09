@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 
-public class TransitionBlacklister implements PotentialSetExpansionsFilter {
+public class TransitionBlacklister implements PotentialExpansionsFilter {
 
     private final BitEncodedSet<Transition> presetBlacklist, postsetBlacklist;
 
@@ -20,18 +20,18 @@ public class TransitionBlacklister implements PotentialSetExpansionsFilter {
     }
 
     @Override
-    public void filterPotentialSetExpansions(BitEncodedSet<Transition> expansions, PlaceGenerator.ExpansionType expansionType) {
+    public void filterPotentialSetExpansions(BitEncodedSet<Transition> expansions, MonotonousPlaceGenerator.ExpansionType expansionType) {
         if (expansions.isEmpty()) return;
 
-        if (expansionType == PlaceGenerator.ExpansionType.Postset) expansions.setminus(postsetBlacklist);
+        if (expansionType == MonotonousPlaceGenerator.ExpansionType.Postset) expansions.setminus(postsetBlacklist);
         else expansions.setminus(presetBlacklist);
     }
 
     @Override
-    public void filterPotentialSetExpansions(BitMask expansions, PlaceGenerator.ExpansionType expansionType) {
+    public void filterPotentialSetExpansions(BitMask expansions, MonotonousPlaceGenerator.ExpansionType expansionType) {
         if (expansions.isEmpty()) return;
 
-        if (expansionType == PlaceGenerator.ExpansionType.Postset) expansions.setminus(postsetBlacklist.getBitMask());
+        if (expansionType == MonotonousPlaceGenerator.ExpansionType.Postset) expansions.setminus(postsetBlacklist.getBitMask());
         else expansions.setminus(presetBlacklist.getBitMask());
     }
 

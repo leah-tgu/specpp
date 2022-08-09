@@ -62,15 +62,19 @@ public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends 
         while (expansionStrategy.hasNextExpansion() && !canExpand) {
             prospectiveExpansion = expansionStrategy.nextExpansion();
             canExpand = prospectiveExpansion.canExpand();
-            if (!canExpand) lastProposalNotExpandable(prospectiveExpansion);
+            if (!canExpand) lastProposalNotExpandable();
         }
         if (canExpand) return expandNode(prospectiveExpansion);
         else return null;
     }
 
-    protected void lastProposalNotExpandable(N node) {
-        expansionStrategy.deregisterPreviousProposal();
-        notExpandable(node);
+    protected void lastProposalNotExpandable() {
+        notExpandable(expansionStrategy.deregisterPreviousProposal());
+    }
+
+    protected void lastExpansionNotExpandable() {
+        lastExpansion = null;
+        lastProposalNotExpandable();
     }
 
     protected void notExpandable(N node) {
@@ -79,8 +83,9 @@ public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends 
 
     protected void nodeExpanded(N node, N child) {
         lastExpansion = node;
-        if (!node.canExpand()) lastProposalNotExpandable(node);
-        else removeLeaf(node);
+        if (!node.canExpand()) {
+            lastExpansionNotExpandable();
+        } else removeLeaf(node);
     }
 
     @Override

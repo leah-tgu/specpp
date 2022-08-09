@@ -11,11 +11,13 @@ import org.processmining.estminer.specpp.componenting.system.ComponentRepository
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.SimpleBuilder;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
+import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.ChangeTree;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
 import org.processmining.estminer.specpp.evaluation.fitness.FullBasicFitnessEvaluation;
@@ -25,6 +27,7 @@ import org.processmining.estminer.specpp.orchestra.SpecOpsConfigBundle;
 import org.processmining.estminer.specpp.orchestra.SpecOpsSetup;
 import org.processmining.estminer.specpp.preprocessing.InputData;
 import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
+import org.processmining.estminer.specpp.util.JavaTypingUtils;
 import org.processmining.estminer.specpp.util.NaivePlacemaker;
 import org.processmining.estminer.specpp.util.PublicPaths;
 
@@ -37,7 +40,7 @@ public class Playground {
     }
 
     public static void play(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource) {
-        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = SpecOpsSetup.specOps(BaseSpecOpsConfigBundle::new, inputDataBundleSource);
+        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = SpecOpsSetup.specOps(configBundleSource, inputDataBundleSource);
 
         // ========================================= //
 
@@ -61,6 +64,14 @@ public class Playground {
     }
 
     public static void playAround(ComponentRepository cr, NaivePlacemaker placemaker, Evaluator<Place, DenseVariantMarkingHistories> markingHistoriesEvaluator, Evaluator<Place, AggregatedBasicFitnessEvaluation> basicFitnessFractionsEvaluator, Evaluator<Place, FullBasicFitnessEvaluation> fullBasicFitnessEvaluator) {
+
+        Log data = cr.dataSources().askForData(DataRequirements.RAW_LOG);
+        System.out.println("Log");
+        data.stream().limit(10).forEach(System.out::println);
+        System.out.println();
+
+        ChangeTree<Place> cht = cr.dataSources()
+                                  .askForData(DataRequirements.dataSource("ChangeTree", JavaTypingUtils.<ChangeTree<Place>>castClass(ChangeTree.class)));
 
         Place p1 = placemaker.preset("place order", "send reminder")
                              .postset("cancel order", "pay", "send reminder")

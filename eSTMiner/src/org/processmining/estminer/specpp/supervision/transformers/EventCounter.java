@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.supervision.transformers;
 
 import org.processmining.estminer.specpp.datastructures.util.Counter;
-import org.processmining.estminer.specpp.supervision.observations.ClassStatisticKey;
+import org.processmining.estminer.specpp.supervision.observations.ClassKey;
 import org.processmining.estminer.specpp.supervision.observations.Count;
 import org.processmining.estminer.specpp.supervision.observations.Event;
 import org.processmining.estminer.specpp.supervision.observations.EventCountStatistics;
@@ -19,7 +19,7 @@ public class EventCounter implements ObservationSummarizer<Event, EventCountStat
         }
         EventCountStatistics result = new EventCountStatistics();
         for (Map.Entry<Class<? extends Event>, Integer> entry : counts.entrySet()) {
-            ClassStatisticKey<Event> key = new ClassStatisticKey<>(entry.getKey());
+            ClassKey<Event> key = new ClassKey<>(entry.getKey());
             result.record(key, new Count(entry.getValue()));
         }
         return result;

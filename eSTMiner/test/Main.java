@@ -1,4 +1,5 @@
 import com.google.common.collect.Sets;
+import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.IteratorUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,20 +11,8 @@ import org.processmining.estminer.specpp.componenting.supervision.FulfilledObser
 import org.processmining.estminer.specpp.componenting.supervision.ObservableRequirement;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.*;
-import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceGenerator;
-import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
-import org.processmining.estminer.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
-import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
 import org.processmining.estminer.specpp.datastructures.BitMask;
-import org.processmining.estminer.specpp.datastructures.encoding.FixedOrdering;
-import org.processmining.estminer.specpp.preprocessing.InputData;
-import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
-import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
-import org.processmining.estminer.specpp.datastructures.encoding.HashmapEncoding;
-import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
-import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
+import org.processmining.estminer.specpp.datastructures.encoding.*;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
@@ -33,15 +22,25 @@ import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
-import org.processmining.estminer.specpp.datastructures.tree.base.*;
-import org.processmining.estminer.specpp.datastructures.vectorization.IVSComputations;
-import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
-import org.processmining.estminer.specpp.supervision.observations.Observation;
-import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
-import org.processmining.estminer.specpp.util.*;
+import org.processmining.estminer.specpp.datastructures.tree.base.BiDiTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.*;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.datastructures.util.Label;
 import org.processmining.estminer.specpp.datastructures.util.RegexLabel;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
+import org.processmining.estminer.specpp.datastructures.vectorization.IVSComputations;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
+import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
+import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
+import org.processmining.estminer.specpp.preprocessing.*;
+import org.processmining.estminer.specpp.supervision.observations.Observation;
+import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
+import org.processmining.estminer.specpp.util.HardcodedTestInput;
+import org.processmining.estminer.specpp.util.JavaTypingUtils;
+import org.processmining.estminer.specpp.util.Placemaker;
+import org.processmining.estminer.specpp.util.Reflection;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -105,7 +104,7 @@ public class Main {
         FixedOrdering<Transition> presetOrdering = new FixedOrdering<>(start, a, b, c);
         FixedOrdering<Transition> postsetOrdering = new FixedOrdering<>(a, b, c, end);
 
-        PlaceGenerator pg = new PlaceGenerator(new IntEncodings<>(new HashmapEncoding<>(presetTransitions, presetOrdering), new HashmapEncoding<>(postsetTransitions, postsetOrdering)));
+        MonotonousPlaceGenerator pg = new MonotonousPlaceGenerator(new IntEncodings<>(new HashmapEncoding<>(presetTransitions, presetOrdering), new HashmapEncoding<>(postsetTransitions, postsetOrdering)));
         EnumeratingTree<PlaceNode> tree = new EnumeratingTree<>(pg.generateRoot(), new VariableExpansion<>());
 
         System.out.println(tree);
@@ -126,7 +125,7 @@ public class Main {
 
         HashmapEncoding<Transition> encoding = new HashmapEncoding<>(transitions, Comparator.comparingInt(o -> Integer.parseInt(o.toString())));
 
-        PlaceGenerator pg = new PlaceGenerator(new IntEncodings<>(encoding, encoding));
+        MonotonousPlaceGenerator pg = new MonotonousPlaceGenerator(new IntEncodings<>(encoding, encoding));
 
         EnumeratingTree<PlaceNode> tree = new EnumeratingTree<>(pg.generateRoot(), new VariableExpansion<>());
 
@@ -295,8 +294,8 @@ public class Main {
 
         Label l1 = new Label("hello.world");
         Label l2 = new Label("goodbye.world");
-        RegexLabel r1 = new RegexLabel("\\w*.world");
-        RegexLabel r2 = new RegexLabel("\\w*.\\w*");
+        RegexLabel r1 = new RegexLabel("\\w*\\.world");
+        RegexLabel r2 = new RegexLabel("\\w*\\.\\w*");
 
         Assert.assertTrue(l1.gt(l1));
         Assert.assertTrue(l1.lt(l1));
@@ -341,8 +340,37 @@ public class Main {
         Assert.assertTrue(f1.gt(req));
         Assert.assertTrue(f2.gt(req));
         Assert.assertFalse(f3.gt(req));
+    }
 
+    @Test
+    public void transitionOrderings() {
+        InputDataBundle data = InputData.sampleData().getData();
+        Log log = data.getLog();
+        BidiMap<Activity, Transition> mapping = data.getMapping();
+
+        Map<String, Activity> activityMap = mapping.entrySet()
+                                                   .stream()
+                                                   .collect(Collectors.toMap(e -> e.getKey()
+                                                                                   .toString(), Map.Entry::getKey));
+
+        List<Class<? extends TransitionEncodingsBuilder>> classes = new LinkedList<>();
+        classes.add(AverageTracePositionOrdering.class);
+        classes.add(TraceFrequencyOrdering.class);
+        classes.add(ActivityFrequencyOrdering.class);
+        classes.add(LexicographicTransitionOrdering.class);
+
+
+        System.out.println(activityMap.values());
+        log.stream().limit(10).forEach(System.out::println);
+
+        for (Class<? extends TransitionEncodingsBuilder> aClass : classes) {
+            TransitionEncodingsBuilder instance = Reflection.instance(aClass, log, activityMap, mapping);
+            System.out.println(aClass);
+            System.out.println(instance);
+            System.out.println(instance.build());
+        }
 
     }
+
 
 }

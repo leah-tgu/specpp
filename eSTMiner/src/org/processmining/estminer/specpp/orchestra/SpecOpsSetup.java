@@ -3,12 +3,14 @@ package org.processmining.estminer.specpp.orchestra;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.processmining.estminer.specpp.base.impls.SpecPP;
+import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.ChangeTree;
 import org.processmining.estminer.specpp.datastructures.util.TypedItem;
 import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 import org.processmining.estminer.specpp.supervision.Supervisor;
@@ -17,6 +19,7 @@ import org.processmining.estminer.specpp.supervision.observations.Visualization;
 import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.supervision.traits.Monitoring;
 import org.processmining.estminer.specpp.util.FileUtils;
+import org.processmining.estminer.specpp.util.JavaTypingUtils;
 import org.processmining.estminer.specpp.util.VizUtils;
 import org.processmining.plugins.graphviz.visualisation.DotPanel;
 
@@ -72,6 +75,12 @@ public class SpecOpsSetup {
                             ChartPanel panel = new ChartPanel(jFreeChart);
                             charts.add(jFreeChart);
                             VizUtils.showJPanel(panel);
+                        } else if (monitor instanceof TreeMonitor) {
+                            TreeMonitor treeMonitor = (TreeMonitor) monitor;
+                            // TODO the ugliness. i cri
+                            specpp.getComponentRepository()
+                                  .dataSources()
+                                  .register(DataRequirements.dataSource("ChangeTree", JavaTypingUtils.castClass(ChangeTree.class), treeMonitor::getMonitoringState));
                         }
                     }
                 }
@@ -85,9 +94,10 @@ public class SpecOpsSetup {
             System.out.println("# Shutdown SpecOps @" + LocalDateTime.now());
             System.out.println("// ========================================= //");
 
+            System.out.println("Executed " + specpp.stepCount() + " PEC cycles.");
+
             ProMPetrinetWrapper finalResult = specpp.getFinalResult();
             VizUtils.visualizeProMPetrinet(finalResult);
-
 
             for (Supervisor supervisor : specpp.getSupervisors()) {
                 if (supervisor instanceof Monitoring) {

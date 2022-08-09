@@ -49,7 +49,7 @@ public class ObserverRequirement<O extends Observation> extends SupervisionRequi
 
     @Override
     public String toString() {
-        return "ObserverRequirement(" + PrintingUtils.quote(label) + ", " + observedClass.getSimpleName() + ")";
+        return "ObserverRequirement(" + label + ", " + observedClass.getSimpleName() + ")";
     }
 
     public FulfilledObserverRequirement<O> fulfilWith(Observer<O> observer) {

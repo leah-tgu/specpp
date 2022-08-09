@@ -10,9 +10,9 @@ import org.processmining.estminer.specpp.datastructures.tree.base.impls.Generati
 
 public class GeneratingTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>> extends TreeConfiguration<N> {
 
-    protected final SimpleBuilder<G> generatorBuilder;
+    protected final SimpleBuilder<? extends G> generatorBuilder;
 
-    public GeneratingTreeConfiguration(ComponentSystemAdapter csa, InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder, SimpleBuilder<G> generatorBuilder) {
+    public GeneratingTreeConfiguration(ComponentSystemAdapter csa, InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder, SimpleBuilder<? extends G> generatorBuilder) {
         super(csa, treeFunction, expansionStrategyBuilder);
         this.generatorBuilder = generatorBuilder;
     }
@@ -23,12 +23,12 @@ public class GeneratingTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>,
 
     public static class Configurator<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>> extends TreeConfiguration.Configurator<N> {
 
-        protected SimpleBuilder<G> generatorBuilder;
+        protected SimpleBuilder<? extends G> generatorBuilder;
 
         public Configurator() {
         }
 
-        public Configurator(InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder, SimpleBuilder<G> generatorBuilder) {
+        public Configurator(InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder, SimpleBuilder<? extends G> generatorBuilder) {
             super(treeFunction, expansionStrategyBuilder);
             this.generatorBuilder = generatorBuilder;
         }
@@ -45,12 +45,12 @@ public class GeneratingTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>,
             return this;
         }
 
-        public Configurator<N, G> generator(SimpleBuilder<G> generatorBuilder) {
+        public Configurator<N, G> generator(SimpleBuilder<? extends G> generatorBuilder) {
             this.generatorBuilder = generatorBuilder;
             return this;
         }
 
-        public <GP extends ConstrainableLocalNodeGenerator<?, ?, N, GenerationConstraint>> Configurator<N, GP> constrainableGenerator(SimpleBuilder<GP> generatorBuilder) {
+        public <GP extends ConstrainableLocalNodeGenerator<?, ?, N, GenerationConstraint>> Configurator<N, GP> constrainableGenerator(SimpleBuilder<? extends GP> generatorBuilder) {
             return new Configurator<>(treeFunction, expansionStrategyBuilder, generatorBuilder);
         }
 

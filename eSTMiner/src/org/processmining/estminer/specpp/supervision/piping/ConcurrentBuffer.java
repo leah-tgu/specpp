@@ -41,7 +41,8 @@ public class ConcurrentBuffer<E> implements Buffer<E>, ThreadsafeBuffer {
     public List<E> drain() {
         List<E> result = new ArrayList<>();
         while (!internal.isEmpty()) {
-            result.add(internal.poll());
+            E poll = internal.poll();
+            if (poll != null) result.add(poll);
         }
         return result;
     }

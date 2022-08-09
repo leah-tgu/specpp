@@ -24,7 +24,7 @@ public class DepthLimiter implements ExpansionStopper {
     }
 
     @Override
-    public boolean allowedToExpand(PlaceNode placeNode) {
-        return placeNode.getPlace().size() < maxDepth;
+    public boolean notAllowedToExpand(PlaceNode placeNode) {
+        return placeNode.getDepth() >= maxDepth;
     }
 }

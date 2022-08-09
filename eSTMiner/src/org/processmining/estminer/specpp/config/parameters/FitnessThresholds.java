@@ -1,27 +1,36 @@
 package org.processmining.estminer.specpp.config.parameters;
 
+import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
+
+import java.util.Arrays;
+
 public class FitnessThresholds implements Parameters {
 
-    public static FitnessThresholds strictUnderfedCulling(double replayableThreshold) {
-        return new FitnessThresholds(replayableThreshold, 1e-8);
+    public static FitnessThresholds ACCEPT_ALL_NON_COMPLETELY_UNDERFED = exhaustive(0);
+
+    private final double[] thresholds;
+
+    public static FitnessThresholds strictUnderfedCulling(double fullyFittingThreshold) {
+        return new FitnessThresholds(fullyFittingThreshold, 1e-8, 0, 0);
     }
 
-    public static FitnessThresholds exhaustive(double replayableThreshold) {
-        return new FitnessThresholds(replayableThreshold, 1);
+    public static FitnessThresholds exhaustive(double fullyFittingThreshold) {
+        return new FitnessThresholds(fullyFittingThreshold, 1, 0, 0);
     }
 
-    private final double replayableFractionAcceptanceThreshold, underfedFractionCullingThreshold;
-
-    public FitnessThresholds(double replayableFractionAcceptanceThreshold, double underfedFractionCullingThreshold) {
-        this.replayableFractionAcceptanceThreshold = replayableFractionAcceptanceThreshold;
-        this.underfedFractionCullingThreshold = underfedFractionCullingThreshold;
+    public FitnessThresholds(double fittingFractionThreshold, double underfedFractionThreshold, double overfedFractionThreshold, double notEndingOnZeroThreshold) {
+        thresholds = new double[]{fittingFractionThreshold, underfedFractionThreshold, overfedFractionThreshold, notEndingOnZeroThreshold};
+        assert thresholds.length >= BasicVariantFitnessStatus.values().length;
     }
 
-    public double getReplayableFractionAcceptanceThreshold() {
-        return replayableFractionAcceptanceThreshold;
+    public double getThreshold(BasicVariantFitnessStatus basicVariantFitnessStatus) {
+        return thresholds[basicVariantFitnessStatus.ordinal()];
     }
 
-    public double getUnderfedFractionCullingThreshold() {
-        return underfedFractionCullingThreshold;
+    @Override
+    public String toString() {
+        return "FitnessThresholds{" +
+                "thresholds=" + Arrays.toString(thresholds) +
+                '}';
     }
 }

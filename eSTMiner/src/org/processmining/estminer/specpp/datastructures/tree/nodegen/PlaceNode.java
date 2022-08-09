@@ -9,10 +9,11 @@ import java.util.Optional;
 /**
  * This class represents a tree node containing a {@code Place} together with a {@code PlaceState} that indicates already generated children nodes.
  * It is an implementation of a {@code GeneratingLocalNode}, that is, it does not hold references to any other nodes and instead employs only its local state and a {@code PlaceGenerator} to compute unseen children.
+ *
  * @see Place
  * @see PlaceState
  * @see GeneratingLocalNode
- * @see PlaceGenerator
+ * @see MonotonousPlaceGenerator
  */
 public class PlaceNode extends GeneratingLocalNode<Place, PlaceState, PlaceNode> {
 

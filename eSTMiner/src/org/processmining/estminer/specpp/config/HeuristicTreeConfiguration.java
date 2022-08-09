@@ -13,7 +13,7 @@ public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, 
     private final InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction;
     private final InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction;
 
-    public HeuristicTreeConfiguration(ComponentSystemAdapter cs, SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier, InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction, InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction, SimpleBuilder<G> generatorSupplier) {
+    public HeuristicTreeConfiguration(ComponentSystemAdapter cs, SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier, InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction, InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction, SimpleBuilder<? extends G> generatorSupplier) {
         super(cs, null, null, generatorSupplier);
         this.heuristicStrategySupplier = heuristicStrategySupplier;
         this.treeExpansionFunction = treeExpansionFunction;
@@ -47,7 +47,7 @@ public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, 
         public Configurator() {
         }
 
-        public Configurator(SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategyBuilder, InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionBuilder, InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction, SimpleBuilder<G> generatorSupplier) {
+        public Configurator(SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategyBuilder, InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionBuilder, InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction, SimpleBuilder<? extends G> generatorSupplier) {
             super(null, null, generatorSupplier);
             this.heuristicStrategyBuilder = heuristicStrategyBuilder;
             this.treeExpansionBuilder = treeExpansionBuilder;
@@ -70,12 +70,12 @@ public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, 
         }
 
         @Override
-        public GeneratingTreeConfiguration.Configurator<N, G> generator(SimpleBuilder<G> generatorBuilder) {
+        public GeneratingTreeConfiguration.Configurator<N, G> generator(SimpleBuilder<? extends G> generatorBuilder) {
             return super.generator(generatorBuilder);
         }
 
         @Override
-        public <GP extends ConstrainableLocalNodeGenerator<?, ?, N, GenerationConstraint>> Configurator<N, GP, H> constrainableGenerator(SimpleBuilder<GP> generatorBuilder) {
+        public <GP extends ConstrainableLocalNodeGenerator<?, ?, N, GenerationConstraint>> Configurator<N, GP, H> constrainableGenerator(SimpleBuilder<? extends GP> generatorBuilder) {
             super.constrainableGenerator(generatorBuilder);
             return new Configurator<>(heuristicStrategyBuilder, treeExpansionBuilder, enumeratingTreeBuilder, generatorBuilder);
         }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class WiringTester implements PotentialSetExpansionsFilter {
+public class WiringTester implements PotentialExpansionsFilter {
 
     private final ArrayList<Place> wiredPlaces;
 
@@ -18,16 +18,16 @@ public class WiringTester implements PotentialSetExpansionsFilter {
     }
 
     @Override
-    public void filterPotentialSetExpansions(BitEncodedSet<Transition> expansions, PlaceGenerator.ExpansionType expansionType) {
+    public void filterPotentialSetExpansions(BitEncodedSet<Transition> expansions, MonotonousPlaceGenerator.ExpansionType expansionType) {
         filterPotentialSetExpansions(expansions.getBitMask(), expansionType);
     }
 
     @Override
-    public void filterPotentialSetExpansions(BitMask expansions, PlaceGenerator.ExpansionType expansionType) {
+    public void filterPotentialSetExpansions(BitMask expansions, MonotonousPlaceGenerator.ExpansionType expansionType) {
         if (expansions.isEmpty()) return;
 
-        Function<Place, BitEncodedSet<Transition>> getTransitions = expansionType == PlaceGenerator.ExpansionType.Postset ? Place::postset : Place::preset;
-        Function<Place, BitEncodedSet<Transition>> getOtherTransitions = expansionType == PlaceGenerator.ExpansionType.Postset ? Place::preset : Place::postset;
+        Function<Place, BitEncodedSet<Transition>> getTransitions = expansionType == MonotonousPlaceGenerator.ExpansionType.Postset ? Place::postset : Place::preset;
+        Function<Place, BitEncodedSet<Transition>> getOtherTransitions = expansionType == MonotonousPlaceGenerator.ExpansionType.Postset ? Place::preset : Place::postset;
 
         for (Place wiredPlace : wiredPlaces) {
             if (getOtherTransitions.apply(wiredPlace).getBitMask().intersects(expansions)) {

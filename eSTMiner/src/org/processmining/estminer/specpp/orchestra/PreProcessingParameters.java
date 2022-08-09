@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.orchestra;
 
 import org.processmining.estminer.specpp.config.parameters.Parameters;
-import org.processmining.estminer.specpp.preprocessing.AverageTracePositionTransitionEncoder;
+import org.processmining.estminer.specpp.preprocessing.AverageTracePositionOrdering;
 import org.processmining.estminer.specpp.preprocessing.TransitionEncodingsBuilder;
 
 public class PreProcessingParameters implements Parameters {
@@ -15,7 +15,7 @@ public class PreProcessingParameters implements Parameters {
     }
 
     public static PreProcessingParameters getDefault() {
-        return new PreProcessingParameters(true, AverageTracePositionTransitionEncoder.class);
+        return new PreProcessingParameters(true, AverageTracePositionOrdering.class);
     }
 
     @Override

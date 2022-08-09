@@ -6,11 +6,11 @@ import java.util.Collection;
 
 public class BasicBuffer<E> implements Buffer<E> {
 
-    private static final int MAX_BUFFER_SIZE = 10000;
+    private static final int MAX_BUFFER_SIZE = 1_000_000;
     private EvictingQueue<E> buffer;
 
     public BasicBuffer(int maxBufferSize) {
-        buffer = EvictingQueue.create(MAX_BUFFER_SIZE);
+        buffer = EvictingQueue.create(maxBufferSize);
     }
 
     public BasicBuffer() {

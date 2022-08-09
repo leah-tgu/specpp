@@ -39,8 +39,10 @@ public class HeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpa
     }
 
     @Override
-    public void deregisterPreviousProposal() {
-        clearHeuristic(dequeueFirst());
+    public N deregisterPreviousProposal() {
+        N node = dequeueFirst();
+        clearHeuristic(node);
+        return node;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.processmining.estminer.specpp.composition;
 
+import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.base.MutableCappedComposition;
 import org.processmining.estminer.specpp.base.impls.AbstractConstrainingComposer;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
@@ -14,6 +15,7 @@ import org.processmining.estminer.specpp.datastructures.tree.constraints.AddWire
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.RemoveWiredPlace;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
@@ -29,7 +31,7 @@ import org.processmining.estminer.specpp.base.ConstrainingComposer;
  * @param <I> the type of the internally used {@code Composition}
  * @see AbstractConstrainingComposer
  */
-public class PlacesComposer<I extends MutableCappedComposition<Place>> extends AbstractConstrainingComposer<Place, I, PetriNet> {
+public class PlacesComposer<I extends AdvancedComposition<Place>> extends AbstractConstrainingComposer<Place, I, PetriNet> {
 
 
     protected final DelegatingEvaluator<Place, AggregatedBasicFitnessEvaluation> fitnessEvaluator = EvaluationRequirements.AGG_PLACE_FITNESS.emptyDelegator();
@@ -57,16 +59,16 @@ public class PlacesComposer<I extends MutableCappedComposition<Place>> extends A
         AggregatedBasicFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
         if (meetsUnderfedThreshold(fitness)) {
             publishConstraint(new ClinicallyUnderfedPlace(candidate));
-        } else meetsFitnessThreshold(fitness);
-        return false;
+            return false;
+        } else return meetsFitnessThreshold(fitness);
     }
 
     protected boolean meetsUnderfedThreshold(AggregatedBasicFitnessEvaluation fitness) {
-        return fitness.getUnderfedFraction() >= fitnessThresholds.getData().getUnderfedFractionCullingThreshold();
+        return fitness.getUnderfedFraction() >= fitnessThresholds.getData().getThreshold(BasicVariantFitnessStatus.UNDERFED);
     }
 
     protected boolean meetsFitnessThreshold(AggregatedBasicFitnessEvaluation fitness) {
-        return fitness.getFittingFraction() >= fitnessThresholds.getData().getReplayableFractionAcceptanceThreshold();
+        return fitness.getFittingFraction() >= fitnessThresholds.getData().getThreshold(BasicVariantFitnessStatus.FITTING);
     }
 
     @Override

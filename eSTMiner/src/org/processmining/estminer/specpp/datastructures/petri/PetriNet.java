@@ -14,4 +14,11 @@ public class PetriNet implements Result {
     public Set<Place> getPlaces() {
         return places;
     }
+
+    @Override
+    public String toString() {
+        return "PetriNet{" +
+                "places=" + places +
+                '}';
+    }
 }

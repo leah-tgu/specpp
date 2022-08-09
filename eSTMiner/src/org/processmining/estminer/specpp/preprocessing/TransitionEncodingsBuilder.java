@@ -49,8 +49,6 @@ public abstract class TransitionEncodingsBuilder implements SimpleBuilder<IntEnc
 
     @Override
     public IntEncodings<Transition> build() {
-
-
         Pair<Comparator<Activity>> comparators = computeActivityOrderings(log, activityMapping);
 
         IntEncoding<Transition> presetEncoding = TransitionEncodingsBuilder.createPresetEncoding(activityMapping.values(), comparators.first(), transitionMapping);
