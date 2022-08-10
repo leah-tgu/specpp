@@ -28,7 +28,7 @@ public class DetailedTreeSupervisor extends MonitoringSupervisor {
     }
 
     @Override
-    protected void instantiateObservationHandling() {
+    protected void instantiateObservationHandlingFullySatisfied() {
 
         CSVLogger<LeafEvent<PlaceNode>> leafCountChanges = new CSVLogger<>("tree.csv", new String[]{"time", "place", "change", "tree.leaves.count delta"}, e -> new String[]{LocalDateTime.now().toString(), e.getSource()
                                                                                                                                                                                                               .getProperties().toString(), e.getClass().getSimpleName(), Integer.toString(e.getDelta())});

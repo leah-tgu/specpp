@@ -15,6 +15,8 @@ public class EvaluationRequirements {
     public static final EvaluatorRequirement<Place, FullBasicFitnessEvaluation> FULL_PLACE_FITNESS = evaluator(Place.class, FullBasicFitnessEvaluation.class);
     public static final EvaluatorRequirement<Place, ImplicitnessRating> PLACE_IMPLICITNESS = evaluator(Place.class, ImplicitnessRating.class);
     public static final EvaluatorRequirement<Place, DenseVariantMarkingHistories> PLACE_MARKING_HISTORY = evaluator(Place.class, DenseVariantMarkingHistories.class);
+    public static final EvaluatorRequirement<Place, ? super DenseVariantMarkingHistories> PURE_PLACE_MARKING_HISTORY = evaluator(Place.class, DenseVariantMarkingHistories.class);
+
 
     public static <I extends Evaluable, E extends Evaluation> EvaluatorRequirement<I, E> evaluator(Class<I> evaluableClass, Class<E> evaluationClass) {
         return new EvaluatorRequirement<>(evaluableClass, evaluationClass);

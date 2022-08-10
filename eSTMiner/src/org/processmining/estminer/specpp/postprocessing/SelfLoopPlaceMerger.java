@@ -23,8 +23,9 @@ public class SelfLoopPlaceMerger implements PostProcessor<PetriNet, PetriNet> {
             Optional<Place> optional = list.stream().filter(p -> noSelfLoops.setEquality(p.nonSelfLoops())).findFirst();
 
             if (optional.isPresent()) {
-                list.remove(optional.get());
-                list.addFirst(first.union(optional.get()));
+                Place other = optional.get();
+                list.remove(other);
+                list.addFirst(first.union(other));
             } else result.add(first);
         }
         if (!list.isEmpty()) result.add(list.remove());

@@ -4,7 +4,7 @@ import org.processmining.estminer.specpp.supervision.observations.Observation;
 
 import java.util.concurrent.CompletableFuture;
 
-public class AsyncSummarizingBufferPipe<I extends Observation, O extends Observation> extends SummarizingBufferingPipe<I, O> implements AsyncObservationPipe<I, O> {
+public class AsyncSummarizingBufferPipe<I extends Observation, O extends Observation> extends SummarizingBufferPipe<I, O> implements AsyncObservationPipe<I, O> {
 
     public AsyncSummarizingBufferPipe(ObservationSummarizer<I, O> collator) {
         super(collator, true);

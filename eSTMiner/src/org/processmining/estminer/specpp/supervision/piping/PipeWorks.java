@@ -13,6 +13,7 @@ import org.processmining.estminer.specpp.traits.Mergeable;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -22,19 +23,24 @@ public class PipeWorks {
     }
 
     public static <O extends Observation> Observer<O> loggingSink(String source, Observer<? super LogMessage> ml) {
-        return o -> ml.observe(new LogMessage(source, o.toString()));
+        return loggingSink(source, Object::toString, ml);
     }
 
+    public static <O extends Observation> Observer<O> loggingSink(String source, Function<O, String> mapper, Observer<? super LogMessage> ml) {
+        return o -> ml.observe(new LogMessage(source, mapper.apply(o)));
+    }
+
+    @SafeVarargs
     @SuppressWarnings("unchecked")
     public static <O extends Observation> Observer<O>[] loggingSinks(String source, Observer<? super LogMessage>... mls) {
-        Observer<O>[] objects = Arrays.stream(mls).map(ml -> loggingSink(source, ml)).toArray(Observer[]::new);
-        return objects;
+        return Arrays.stream(mls).map(ml -> loggingSink(source, ml)).toArray(Observer[]::new);
     }
 
-    public static <O extends Observation> Observer<O> loggingSink(Observer<? super LogMessage> ml) {
-        return o -> ml.observe(new LogMessage(o.getClass().getSimpleName(), o.toString()));
+    @SafeVarargs
+    @SuppressWarnings("unchecked")
+    public static <O extends Observation> Observer<O>[] loggingSinks(String source, Function<O, String> mapper, Observer<? super LogMessage>... mls) {
+        return Arrays.stream(mls).map(ml -> loggingSink(source, mapper, ml)).toArray(Observer[]::new);
     }
-
 
     public static <O extends Observation> IdentityPipe<O> identityPipe() {
         return new IdentityPipe<>();
@@ -109,8 +115,12 @@ public class PipeWorks {
         return new AsyncBufferPipe<>();
     }
 
-    public static <I extends Observation, O extends Observation> SummarizingBufferingPipe<I, O> summarizingBuffer(ObservationSummarizer<I, O> summarizer) {
-        return new SummarizingBufferingPipe<>(summarizer);
+    public static <I extends Observation, O extends Observation> SummarizingBufferPipe<I, O> summarizingBuffer(ObservationSummarizer<I, O> summarizer) {
+        return new SummarizingBufferPipe<>(summarizer);
+    }
+
+    public static <I extends Observation, O extends Observation> SummarizingBufferPipe<I, O> selfEmptyingSummarizingBuffer(ObservationSummarizer<I, O> summarizer, int capacity) {
+        return new SelfEmptyingSummarizingBufferPipe<>(summarizer, capacity);
     }
 
     public static <I extends Observation, O extends Observation> AsyncSummarizingBufferPipe<I, O> asyncSummarizingBuffer(ObservationSummarizer<I, O> summarizer) {

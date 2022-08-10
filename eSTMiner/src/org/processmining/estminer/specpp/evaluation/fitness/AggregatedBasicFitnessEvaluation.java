@@ -4,8 +4,6 @@ import org.processmining.estminer.specpp.base.CandidateEvaluation;
 import org.processmining.estminer.specpp.base.Evaluable;
 import org.processmining.estminer.specpp.datastructures.util.EnumFractions;
 
-import java.util.Arrays;
-
 public class AggregatedBasicFitnessEvaluation extends EnumFractions<BasicVariantFitnessStatus> implements CandidateEvaluation, Evaluable {
 
 
@@ -19,11 +17,11 @@ public class AggregatedBasicFitnessEvaluation extends EnumFractions<BasicVariant
     }
 
     public double getUnderfedFraction() {
-        return getFraction(BasicVariantFitnessStatus.UNDERFED);
+        return getFraction(BasicVariantFitnessStatus.GOES_NEGATIVE);
     }
 
     public double getOverfedFraction() {
-        return getFraction(BasicVariantFitnessStatus.OVERFED);
+        return getFraction(BasicVariantFitnessStatus.NON_SAFE);
     }
 
     public double getNotEndingOnZeroFraction() {

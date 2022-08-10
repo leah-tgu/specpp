@@ -11,6 +11,10 @@ public class CountStatistics<T extends StatisticKey> extends Statistics<T, Count
         super(input);
     }
 
+    @Override
+    public String toPrettyString() {
+        return "Count " + super.toPrettyString();
+    }
 
     @Override
     public String toString() {

@@ -10,6 +10,7 @@ import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.util.ComputingCache;
 
 public class LogHistoryMaker extends AbstractComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
 
@@ -17,7 +18,6 @@ public class LogHistoryMaker extends AbstractComponentSystemUser implements Prov
     private final DelegatingDataSource<BitMask> consideredVariantsSource = DataRequirements.CONSIDERED_VARIANTS.emptyDelegator();
 
     private BitMask consideredVariants;
-
 
     public LogHistoryMaker() {
         componentSystemAdapter().require(DataRequirements.ENC_LOG, encodedLogSource)
@@ -27,7 +27,6 @@ public class LogHistoryMaker extends AbstractComponentSystemUser implements Prov
 
     protected void updateConsideredVariants() {
         setConsideredVariants(consideredVariantsSource.getData());
-
     }
 
     public DenseVariantMarkingHistories computeVariantMarkingHistories(Place input) {

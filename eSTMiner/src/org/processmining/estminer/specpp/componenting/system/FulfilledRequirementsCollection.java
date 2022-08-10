@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public abstract class FulfilledRequirementsCollection<R extends Requirement<?, R>> {
 
-    private final List<FulfilledRequirement<?, R>> list;
+    private final ArrayList<FulfilledRequirement<?, R>> list;
 
     protected FulfilledRequirementsCollection() {
         this.list = new ArrayList<>();
@@ -57,4 +57,10 @@ public abstract class FulfilledRequirementsCollection<R extends Requirement<?, R
                                       .collect(Collectors.toList());
     }
 
+    @Override
+    public String toString() {
+        return list.stream()
+                   .map(f -> "\t" + f)
+                   .collect(Collectors.joining("\n", "Fulfilled Requirements: " + "{" + "\n", "}"));
+    }
 }

@@ -30,7 +30,7 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
     }
 
     @Override
-    public void instantiateObservationHandling() {
+    public void instantiateObservationHandlingFullySatisfied() {
         CSVLogger<TreeHeuristicQueueingEvent<PlaceNode>> queueSizeChanges = new CSVLogger<>("queue.csv", new String[]{"time", "place", "change", "queue.size delta"}, e -> new String[]{LocalDateTime.now().toString(), e.getSource()
                                                                                                                                                                                                                          .getProperties().toString(), e.getClass().getSimpleName(), Integer.toString(e.getDelta())});
 

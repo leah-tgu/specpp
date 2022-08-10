@@ -91,9 +91,9 @@ public class ShortCircuitingFitnessEvaluator extends AbstractComponentSystemUser
         while (postIt.hasNext() && preIt.hasNext()) {
             int postsetExecution = postIt.nextInt(), presetExecution = preIt.nextInt();
             acc += postsetExecution;
-            if (acc < 0) return BasicVariantFitnessStatus.UNDERFED;
+            if (acc < 0) return BasicVariantFitnessStatus.GOES_NEGATIVE;
             acc += presetExecution;
-            if (acc > 1) return BasicVariantFitnessStatus.OVERFED;
+            if (acc > 1) return BasicVariantFitnessStatus.NON_SAFE;
         }
         return acc == 0 ? BasicVariantFitnessStatus.FITTING : BasicVariantFitnessStatus.NOT_ENDING_ON_ZERO;
     }

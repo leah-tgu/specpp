@@ -185,8 +185,8 @@ public class DenseVariantMarkingHistories implements VariantMarkingHistories<Den
         int next = 0;
         while (it.hasNext()) {
             next = it.nextInt();
-            if (next < 0) return BasicVariantFitnessStatus.UNDERFED;
-            else if (next > 1) return BasicVariantFitnessStatus.OVERFED;
+            if (next < 0) return BasicVariantFitnessStatus.GOES_NEGATIVE;
+            else if (next > 1) return BasicVariantFitnessStatus.NON_SAFE;
         }
         return next == 0 ? BasicVariantFitnessStatus.FITTING : BasicVariantFitnessStatus.NOT_ENDING_ON_ZERO;
     }

@@ -13,8 +13,8 @@ public class FullBasicFitnessEvaluation implements CandidateEvaluation {
     public FullBasicFitnessEvaluation(EnumBitMasks<BasicVariantFitnessStatus> bitMasks) {
         this.bitMasks = bitMasks;
         int fittingCount = bitMasks.getBitMask(BasicVariantFitnessStatus.FITTING).cardinality();
-        int underfedCount = bitMasks.getBitMask(BasicVariantFitnessStatus.UNDERFED).cardinality();
-        int overfedCount = bitMasks.getBitMask(BasicVariantFitnessStatus.OVERFED).cardinality();
+        int underfedCount = bitMasks.getBitMask(BasicVariantFitnessStatus.GOES_NEGATIVE).cardinality();
+        int overfedCount = bitMasks.getBitMask(BasicVariantFitnessStatus.NON_SAFE).cardinality();
         int noEndingOnZeroCount = bitMasks.getBitMask(BasicVariantFitnessStatus.NOT_ENDING_ON_ZERO).cardinality();
         double sum = fittingCount + underfedCount + overfedCount + noEndingOnZeroCount;
         this.fractions = new EnumFractions<>(new double[]{fittingCount / sum, underfedCount / sum, overfedCount / sum, noEndingOnZeroCount / sum});
@@ -30,11 +30,11 @@ public class FullBasicFitnessEvaluation implements CandidateEvaluation {
     }
 
     public double getUnderfedVariantFraction() {
-        return fractions.getFraction(BasicVariantFitnessStatus.UNDERFED);
+        return fractions.getFraction(BasicVariantFitnessStatus.GOES_NEGATIVE);
     }
 
     public double getOverfedVariantFraction() {
-        return fractions.getFraction(BasicVariantFitnessStatus.OVERFED);
+        return fractions.getFraction(BasicVariantFitnessStatus.NON_SAFE);
     }
 
     public double getNotEndingOnZeroFraction() {
@@ -46,11 +46,11 @@ public class FullBasicFitnessEvaluation implements CandidateEvaluation {
     }
 
     public BitMask getUnderfedVariants() {
-        return bitMasks.getBitMask(BasicVariantFitnessStatus.UNDERFED);
+        return bitMasks.getBitMask(BasicVariantFitnessStatus.GOES_NEGATIVE);
     }
 
     public BitMask getOverfedVariants() {
-        return bitMasks.getBitMask(BasicVariantFitnessStatus.OVERFED);
+        return bitMasks.getBitMask(BasicVariantFitnessStatus.NON_SAFE);
     }
 
     public BitMask getNotEndingOnZeroVariants() {

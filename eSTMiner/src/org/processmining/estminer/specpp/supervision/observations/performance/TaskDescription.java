@@ -16,6 +16,7 @@ public class TaskDescription extends StringStatisticKey {
     public static final TaskDescription POST_PROCESSING = new TaskDescription("Post Processing");
     public static final TaskDescription PEC_CYCLE = new TaskDescription("PEC Cycle");
     public static final TaskDescription TOTAL_CYCLING = new TaskDescription("Total PEC Cycling");
+    public static final TaskDescription REPLAY_BASED_CONCURRENT_IMPLICITNESS = new TaskDescription("Concurrent Replay Based Implicitness");
 
     public TaskDescription(String description) {
         super(description);

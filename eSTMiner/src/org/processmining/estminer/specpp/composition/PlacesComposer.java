@@ -1,7 +1,6 @@
 package org.processmining.estminer.specpp.composition;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
-import org.processmining.estminer.specpp.base.MutableCappedComposition;
 import org.processmining.estminer.specpp.base.impls.AbstractConstrainingComposer;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
@@ -19,7 +18,6 @@ import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessS
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
-import org.processmining.estminer.specpp.base.ConstrainingComposer;
 
 /**
  * The base implementation of a {@code Composer} for candidates of type {@code Place}.
@@ -64,7 +62,7 @@ public class PlacesComposer<I extends AdvancedComposition<Place>> extends Abstra
     }
 
     protected boolean meetsUnderfedThreshold(AggregatedBasicFitnessEvaluation fitness) {
-        return fitness.getUnderfedFraction() >= fitnessThresholds.getData().getThreshold(BasicVariantFitnessStatus.UNDERFED);
+        return fitness.getUnderfedFraction() >= fitnessThresholds.getData().getThreshold(BasicVariantFitnessStatus.GOES_NEGATIVE);
     }
 
     protected boolean meetsFitnessThreshold(AggregatedBasicFitnessEvaluation fitness) {

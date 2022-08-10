@@ -19,7 +19,7 @@ public class DebuggingSupervisor extends SubSupervisor {
     }
 
     @Override
-    protected void instantiateObservationHandling() {
+    protected void instantiateObservationHandlingFullySatisfied() {
 
     }
 

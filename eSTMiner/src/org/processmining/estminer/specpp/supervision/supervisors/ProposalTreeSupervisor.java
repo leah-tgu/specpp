@@ -21,7 +21,7 @@ public class ProposalTreeSupervisor extends MonitoringSupervisor {
     }
 
     @Override
-    protected void instantiateObservationHandling() {
+    protected void instantiateObservationHandlingFullySatisfied() {
         createMonitor("tree.monitor", new TreeMonitor(paramSource.getData()));
         beginLaying()
                 .source(treeEvents)

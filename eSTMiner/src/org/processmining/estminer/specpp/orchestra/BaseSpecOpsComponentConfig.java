@@ -30,10 +30,8 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     public SupervisionConfiguration getSupervisionConfiguration(ComponentSystemAdapter csa) {
         return Configurators.supervisors()
                             .supervisor(BaseSupervisor::new)
-                            .supervisor(DetailedHeuristicsSupervisor::new)
-                            .supervisor(DetailedTreeSupervisor::new)
-                            .supervisor(DebuggingSupervisor::new)
-                            .supervisor(ProposalTreeSupervisor::new)
+                            .supervisor(PerformanceSupervisor::new)
+                            .supervisor(AltEventCountsSupervisor::new)
                             .supervisor(TerminalSupervisor::new)
                             .build(csa);
     }

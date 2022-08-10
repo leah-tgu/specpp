@@ -42,10 +42,10 @@ public class Playground {
     public static void play(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource) {
         SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = SpecOpsSetup.specOps(configBundleSource, inputDataBundleSource);
 
-        // ========================================= //
-
         System.out.println("// ========================================= //");
         System.out.println("POST EXECUTION");
+
+        // ========================================= //
 
         ComponentRepository cr = specPP.getComponentRepository();
 
@@ -60,7 +60,7 @@ public class Playground {
 
         Evaluator<Place, FullBasicFitnessEvaluation> fullBasicFitnessEvaluator = ec.askForEvaluator(EvaluationRequirements.FULL_PLACE_FITNESS);
 
-        playAround(cr, new NaivePlacemaker(transitionEncodings), historiesEvaluator, aggregatedBasicFitnessEvaluator, fullBasicFitnessEvaluator);
+        //playAround(cr, new NaivePlacemaker(transitionEncodings), historiesEvaluator, aggregatedBasicFitnessEvaluator, fullBasicFitnessEvaluator);
     }
 
     public static void playAround(ComponentRepository cr, NaivePlacemaker placemaker, Evaluator<Place, DenseVariantMarkingHistories> markingHistoriesEvaluator, Evaluator<Place, AggregatedBasicFitnessEvaluation> basicFitnessFractionsEvaluator, Evaluator<Place, FullBasicFitnessEvaluation> fullBasicFitnessEvaluator) {
@@ -69,9 +69,6 @@ public class Playground {
         System.out.println("Log");
         data.stream().limit(10).forEach(System.out::println);
         System.out.println();
-
-        ChangeTree<Place> cht = cr.dataSources()
-                                  .askForData(DataRequirements.dataSource("ChangeTree", JavaTypingUtils.<ChangeTree<Place>>castClass(ChangeTree.class)));
 
         Place p1 = placemaker.preset("place order", "send reminder")
                              .postset("cancel order", "pay", "send reminder")

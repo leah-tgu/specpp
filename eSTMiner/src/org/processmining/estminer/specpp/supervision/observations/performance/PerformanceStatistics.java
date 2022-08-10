@@ -1,10 +1,11 @@
 package org.processmining.estminer.specpp.supervision.observations.performance;
 
 import org.processmining.estminer.specpp.supervision.observations.Statistics;
+import org.processmining.estminer.specpp.traits.PrettyPrintable;
 
 import java.util.Map;
 
-public class PerformanceStatistics extends Statistics<TaskDescription, PerformanceStatistic> {
+public class PerformanceStatistics extends Statistics<TaskDescription, PerformanceStatistic> implements PrettyPrintable {
 
     public PerformanceStatistics() {
     }
@@ -16,5 +17,10 @@ public class PerformanceStatistics extends Statistics<TaskDescription, Performan
     @Override
     public String toString() {
         return "PerformanceStatistics:" + super.toString();
+    }
+
+    @Override
+    public String toPrettyString() {
+        return "Performance " + super.toPrettyString();
     }
 }

@@ -6,7 +6,7 @@ import org.processmining.estminer.specpp.config.Configurators;
 import org.processmining.estminer.specpp.config.GeneratingTreeConfiguration;
 import org.processmining.estminer.specpp.config.SupervisionConfiguration;
 import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.InstrumentedEnumeratingTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.VariableExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
@@ -32,13 +32,12 @@ public class LightweightSpecOpsComponentConfig extends BaseSpecOpsComponentConfi
                             .build(csa);
     }
 
-
     @Override
     public GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentSystemAdapter csa) {
         return Configurators.<PlaceNode, PlaceGenerator>generatingTree()
                             .generator(new MonotonousPlaceGenerator.Builder())
                             .expansionStrategy(VariableExpansion::bfs)
-                            .tree(InstrumentedEnumeratingTree::new)
+                            .tree(EnumeratingTree::new)
                             .build(csa);
     }
 

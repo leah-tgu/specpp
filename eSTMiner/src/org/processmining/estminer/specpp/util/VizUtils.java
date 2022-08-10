@@ -3,6 +3,8 @@ package org.processmining.estminer.specpp.util;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.supervision.observations.Visualization;
 import org.processmining.graphvisualizers.algorithms.GraphVisualizerAlgorithm;
+import org.processmining.graphvisualizers.parameters.GraphVisualizerParameters;
+import org.processmining.graphvisualizers.plugins.GraphVisualizerPlugin;
 
 import javax.swing.*;
 
