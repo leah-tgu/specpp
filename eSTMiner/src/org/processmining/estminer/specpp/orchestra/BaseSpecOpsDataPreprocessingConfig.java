@@ -32,7 +32,6 @@ public class BaseSpecOpsDataPreprocessingConfig implements SpecOpsDataPreprocess
         dc.register(DataRequirements.ENC_LOG, of(multiEncodedLog));
         dc.register(DataRequirements.CONSIDERED_VARIANTS, of(multiEncodedLog.variantIndices()));
         dc.register(DataRequirements.ENC_TRANS, of(transitionEncodings));
-        dc.register(ParameterRequirements.FITNESS_THRESHOLDS, of(FitnessThresholds.exhaustive(1)));
     }
 
 }

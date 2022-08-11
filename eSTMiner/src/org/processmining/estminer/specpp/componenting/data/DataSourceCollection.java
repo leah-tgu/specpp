@@ -4,6 +4,8 @@ import org.processmining.estminer.specpp.componenting.system.ComponentType;
 import org.processmining.estminer.specpp.componenting.system.FulfilledRequirement;
 import org.processmining.estminer.specpp.componenting.system.FulfilledRequirementsCollection;
 
+import java.util.List;
+
 public class DataSourceCollection extends FulfilledRequirementsCollection<DataRequirement<?>> {
 
 
@@ -25,4 +27,9 @@ public class DataSourceCollection extends FulfilledRequirementsCollection<DataRe
         return (((FulfilledDataRequirement<T>) fulfilledRequirement)).getContent().getData();
     }
 
+    public void registerAll(List<FulfilledDataRequirement<?>> listOf) {
+        for (FulfilledDataRequirement<?> fulfilledDataRequirement : listOf) {
+            register(fulfilledDataRequirement);
+        }
+    }
 }

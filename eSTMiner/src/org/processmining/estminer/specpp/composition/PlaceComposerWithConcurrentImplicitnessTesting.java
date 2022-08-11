@@ -8,6 +8,8 @@ import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
+import org.processmining.estminer.specpp.evaluation.fitness.DerivedVariantFitnessStatus;
 import org.processmining.estminer.specpp.evaluation.implicitness.*;
 
 /**
@@ -37,10 +39,10 @@ public class PlaceComposerWithConcurrentImplicitnessTesting<I extends AdvancedCo
     @Override
     protected boolean deliberateAcceptance(Place candidate) {
         AggregatedBasicFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
-        if (meetsUnderfedThreshold(fitness)) {
+        if (meetsThreshold(fitness, BasicVariantFitnessStatus.GOES_NEGATIVE)) {
             publishConstraint(new ClinicallyUnderfedPlace(candidate));
             return false;
-        } else if (meetsFitnessThreshold(fitness)) {
+        } else if (meetsThreshold(fitness, DerivedVariantFitnessStatus.FEASIBLE)) {
             ImplicitnessRating rating = implicitnessEvaluator.eval(candidate);
             if (rating instanceof ReplaceExaminedPlace) {
                 return false;

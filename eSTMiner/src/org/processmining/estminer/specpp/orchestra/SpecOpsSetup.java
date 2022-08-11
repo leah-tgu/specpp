@@ -63,7 +63,7 @@ public class SpecOpsSetup {
         Set<Activity> activities = data.getMapping().keySet();
         int activityCount = activities.size();
         BigInteger p_total = BigInteger.valueOf(4).pow(activityCount);
-        System.out.println("2x2^|A|=" + p_total);
+        System.out.println("(2^|A|)^2=" + p_total);
         BigInteger cutoff = BigInteger.valueOf(2).pow(activityCount - 2 + activityCount);
         BigInteger p_remaining = p_total.subtract(cutoff);
         System.out.println("cutoff=" + cutoff);
@@ -74,9 +74,7 @@ public class SpecOpsSetup {
         log.stream()
            .sorted(Comparator.comparingInt(ii -> -log.getVariantFrequency(ii.getIndex())))
            .limit(7)
-           .forEach(ii -> {
-               System.out.println(log.getVariantFrequency(ii.getIndex()) + "\t" + ii.getVariant());
-           });
+           .forEach(ii -> System.out.println(log.getVariantFrequency(ii.getIndex()) + "\t" + ii.getVariant()));
     }
 
 

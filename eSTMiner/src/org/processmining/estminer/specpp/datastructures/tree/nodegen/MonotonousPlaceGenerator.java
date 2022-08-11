@@ -296,13 +296,16 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
     }
 
     /**
-     * Clears the potential expansions of type {@code expansionType} of PlaceNode {@code node}, thus cutting of the corresponding subtree.
+     * Clears the potential expansions of type {@code expansionType} of PlaceNode {@code node}, thus cutting off the corresponding subtree.
      *
      * @param node
      * @param expansionType
      */
     public void cullChildren(PlaceNode node, ExpansionType expansionType) {
-        node.getState().getPotentialExpansions(expansionType).clear();
+        BitMask potentialExpansions = node.getState().getPotentialExpansions(expansionType);
+        int cardinality = potentialExpansions.cardinality();
+
+        potentialExpansions.clear();
     }
 
     /**

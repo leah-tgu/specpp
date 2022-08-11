@@ -10,6 +10,8 @@ import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.vectorization.IVSComputations;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 import org.processmining.estminer.specpp.datastructures.vectorization.OrderingRelation;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedBitMaskSplitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedSplitty;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
 import org.processmining.estminer.specpp.util.StreamUtils;
 
@@ -153,6 +155,15 @@ public class DenseVariantMarkingHistories implements VariantMarkingHistories<Den
     @Override
     public BitMask computeNonnegativeAmong(BitMask variantMask) {
         return BitMask.of(indexSubset.unmapIndices(markingHistories.vectorwisePredicateStream(indexSubset.mapIndices(variantMask.stream()), isNonnegativeMarkingHistory)));
+    }
+
+    public Spliterator<IndexedItem<Spliterator.OfInt>> spliterator() {
+        return new IndexedSplitty(markingHistories, 0, indexSubset.getIndexCount(), indexSubset::unmapIndex);
+    }
+
+    public Spliterator<IndexedItem<Spliterator.OfInt>> spliterator(BitMask bitMask) {
+        BitMask mask = indexSubset.mapIndices(bitMask);
+        return new IndexedBitMaskSplitty(markingHistories, mask, 0, mask.cardinality(), indexSubset::unmapIndex);
     }
 
     public Spliterator<BasicVariantFitnessStatus> basicFitnessComputation() {

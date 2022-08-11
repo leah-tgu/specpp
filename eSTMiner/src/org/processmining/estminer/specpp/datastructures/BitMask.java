@@ -20,9 +20,9 @@ public class BitMask extends BitSet implements Copyable<BitMask>, SetQueries<Bit
         return isSubsetOf(other);
     }
 
-    public static BitMask completelySet(int size) {
-        BitMask mask = new BitMask(size);
-        mask.set(0, size - 1);
+    public static BitMask completelySet(int exclusiveUpperLimit) {
+        BitMask mask = new BitMask(exclusiveUpperLimit);
+        mask.set(0, exclusiveUpperLimit - 1);
         return mask;
     }
 

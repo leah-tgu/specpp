@@ -16,7 +16,7 @@ public class EnumFractions<E extends Enum<E>> {
 
     @Override
     public String toString() {
-        return "EnumFractions{" + Arrays.toString(fractions) + "}";
+        return "EnumFractions(" + Arrays.toString(fractions) + ")";
     }
 
 }

@@ -1,25 +1,19 @@
 package org.processmining.estminer.specpp.config.parameters;
 
 import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
+import org.processmining.estminer.specpp.evaluation.fitness.DerivedVariantFitnessStatus;
 
 import java.util.Arrays;
 
 public class FitnessThresholds implements Parameters {
-
-    public static FitnessThresholds ACCEPT_ALL_NON_COMPLETELY_UNDERFED = exhaustive(0);
-
     private final double[] thresholds;
 
-    public static FitnessThresholds strictUnderfedCulling(double fullyFittingThreshold) {
-        return new FitnessThresholds(fullyFittingThreshold, 1e-8, 0, 0);
-    }
-
     public static FitnessThresholds tau(double t) {
-        return new FitnessThresholds(t, 1, 0, 0);
+        return new FitnessThresholds(t, 1 - t, 1 - t, 1 - t);
     }
 
-    public static FitnessThresholds exhaustive(double fullyFittingThreshold) {
-        return new FitnessThresholds(fullyFittingThreshold, 1, 0, 0);
+    public static FitnessThresholds unsafe_feasible(double tau) {
+        return new FitnessThresholds(tau, 1 - tau, tau, 1 - tau);
     }
 
     public FitnessThresholds(double fittingFractionThreshold, double goesNegativeFractionThreshold, double nonSafeFractionThreshold, double notEndingOnZeroThreshold) {
@@ -31,8 +25,13 @@ public class FitnessThresholds implements Parameters {
         return thresholds[basicVariantFitnessStatus.ordinal()];
     }
 
+
+    public double getThreshold(DerivedVariantFitnessStatus derivedVariantFitnessStatus) {
+        return derivedVariantFitnessStatus.thresholdFunc.applyAsDouble(this);
+    }
+
     @Override
     public String toString() {
-        return "FitnessThresholds{" + "thresholds=" + Arrays.toString(thresholds) + '}';
+        return "FitnessThresholds(" + Arrays.toString(thresholds) + ')';
     }
 }

@@ -16,20 +16,12 @@ public class AggregatedBasicFitnessEvaluation extends EnumFractions<BasicVariant
         assert fractions.length == BasicVariantFitnessStatus.values().length;
     }
 
-    public double getUnderfedFraction() {
-        return getFraction(BasicVariantFitnessStatus.GOES_NEGATIVE);
+    public double getFraction(BasicVariantFitnessStatus basicVariantFitnessStatus) {
+        return fractions[basicVariantFitnessStatus.ordinal()];
     }
 
-    public double getOverfedFraction() {
-        return getFraction(BasicVariantFitnessStatus.NON_SAFE);
-    }
-
-    public double getNotEndingOnZeroFraction() {
-        return getFraction(BasicVariantFitnessStatus.NOT_ENDING_ON_ZERO);
-    }
-
-    public double getFittingFraction() {
-        return getFraction(BasicVariantFitnessStatus.FITTING);
+    public double getFraction(DerivedVariantFitnessStatus derivedVariantFitnessStatus) {
+        return derivedVariantFitnessStatus.measurementFunc.applyAsDouble(this);
     }
 
 }

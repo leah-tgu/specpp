@@ -1,12 +1,19 @@
 package org.processmining.estminer.specpp.datastructures.vectorization;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.BitMaskSplitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedBitMaskSplitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedSplitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.Splitty;
 import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.PartiallyOrdered;
 import org.processmining.estminer.specpp.util.StreamUtils;
 
 import java.util.Arrays;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntUnaryOperator;
@@ -16,6 +23,8 @@ import java.util.stream.Stream;
 
 public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<IntVectorStorage>, Mappable<IntUnaryOperator>, PartiallyOrdered<IntVectorStorage> {
 
+
+    public static final int MIN_SPLIT_VECTOR_COUNT = 2;
     final int[] startIndices;
     final int[] storage;
 
@@ -24,13 +33,13 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
         this.startIndices = startIndices;
     }
 
-    public static IntVectorStorage of(int[] data, int[] lengths) {
+    public static IntVectorStorage zeros(int[] data, int[] lengths) {
         int[] startIndices = ArrayUtils.addFirst(lengths, 0);
         Arrays.parallelPrefix(startIndices, Integer::sum);
         return new IntVectorStorage(data, startIndices);
     }
 
-    public static IntVectorStorage of(int[] lengths) {
+    public static IntVectorStorage zeros(int[] lengths) {
         int[] startIndices = ArrayUtils.addFirst(lengths, 0);
         Arrays.parallelPrefix(startIndices, Integer::sum);
         return new IntVectorStorage(new int[startIndices[lengths.length]], startIndices);
@@ -58,9 +67,9 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
         return startIndices[index + 1] - startIndices[index];
     }
 
-    public int[] getVector(int index) {
+    public Spliterator.OfInt getVector(int index) {
         assert isValidVectorIndex(index);
-        return Arrays.copyOfRange(storage, startIndices[index], startIndices[index + 1]);
+        return Spliterators.spliterator(storage, startIndices[index], startIndices[index + 1], Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL | Spliterator.CONCURRENT);
     }
 
     public void setVectorElement(int index, int elementIndex, int value) {
@@ -182,6 +191,24 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
     @Override
     public boolean lt(IntVectorStorage other) {
         return IVSComputations.ltOn(indexStream(), this, other.indexStream(), other);
+    }
+
+    public Spliterator<Spliterator.OfInt> spliterator() {
+        return new Splitty(this, 0, getVectorCount());
+    }
+
+    public Spliterator<IndexedItem<Spliterator.OfInt>> indexedSpliterator() {
+        return new IndexedSplitty(this, 0, getVectorCount(), IntUnaryOperator.identity());
+    }
+
+    public Spliterator<Spliterator.OfInt> spliterator(BitMask bitMask) {
+        assert bitMask.length() <= getVectorCount();
+        return new BitMaskSplitty(this, bitMask, 0, bitMask.cardinality());
+    }
+
+    public Spliterator<IndexedItem<Spliterator.OfInt>> indexedSpliterator(BitMask bitMask) {
+        assert bitMask.length() <= getVectorCount();
+        return new IndexedBitMaskSplitty(this, bitMask, 0, bitMask.cardinality(), IntUnaryOperator.identity());
     }
 
 }

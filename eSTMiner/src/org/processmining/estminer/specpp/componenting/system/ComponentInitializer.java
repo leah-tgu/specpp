@@ -50,6 +50,16 @@ public class ComponentInitializer extends AbstractComponentSystemUser {
         }
     }
 
+    public <T> void overridingAbsorb(T other) {
+        if (other instanceof FulfilledRequirementsCollection) {
+            componentSystemAdapter.overridingAbsorb((FulfilledRequirementsCollection<?>) other);
+        } else if (other instanceof ProvisionsComponents) {
+            componentSystemAdapter.overridingAbsorb((ProvisionsComponents) other);
+        } else if (other instanceof UsesComponentSystem) {
+            overridingAbsorb(((UsesComponentSystem) other).componentSystemAdapter());
+        }
+    }
+
     public <T> T checkoutAndAbsorb(T other) {
         checkout(other);
         absorb(other);

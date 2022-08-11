@@ -9,6 +9,7 @@ import org.processmining.estminer.specpp.componenting.traits.RequiresComponents;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @SuppressWarnings({"rawuse", "unchecked"})
 public class ComponentSystemAdapter implements RequiresComponents, ProvisionsComponents {
@@ -86,12 +87,6 @@ public class ComponentSystemAdapter implements RequiresComponents, ProvisionsCom
         instantiateFrom(fulfilledRequirement);
     }
 
-    public void absorb(ProvisionsComponents other) {
-        for (FulfilledRequirementsCollection<?> frp : other.componentProvisions().values()) {
-            absorb(frp);
-        }
-    }
-
     public <R extends Requirement<?, R>> boolean alreadySatisfies(FulfilledRequirement<?, R> fulfilledRequirement) {
         ComponentType componentType = fulfilledRequirement.componentType();
         R comparable = fulfilledRequirement.getComparable();
@@ -104,6 +99,48 @@ public class ComponentSystemAdapter implements RequiresComponents, ProvisionsCom
                                                                                     .filter(f -> comparableClass.isAssignableFrom(f.getComparable()
                                                                                                                                    .getClass()))
                                                                                     .anyMatch(f -> comparable.lt(comparableClass.cast(f.getComparable())));
+    }
+
+    public <R extends Requirement<?, R>> boolean removeExisting(FulfilledRequirement<?, R> fulfilledRequirement) {
+        ComponentType componentType = fulfilledRequirement.componentType();
+        R comparable = fulfilledRequirement.getComparable();
+        Class<R> comparableClass = (Class<R>) comparable.getClass();
+        if (componentProvisions.containsKey(componentType)) {
+            List<? extends FulfilledRequirement<?, ?>> existing = componentProvisions.get(componentType)
+                                                                                     .fulfilledRequirements()
+                                                                                     .stream()
+                                                                                     .filter(f -> f.contentClass()
+                                                                                                   .isAssignableFrom(fulfilledRequirement.contentClass()))
+                                                                                     .filter(f -> comparableClass.isAssignableFrom(f.getComparable()
+                                                                                                                                    .getClass()))
+                                                                                     .filter(f -> comparable.lt(comparableClass.cast(f.getComparable())))
+                                                                                     .collect(Collectors.toList());
+            System.out.println("REMOVING" + fulfilledRequirement);
+            System.out.println(existing);
+            componentProvisions.get(componentType).fulfilledRequirements().removeAll(existing);
+            System.out.println(componentProvisions.get(componentType).fulfilledRequirements());
+            return !existing.isEmpty();
+        }
+        return false;
+    }
+
+    public <R extends Requirement<?, R>> void overridingAbsorb(FulfilledRequirementsCollection<R> frp) {
+        for (FulfilledRequirement<?, R> fulfilledRequirement : frp.fulfilledRequirements()) {
+            removeExisting(fulfilledRequirement);
+            if (!alreadySatisfies(fulfilledRequirement)) provide(fulfilledRequirement);
+        }
+    }
+
+    public void overridingAbsorb(ProvisionsComponents other) {
+        for (FulfilledRequirementsCollection<?> frp : other.componentProvisions().values()) {
+            overridingAbsorb(frp);
+        }
+    }
+
+    public void absorb(ProvisionsComponents other) {
+        for (FulfilledRequirementsCollection<?> frp : other.componentProvisions().values()) {
+            absorb(frp);
+        }
     }
 
     public <R extends Requirement<?, R>> void absorb(FulfilledRequirementsCollection<R> frp) {

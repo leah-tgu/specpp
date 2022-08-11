@@ -1,3 +1,4 @@
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.IteratorUtils;
@@ -34,13 +35,11 @@ import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorS
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
 import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
+import org.processmining.estminer.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.estminer.specpp.preprocessing.*;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
-import org.processmining.estminer.specpp.util.HardcodedTestInput;
-import org.processmining.estminer.specpp.util.JavaTypingUtils;
-import org.processmining.estminer.specpp.util.Placemaker;
-import org.processmining.estminer.specpp.util.Reflection;
+import org.processmining.estminer.specpp.util.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -163,8 +162,8 @@ public class Main {
 
     @Test
     public void ivs_math() {
-        IntVectorStorage ivs1 = IntVectorStorage.of(new int[]{1, 1, 0, -2, 1, 2, -1, 0, 0, 1, 1, 1, 1, -1, 1}, new int[]{3, 4, 8});
-        IntVectorStorage ivs2 = IntVectorStorage.of(new int[]{0, 1, 1, -1, 0, 1, 0, -1, 0, -2, 1, 2, 1, -1, 0}, new int[]{3, 4, 8});
+        IntVectorStorage ivs1 = IntVectorStorage.zeros(new int[]{1, 1, 0, -2, 1, 2, -1, 0, 0, 1, 1, 1, 1, -1, 1}, new int[]{3, 4, 8});
+        IntVectorStorage ivs2 = IntVectorStorage.zeros(new int[]{0, 1, 1, -1, 0, 1, 0, -1, 0, -2, 1, 2, 1, -1, 0}, new int[]{3, 4, 8});
 
         System.out.println(ivs1);
         System.out.println(ivs2);
@@ -245,8 +244,8 @@ public class Main {
 
     @Test
     public void indexSubsetMapping() {
-        IntVectorStorage ivs1 = IntVectorStorage.of(new int[]{1, 1, 0, -2, 1, 2, -1, /*from*/ 0, 0, 1, 1, 1, 0, -1, /*to*/ 1}, new int[]{3, 4, 7, 1});
-        IntVectorStorage ivs2 = IntVectorStorage.of(new int[]{1, 1, 0, -2, 1, 2, -1, /*from*/ 0, 0, 1, 1, 1, 0, -1, /*to*/ 1}, new int[]{7, 7, 1});
+        IntVectorStorage ivs1 = IntVectorStorage.zeros(new int[]{1, 1, 0, -2, 1, 2, -1, /*from*/ 0, 0, 1, 1, 1, 0, -1, /*to*/ 1}, new int[]{3, 4, 7, 1});
+        IntVectorStorage ivs2 = IntVectorStorage.zeros(new int[]{1, 1, 0, -2, 1, 2, -1, /*from*/ 0, 0, 1, 1, 1, 0, -1, /*to*/ 1}, new int[]{7, 7, 1});
 
         IndexSubset s1 = IndexSubset.of(BitMask.of(0, 1, 2, 3));
         IndexSubset s2 = IndexSubset.of(BitMask.of(1, 2, 5));
@@ -370,6 +369,30 @@ public class Main {
             System.out.println(instance.build());
         }
 
+    }
+
+    @Test
+    public void selfLoopMerging() {
+        InputDataBundle dummyInputBundle = HardcodedTestInput.getDummyInputBundle("a", "b", "c", "d");
+
+
+        NaivePlacemaker placemaker = new NaivePlacemaker(dummyInputBundle.getTransitionEncodings());
+        Place p1 = placemaker.preset("a", "b").postset("b", "c").get();
+        Place p2 = placemaker.preset("a").postset("c").get();
+        Place p3 = placemaker.preset("b").postset("b", "d").get();
+
+        System.out.println(p1);
+        System.out.println(p2);
+        System.out.println(p3);
+        System.out.println(p1.nonSelfLoops().setEquality(p2.nonSelfLoops()));
+        System.out.println(p1.nonSelfLoops().setEquality(p3.nonSelfLoops()));
+        System.out.println(p2.nonSelfLoops().setEquality(p3.nonSelfLoops()));
+
+        SelfLoopPlaceMerger slpm = new SelfLoopPlaceMerger();
+
+        PetriNet pn = new PetriNet(ImmutableSet.of(p1, p2, p3));
+        System.out.println(pn);
+        System.out.println(slpm.postProcess(pn));
     }
 
 

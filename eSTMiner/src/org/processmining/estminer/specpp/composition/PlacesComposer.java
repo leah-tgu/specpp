@@ -15,6 +15,7 @@ import org.processmining.estminer.specpp.datastructures.tree.constraints.Clinica
 import org.processmining.estminer.specpp.datastructures.tree.constraints.RemoveWiredPlace;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
+import org.processmining.estminer.specpp.evaluation.fitness.DerivedVariantFitnessStatus;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
@@ -55,18 +56,33 @@ public class PlacesComposer<I extends AdvancedComposition<Place>> extends Abstra
     @Override
     protected boolean deliberateAcceptance(Place candidate) {
         AggregatedBasicFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
-        if (meetsUnderfedThreshold(fitness)) {
+        if (meetsThreshold(fitness, BasicVariantFitnessStatus.GOES_NEGATIVE)) {
             publishConstraint(new ClinicallyUnderfedPlace(candidate));
             return false;
-        } else return meetsFitnessThreshold(fitness);
+        } else return meetsThreshold(fitness, DerivedVariantFitnessStatus.FEASIBLE);
     }
 
     protected boolean meetsUnderfedThreshold(AggregatedBasicFitnessEvaluation fitness) {
-        return fitness.getUnderfedFraction() >= fitnessThresholds.getData().getThreshold(BasicVariantFitnessStatus.GOES_NEGATIVE);
+        return meetsThreshold(fitness, BasicVariantFitnessStatus.GOES_NEGATIVE);
     }
 
     protected boolean meetsFitnessThreshold(AggregatedBasicFitnessEvaluation fitness) {
-        return fitness.getFittingFraction() >= fitnessThresholds.getData().getThreshold(BasicVariantFitnessStatus.FITTING);
+        return meetsThreshold(fitness, BasicVariantFitnessStatus.FITTING);
+    }
+
+    protected boolean meetsFeasibilityThreshold(AggregatedBasicFitnessEvaluation fitness) {
+        return fitness.getFraction(DerivedVariantFitnessStatus.FEASIBLE) >= fitnessThresholds.getData()
+                                                                                             .getThreshold(DerivedVariantFitnessStatus.FEASIBLE);
+    }
+
+    protected boolean meetsThreshold(AggregatedBasicFitnessEvaluation fitness, BasicVariantFitnessStatus basicVariantFitnessStatus) {
+        return fitness.getFraction(basicVariantFitnessStatus) >= fitnessThresholds.getData()
+                                                                                  .getThreshold(basicVariantFitnessStatus);
+    }
+
+    protected boolean meetsThreshold(AggregatedBasicFitnessEvaluation fitness, DerivedVariantFitnessStatus derivedVariantFitnessStatus) {
+        return fitness.getFraction(derivedVariantFitnessStatus) >= fitnessThresholds.getData()
+                                                                                    .getThreshold(derivedVariantFitnessStatus);
     }
 
     @Override

@@ -43,9 +43,9 @@ public class LPBasedImplicitnessCalculator {
 
         int[] lengths = new int[places.size()];
         Arrays.fill(lengths, allTransitions.size());
-        IntVectorStorage preIncidence = IntVectorStorage.of(lengths);
-        IntVectorStorage postIncidence = IntVectorStorage.of(lengths);
-        IntVectorStorage incidence = IntVectorStorage.of(lengths);
+        IntVectorStorage preIncidence = IntVectorStorage.zeros(lengths);
+        IntVectorStorage postIncidence = IntVectorStorage.zeros(lengths);
+        IntVectorStorage incidence = IntVectorStorage.zeros(lengths);
 
         IntStream.range(0, places.size()).forEach(i -> {
             Place p = places.get(i);

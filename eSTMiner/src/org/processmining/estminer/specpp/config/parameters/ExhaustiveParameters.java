@@ -5,11 +5,10 @@ import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 
-public class ParameterDefaults extends AbstractComponentSystemUser implements ProvidesParameters {
+public class ExhaustiveParameters extends AbstractComponentSystemUser implements ProvidesParameters {
 
-    public ParameterDefaults() {
-        componentSystemAdapter().provide(ParameterRequirements.parameters(ParameterRequirements.FITNESS_THRESHOLDS, StaticDataSource.of(FitnessThresholds.exhaustive(1))))
-                                .provide(ParameterRequirements.parameters("tree.tracker.parameters", TreeTrackerParameters.class, StaticDataSource.of(TreeTrackerParameters.getDefault())))
+    public ExhaustiveParameters() {
+        componentSystemAdapter().provide(ParameterRequirements.parameters(ParameterRequirements.FITNESS_THRESHOLDS, StaticDataSource.of(FitnessThresholds.tau(1))))
                                 .provide(ParameterRequirements.parameters("placegenerator.parameters", PlaceGeneratorParameters.class, StaticDataSource.of(PlaceGeneratorParameters.getDefault())));
     }
 
