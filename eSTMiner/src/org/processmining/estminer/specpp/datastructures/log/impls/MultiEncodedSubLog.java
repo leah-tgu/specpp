@@ -12,7 +12,7 @@ public class MultiEncodedSubLog extends MultiEncodedLog implements OnlyCoversInd
 
     protected final IndexSubset indexSubset;
 
-    protected MultiEncodedSubLog(IndexSubset indexSubset, EncodedSubLog presetEncodedLog, EncodedSubLog postsetEncodedLog, IntEncodings<Activity> activityEncodings) {
+    protected MultiEncodedSubLog(IndexSubset indexSubset, EncodedSubLogImpl presetEncodedLog, EncodedSubLogImpl postsetEncodedLog, IntEncodings<Activity> activityEncodings) {
         super(presetEncodedLog, postsetEncodedLog, activityEncodings);
         assert presetEncodedLog.getIndexSubset().setEquality(postsetEncodedLog.getIndexSubset());
         this.indexSubset = indexSubset;

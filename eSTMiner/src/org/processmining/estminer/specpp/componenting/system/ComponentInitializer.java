@@ -19,18 +19,18 @@ public class ComponentInitializer extends AbstractComponentSystemUser {
         if (other instanceof RequiresComponents || other instanceof FulfilledRequirementsCollection || other instanceof ProvisionsComponents) {
             if (other instanceof RequiresComponents) {
                 RequiresComponents requiresComponents = (RequiresComponents) other;
-                componentSystemAdapter.fulfil(requiresComponents);
+                componentSystemAdapter().fulfil(requiresComponents);
             }
             if (other instanceof FulfilledRequirementsCollection) {
                 FulfilledRequirementsCollection<?> frp = (FulfilledRequirementsCollection<?>) other;
-                componentSystemAdapter.fulfilFrom(frp);
-                if (frp instanceof IsGlobalProvider) componentSystemAdapter.absorb(frp);
+                componentSystemAdapter().fulfilFrom(frp);
+                if (frp instanceof IsGlobalProvider) componentSystemAdapter().absorb(frp);
             }
             if (other instanceof ProvisionsComponents) {
                 ProvisionsComponents provisionsComponents = (ProvisionsComponents) other;
                 for (FulfilledRequirementsCollection<?> frp : provisionsComponents.componentProvisions().values()) {
-                    componentSystemAdapter.fulfilFrom(frp);
-                    if (frp instanceof IsGlobalProvider) componentSystemAdapter.absorb(frp);
+                    componentSystemAdapter().fulfilFrom(frp);
+                    if (frp instanceof IsGlobalProvider) componentSystemAdapter().absorb(frp);
                 }
             }
         } else if (other instanceof UsesComponentSystem) {
@@ -42,9 +42,9 @@ public class ComponentInitializer extends AbstractComponentSystemUser {
 
     public <T> void absorb(T other) {
         if (other instanceof FulfilledRequirementsCollection) {
-            componentSystemAdapter.absorb((FulfilledRequirementsCollection<?>) other);
+            componentSystemAdapter().absorb((FulfilledRequirementsCollection<?>) other);
         } else if (other instanceof ProvisionsComponents) {
-            componentSystemAdapter.absorb((ProvisionsComponents) other);
+            componentSystemAdapter().absorb((ProvisionsComponents) other);
         } else if (other instanceof UsesComponentSystem) {
             absorb(((UsesComponentSystem) other).componentSystemAdapter());
         }
@@ -52,9 +52,9 @@ public class ComponentInitializer extends AbstractComponentSystemUser {
 
     public <T> void overridingAbsorb(T other) {
         if (other instanceof FulfilledRequirementsCollection) {
-            componentSystemAdapter.overridingAbsorb((FulfilledRequirementsCollection<?>) other);
+            componentSystemAdapter().overridingAbsorb((FulfilledRequirementsCollection<?>) other);
         } else if (other instanceof ProvisionsComponents) {
-            componentSystemAdapter.overridingAbsorb((ProvisionsComponents) other);
+            componentSystemAdapter().overridingAbsorb((ProvisionsComponents) other);
         } else if (other instanceof UsesComponentSystem) {
             overridingAbsorb(((UsesComponentSystem) other).componentSystemAdapter());
         }

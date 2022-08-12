@@ -7,6 +7,7 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvalu
 import org.processmining.estminer.specpp.componenting.system.ComponentType;
 import org.processmining.estminer.specpp.componenting.system.Requirement;
 import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
+import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
@@ -17,7 +18,7 @@ public class EvaluatorRequirement<I extends Evaluable, E extends Evaluation> ext
     private final Class<E> evaluationClass;
 
     public EvaluatorRequirement(Class<I> evaluableClass, Class<E> evaluationClass) {
-        super(new Tuple2<>(evaluableClass, evaluationClass));
+        super(new ImmutableTuple2<>(evaluableClass, evaluationClass));
         this.evaluableClass = evaluableClass;
         this.evaluationClass = evaluationClass;
     }

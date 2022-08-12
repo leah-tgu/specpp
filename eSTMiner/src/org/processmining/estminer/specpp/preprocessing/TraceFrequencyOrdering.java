@@ -6,6 +6,7 @@ import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.impls.IndexedVariant;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.util.Counter;
+import org.processmining.estminer.specpp.datastructures.util.ImmutablePair;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
 
 import java.util.Comparator;
@@ -34,6 +35,6 @@ public class TraceFrequencyOrdering extends TransitionEncodingsBuilder {
 
         Comparator<Activity> reversed = Comparator.<Activity>comparingInt(counter::get).reversed();
 
-        return new Pair<>(reversed, reversed);
+        return new ImmutablePair<>(reversed, reversed);
     }
 }

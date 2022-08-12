@@ -9,23 +9,21 @@ import java.util.stream.IntStream;
 public class IntVector implements Copyable<IntVector> {
 
     private final int[] internal;
+    private final int total;
 
 
-    public IntVector(int length) {
-        internal = new int[length];
-    }
-
-    protected IntVector(int[] internal) {
+    protected IntVector(int[] internal, int sum) {
         this.internal = internal;
+        total = sum;
     }
 
     public static IntVector of(int[] frequencies) {
-        return new IntVector(Arrays.copyOf(frequencies, frequencies.length));
+        return new IntVector(Arrays.copyOf(frequencies, frequencies.length), Arrays.stream(frequencies).sum());
     }
 
     @Override
     public IntVector copy() {
-        return new IntVector(internal);
+        return new IntVector(internal, total);
     }
 
     public IntStream view() {

@@ -2,6 +2,7 @@ package org.processmining.estminer.specpp.supervision.piping;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.supervision.BackgroundTaskRunner;
 import org.processmining.estminer.specpp.supervision.RegularScheduler;
@@ -160,7 +161,7 @@ public class LayingPipe {
     public LayingPipe schedule(Duration interval) {
         if (lastAddition instanceof Triggerable) {
             Triggerable tr = ((Triggerable) lastAddition);
-            prospectiveScheduledRunnables.add(new Tuple2<>(tr::trigger, interval));
+            prospectiveScheduledRunnables.add(new ImmutableTuple2<>(tr::trigger, interval));
         }
         return this;
     }

@@ -7,15 +7,14 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataS
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.config.parameters.FitnessThresholds;
+import org.processmining.estminer.specpp.config.parameters.TauFitnessThresholds;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.AddWiredPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.RemoveWiredPlace;
-import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
-import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
-import org.processmining.estminer.specpp.evaluation.fitness.DerivedVariantFitnessStatus;
+import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.SimplifiedFitnessStatus;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
@@ -33,16 +32,16 @@ import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 public class PlacesComposer<I extends AdvancedComposition<Place>> extends AbstractConstrainingComposer<Place, I, PetriNet> {
 
 
-    protected final DelegatingEvaluator<Place, AggregatedBasicFitnessEvaluation> fitnessEvaluator = EvaluationRequirements.AGG_PLACE_FITNESS.emptyDelegator();
+    protected final DelegatingEvaluator<Place, SimplestFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
 
-    protected final DelegatingDataSource<FitnessThresholds> fitnessThresholds = ParameterRequirements.FITNESS_THRESHOLDS.emptyDelegator();
+    protected final DelegatingDataSource<TauFitnessThresholds> fitnessThresholds = new DelegatingDataSource<>();
 
     protected final TimeStopper timeStopper = new TimeStopper();
 
     public PlacesComposer(I placeComposition) {
         super(placeComposition, c -> new PetriNet(c.toSet()));
-        componentSystemAdapter().require(ParameterRequirements.FITNESS_THRESHOLDS, fitnessThresholds)
-                                .require(EvaluationRequirements.AGG_PLACE_FITNESS, fitnessEvaluator)
+        componentSystemAdapter().require(ParameterRequirements.TAU_FITNESS_THRESHOLDS, fitnessThresholds)
+                                .require(EvaluationRequirements.SIMPLE_FITNESS, fitnessEvaluator)
                                 .provide(SupervisionRequirements.observable("composer.performance", PerformanceEvent.class, timeStopper));
     }
 
@@ -55,34 +54,19 @@ public class PlacesComposer<I extends AdvancedComposition<Place>> extends Abstra
 
     @Override
     protected boolean deliberateAcceptance(Place candidate) {
-        AggregatedBasicFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
-        if (meetsThreshold(fitness, BasicVariantFitnessStatus.GOES_NEGATIVE)) {
+        SimplestFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
+        if (isSufficientlyUnderfed(fitness)) {
             publishConstraint(new ClinicallyUnderfedPlace(candidate));
             return false;
-        } else return meetsThreshold(fitness, DerivedVariantFitnessStatus.FEASIBLE);
+        } else return isSufficientlyFitting(fitness);
     }
 
-    protected boolean meetsUnderfedThreshold(AggregatedBasicFitnessEvaluation fitness) {
-        return meetsThreshold(fitness, BasicVariantFitnessStatus.GOES_NEGATIVE);
+    protected boolean isSufficientlyFitting(SimplestFitnessEvaluation fitness) {
+        return fitness.getFraction(SimplifiedFitnessStatus.FITTING) >= fitnessThresholds.getData().getFittingThreshold();
     }
 
-    protected boolean meetsFitnessThreshold(AggregatedBasicFitnessEvaluation fitness) {
-        return meetsThreshold(fitness, BasicVariantFitnessStatus.FITTING);
-    }
-
-    protected boolean meetsFeasibilityThreshold(AggregatedBasicFitnessEvaluation fitness) {
-        return fitness.getFraction(DerivedVariantFitnessStatus.FEASIBLE) >= fitnessThresholds.getData()
-                                                                                             .getThreshold(DerivedVariantFitnessStatus.FEASIBLE);
-    }
-
-    protected boolean meetsThreshold(AggregatedBasicFitnessEvaluation fitness, BasicVariantFitnessStatus basicVariantFitnessStatus) {
-        return fitness.getFraction(basicVariantFitnessStatus) >= fitnessThresholds.getData()
-                                                                                  .getThreshold(basicVariantFitnessStatus);
-    }
-
-    protected boolean meetsThreshold(AggregatedBasicFitnessEvaluation fitness, DerivedVariantFitnessStatus derivedVariantFitnessStatus) {
-        return fitness.getFraction(derivedVariantFitnessStatus) >= fitnessThresholds.getData()
-                                                                                    .getThreshold(derivedVariantFitnessStatus);
+    protected boolean isSufficientlyUnderfed(SimplestFitnessEvaluation fitness) {
+        return fitness.getFraction(SimplifiedFitnessStatus.UNDERFED) > fitnessThresholds.getData().getUnderfedThreshold();
     }
 
     @Override

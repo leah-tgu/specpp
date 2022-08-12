@@ -11,13 +11,14 @@ import org.processmining.estminer.specpp.datastructures.vectorization.IVSComputa
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 import org.processmining.estminer.specpp.datastructures.vectorization.OrderingRelation;
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedBitMaskSplitty;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedSplitty;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
+import org.processmining.estminer.specpp.evaluation.fitness.SimplifiedFitnessStatus;
 import org.processmining.estminer.specpp.util.StreamUtils;
 
 import java.util.EnumSet;
 import java.util.PrimitiveIterator;
 import java.util.Spliterator;
+import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
@@ -157,13 +158,12 @@ public class DenseVariantMarkingHistories implements VariantMarkingHistories<Den
         return BitMask.of(indexSubset.unmapIndices(markingHistories.vectorwisePredicateStream(indexSubset.mapIndices(variantMask.stream()), isNonnegativeMarkingHistory)));
     }
 
-    public Spliterator<IndexedItem<Spliterator.OfInt>> spliterator() {
-        return new IndexedSplitty(markingHistories, 0, indexSubset.getIndexCount(), indexSubset::unmapIndex);
+    public Spliterator<IndexedItem<IntStream>> spliterator() {
+        return new IndexedBitMaskSplitty(markingHistories, indexSubset.getIndices(), 0, indexSubset.getIndexCount(), IntUnaryOperator.identity());
     }
 
-    public Spliterator<IndexedItem<Spliterator.OfInt>> spliterator(BitMask bitMask) {
-        BitMask mask = indexSubset.mapIndices(bitMask);
-        return new IndexedBitMaskSplitty(markingHistories, mask, 0, mask.cardinality(), indexSubset::unmapIndex);
+    public Spliterator<IndexedItem<IntStream>> spliterator(BitMask bitMask) {
+        return new IndexedBitMaskSplitty(markingHistories, bitMask, 0, bitMask.cardinality(), IntUnaryOperator.identity());
     }
 
     public Spliterator<BasicVariantFitnessStatus> basicFitnessComputation() {
@@ -201,6 +201,7 @@ public class DenseVariantMarkingHistories implements VariantMarkingHistories<Den
         }
         return next == 0 ? BasicVariantFitnessStatus.FITTING : BasicVariantFitnessStatus.NOT_ENDING_ON_ZERO;
     }
+
 
     @Override
     public IntStream getAt(int index) {

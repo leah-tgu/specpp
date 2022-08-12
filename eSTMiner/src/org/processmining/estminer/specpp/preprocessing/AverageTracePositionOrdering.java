@@ -7,6 +7,7 @@ import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.Variant;
 import org.processmining.estminer.specpp.datastructures.log.impls.IndexedVariant;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
+import org.processmining.estminer.specpp.datastructures.util.ImmutablePair;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
 
 import java.util.Comparator;
@@ -40,6 +41,6 @@ public class AverageTracePositionOrdering extends TransitionEncodingsBuilder {
         Comparator<Activity> presetComp = Comparator.comparingDouble(averageVariantPosition::get);
         Comparator<Activity> postsetComp = presetComp.reversed();
 
-        return new Pair<>(presetComp, postsetComp);
+        return new ImmutablePair<>(presetComp, postsetComp);
     }
 }

@@ -5,8 +5,9 @@ import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorS
 
 import java.util.Spliterator;
 import java.util.function.IntUnaryOperator;
+import java.util.stream.IntStream;
 
-public class IndexedSplitty extends AbstractSplitty<IndexedItem<Spliterator.OfInt>> {
+public class IndexedSplitty extends AbstractSplitty<IndexedItem<IntStream>> {
     private final IntUnaryOperator outsideMapper;
 
     public IndexedSplitty(IntVectorStorage ivs, int startVectorIndex, int fenceVectorIndex, IntUnaryOperator outsideMapper) {
@@ -15,12 +16,12 @@ public class IndexedSplitty extends AbstractSplitty<IndexedItem<Spliterator.OfIn
     }
 
     @Override
-    protected IndexedItem<OfInt> make(int index) {
-        return new IndexedItem<>(outsideMapper.applyAsInt(index), ivs.getVector(index));
+    protected IndexedItem<IntStream> make(int index) {
+        return new IndexedItem<>(outsideMapper.applyAsInt(index), ivs.viewVector(index));
     }
 
     @Override
-    protected AbstractSplitty<IndexedItem<OfInt>> makePrefix(int low, int mid) {
+    protected AbstractSplitty<IndexedItem<IntStream>> makePrefix(int low, int mid) {
         return new IndexedSplitty(ivs, low, mid, outsideMapper);
     }
 }

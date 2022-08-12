@@ -7,10 +7,12 @@ import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMa
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.FullBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.implicitness.ImplicitnessRating;
 
 public class EvaluationRequirements {
 
+    public static final EvaluatorRequirement<Place, SimplestFitnessEvaluation> SIMPLE_FITNESS = evaluator(Place.class, SimplestFitnessEvaluation.class);
     public static final EvaluatorRequirement<Place, AggregatedBasicFitnessEvaluation> AGG_PLACE_FITNESS = evaluator(Place.class, AggregatedBasicFitnessEvaluation.class);
     public static final EvaluatorRequirement<Place, FullBasicFitnessEvaluation> FULL_PLACE_FITNESS = evaluator(Place.class, FullBasicFitnessEvaluation.class);
     public static final EvaluatorRequirement<Place, ImplicitnessRating> PLACE_IMPLICITNESS = evaluator(Place.class, ImplicitnessRating.class);

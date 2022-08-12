@@ -10,7 +10,6 @@ import org.processmining.estminer.specpp.datastructures.tree.base.impls.Enumerat
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.VariableExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.estminer.specpp.evaluation.fitness.ShortCircuitingFitnessEvaluator;
 import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.estminer.specpp.supervision.supervisors.BaseSupervisor;
 import org.processmining.estminer.specpp.supervision.supervisors.TerminalSupervisor;
@@ -20,7 +19,6 @@ public class LightweightSpecOpsComponentConfig extends BaseSpecOpsComponentConfi
     public EvaluatorConfiguration getEvaluatorConfiguration(ComponentSystemAdapter csa) {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
-                            .evaluatorProvider(ShortCircuitingFitnessEvaluator::new)
                             .build(csa);
     }
 

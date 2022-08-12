@@ -8,6 +8,7 @@ import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwar
 import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.python.google.common.collect.Maps;
 
@@ -44,7 +45,7 @@ public class ReplayBasedImplicitnessPostProcessing implements PostProcessor<Petr
 
         Map<Place, DenseVariantMarkingHistories> histories = places.stream()
                                                                    .parallel()
-                                                                   .map(p -> new Tuple2<>(p, markingHistoriesEvaluator.eval(p)))
+                                                                   .map(p -> new ImmutableTuple2<>(p, markingHistoriesEvaluator.eval(p)))
                                                                    .collect(Collectors.toMap(Tuple2::getT1, Tuple2::getT2));
 
         Set<Place> exclusionZone = new HashSet<>();

@@ -1,6 +1,8 @@
 package org.processmining.estminer.specpp.config.parameters;
 
-public interface Parameters {
+import org.processmining.estminer.specpp.traits.ProperlyPrintable;
+
+public interface Parameters extends ProperlyPrintable {
 
 
 }

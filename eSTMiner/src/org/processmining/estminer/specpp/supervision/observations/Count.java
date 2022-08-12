@@ -38,6 +38,10 @@ public class Count implements Statistic, Mergeable {
         return count;
     }
 
+    public void inc(int plus) {
+        count += plus;
+    }
+
     @Override
     public void merge(Object other) {
         if (other instanceof Count) count += ((Count) other).count;

@@ -1,5 +1,6 @@
 package org.processmining.estminer.specpp.datastructures.graph;
 
+import org.processmining.estminer.specpp.datastructures.util.ImmutablePair;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
 
 public interface DirectedEdge<V extends Vertex> extends Edge<V> {
@@ -10,6 +11,6 @@ public interface DirectedEdge<V extends Vertex> extends Edge<V> {
 
     @Override
     default Pair<V> getVertices() {
-        return new Pair<>(predecessor(), successor());
+        return new ImmutablePair<>(predecessor(), successor());
     }
 }

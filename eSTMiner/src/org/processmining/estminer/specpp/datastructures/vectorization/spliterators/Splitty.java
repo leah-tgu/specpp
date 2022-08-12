@@ -3,8 +3,9 @@ package org.processmining.estminer.specpp.datastructures.vectorization.spliterat
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
 import java.util.Spliterator;
+import java.util.stream.IntStream;
 
-public class Splitty extends AbstractSplitty<Spliterator.OfInt> {
+public class Splitty extends AbstractSplitty<IntStream> {
 
 
     public Splitty(IntVectorStorage intVectorStorage, int startVectorIndex, int fenceVectorIndex) {
@@ -12,12 +13,12 @@ public class Splitty extends AbstractSplitty<Spliterator.OfInt> {
     }
 
     @Override
-    protected OfInt make(int index) {
-        return ivs.getVector(index);
+    protected IntStream make(int index) {
+        return ivs.viewVector(index);
     }
 
     @Override
-    protected AbstractSplitty<OfInt> makePrefix(int low, int mid) {
+    protected AbstractSplitty<IntStream> makePrefix(int low, int mid) {
         return new Splitty(ivs, low, mid);
     }
 }

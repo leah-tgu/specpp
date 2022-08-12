@@ -16,7 +16,7 @@ import org.processmining.estminer.specpp.datastructures.tree.heuristic.Heuristic
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.InstrumentedHeuristicTreeExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.estminer.specpp.evaluation.fitness.ShortCircuitingFitnessEvaluator;
+import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluator;
 import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.estminer.specpp.postprocessing.ProMConverter;
 import org.processmining.estminer.specpp.postprocessing.ReplayBasedImplicitnessPostProcessing;
@@ -40,7 +40,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     public EvaluatorConfiguration getEvaluatorConfiguration(ComponentSystemAdapter csa) {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
-                            .evaluatorProvider(ShortCircuitingFitnessEvaluator::new)
+                            .evaluatorProvider(SimplestFitnessEvaluator::new)
                             .build(csa);
     }
 

@@ -1,5 +1,6 @@
 package org.processmining.estminer.specpp.supervision;
 
+import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.traits.Joinable;
 import org.processmining.estminer.specpp.traits.StartStoppable;
@@ -30,7 +31,7 @@ public class RegularScheduler implements StartStoppable, Joinable {
 
     public RegularScheduler schedule(Runnable r, Duration timeInterval) {
         if (tasksToSchedule.stream().noneMatch(t -> t.getT1().equals(r)))
-            tasksToSchedule.add(new Tuple2<>(r, timeInterval));
+            tasksToSchedule.add(new ImmutableTuple2<>(r, timeInterval));
         return this;
     }
 
