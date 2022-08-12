@@ -10,7 +10,7 @@ public class EnumCounts<E extends Enum<E>> {
         this.counts = counts;
     }
 
-    public double getCount(E enumInstance) {
+    public int getCount(E enumInstance) {
         return counts[enumInstance.ordinal()];
     }
 

@@ -62,7 +62,7 @@ public class IndexSubset implements SetQueries<IndexSubset>, Copyable<IndexSubse
 
     public BitMask mapIndices(BitMask indices) {
         BitMask mask = new BitMask();
-        mapIndices(indices.stream()).forEach(mask::set);
+        indices.stream().filter(this::contains).forEach(mask::set);
         return mask;
     }
 

@@ -2,7 +2,7 @@ package org.processmining.estminer.specpp.datastructures.util;
 
 import org.processmining.estminer.specpp.traits.ProperlyPrintable;
 
-public class TypedItem<T> extends Tuple2<Class<? extends T>, T> implements ProperlyPrintable {
+public class TypedItem<T> extends ImmutableTuple2<Class<? extends T>, T> implements ProperlyPrintable {
 
     public TypedItem(Class<? extends T> tClass, T t) {
         super(tClass, t);

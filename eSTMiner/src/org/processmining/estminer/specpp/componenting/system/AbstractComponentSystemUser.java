@@ -4,7 +4,7 @@ import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem
 
 public abstract class AbstractComponentSystemUser implements UsesComponentSystem {
 
-    protected final ComponentSystemAdapter componentSystemAdapter;
+    private final ComponentSystemAdapter componentSystemAdapter;
 
     public AbstractComponentSystemUser() {
         componentSystemAdapter = new ComponentSystemAdapter();

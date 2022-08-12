@@ -4,8 +4,13 @@ import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncoding;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
-import org.processmining.estminer.specpp.datastructures.log.*;
+import org.processmining.estminer.specpp.datastructures.log.Activity;
+import org.processmining.estminer.specpp.datastructures.log.Log;
+import org.processmining.estminer.specpp.datastructures.log.OnlyCoversIndexSubset;
+import org.processmining.estminer.specpp.datastructures.log.Variant;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorSubsetStorage;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -75,7 +80,13 @@ public class LogEncoder {
         }
         int[] data = dataList.stream().mapToInt(i -> i).toArray();
         int[] startIndices = cumLengthsList.stream().mapToInt(i -> i).toArray();
-        return (log instanceof OnlyCoversIndexSubset || discardedVariant) ? new EncodedSubLog(IndexSubset.of(mask), data, startIndices, encoding) : new EncodedLog(data, startIndices, encoding);
+        if (log instanceof OnlyCoversIndexSubset || discardedVariant) {
+            IntVectorSubsetStorage ivss = new IntVectorSubsetStorage(IndexSubset.of(mask), data, startIndices);
+            return new EncodedSubLogImpl(log.getVariantFrequencies(), ivss, encoding);
+        } else {
+            IntVectorStorage ivs = new IntVectorStorage(data, startIndices);
+            return new EncodedLogImpl(log.getVariantFrequencies(), ivs, encoding);
+        }
     }
 
     public static MultiEncodedLog multiEncodeLog(Log log, IntEncodings<Transition> transitionEncodings, Map<Activity, Transition> mapping, LogEncodingParameters lep) {
@@ -88,9 +99,9 @@ public class LogEncoder {
         LogEncodingInfo lei = new LogEncodingInfo(activitySet);
         EncodedLog presetEncodedLog = encodeLog(log, activityEncodings.pre(), lep, lei);
         EncodedLog postsetEncodedLog = encodeLog(log, activityEncodings.post(), lep, lei);
-        if (presetEncodedLog instanceof EncodedSubLog && postsetEncodedLog instanceof EncodedSubLog) {
+        if (presetEncodedLog instanceof EncodedSubLogImpl && postsetEncodedLog instanceof EncodedSubLogImpl) {
             IndexSubset indexSubset = ((OnlyCoversIndexSubset) presetEncodedLog).getIndexSubset();
-            return new MultiEncodedSubLog(indexSubset, ((EncodedSubLog) presetEncodedLog), ((EncodedSubLog) postsetEncodedLog), activityEncodings);
+            return new MultiEncodedSubLog(indexSubset, ((EncodedSubLogImpl) presetEncodedLog), ((EncodedSubLogImpl) postsetEncodedLog), activityEncodings);
         } else return new MultiEncodedLog(presetEncodedLog, postsetEncodedLog, activityEncodings);
     }
 

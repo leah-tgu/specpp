@@ -4,6 +4,7 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataS
 import org.processmining.estminer.specpp.componenting.system.ComponentType;
 import org.processmining.estminer.specpp.componenting.system.Requirement;
 import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
+import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
@@ -23,7 +24,7 @@ public class DataRequirement<T> extends NoRehashing<Tuple2<String, Class<T>>> im
     protected final Class<T> dataType;
 
     public DataRequirement(String label, Class<T> dataType) {
-        super(new Tuple2<>(label, dataType));
+        super(new ImmutableTuple2<>(label, dataType));
         this.label = label;
         this.dataType = dataType;
     }

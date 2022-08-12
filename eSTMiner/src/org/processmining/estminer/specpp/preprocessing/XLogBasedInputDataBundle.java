@@ -17,6 +17,7 @@ import org.processmining.estminer.specpp.datastructures.petri.FinalTransition;
 import org.processmining.estminer.specpp.datastructures.petri.InitialTransition;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.util.Counter;
+import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.orchestra.PreProcessingParameters;
 import org.processmining.estminer.specpp.util.Reflection;
@@ -66,7 +67,7 @@ public class XLogBasedInputDataBundle implements DataSource<InputDataBundle> {
         } catch (RuntimeException e){
             throw new InputLoadingException(e);
         }
-        return new Tuple2<>(transitionEncodings, transitionMapping);
+        return new ImmutableTuple2<>(transitionEncodings, transitionMapping);
     }
 
     public static XLog readLog(String path) {
@@ -102,7 +103,7 @@ public class XLogBasedInputDataBundle implements DataSource<InputDataBundle> {
         for (Map.Entry<Variant, Integer> entry : c.entrySet()) {
             builder.appendVariant(entry.getKey(), entry.getValue());
         }
-        return new Tuple2<>(builder.build(), activities);
+        return new ImmutableTuple2<>(builder.build(), activities);
     }
 
     @Override

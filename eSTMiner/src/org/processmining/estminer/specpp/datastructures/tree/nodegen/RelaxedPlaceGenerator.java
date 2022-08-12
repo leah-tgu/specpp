@@ -10,6 +10,7 @@ import org.processmining.estminer.specpp.datastructures.tree.constraints.AddWire
 import org.processmining.estminer.specpp.datastructures.tree.constraints.DepthConstraint;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.RemoveWiredPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.WiringConstraint;
+import org.processmining.estminer.specpp.datastructures.util.ImmutablePair;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
 
 
@@ -72,7 +73,7 @@ public class RelaxedPlaceGenerator extends MonotonousPlaceGenerator {
         if (expansionStoppers.stream().anyMatch(es -> es.notAllowedToExpand(parent))) {
             cullChildren(parent, ExpansionType.Preset);
             cullChildren(parent, ExpansionType.Postset);
-            return new Pair<>(new BitMask(), new BitMask());
+            return new ImmutablePair<>(new BitMask(), new BitMask());
         } else {
             Place place = parent.getPlace();
             BitMask possiblePresetExpansions = new BitMask(), possiblePostsetExpansions = new BitMask();
@@ -83,7 +84,7 @@ public class RelaxedPlaceGenerator extends MonotonousPlaceGenerator {
             else if (possiblePostsetExpansions.isEmpty() && canHavePresetChildren(place))
                 possiblePresetExpansions = computeFilteredPotentialExpansions(state, ExpansionType.Preset);
 
-            return new Pair<>(possiblePresetExpansions, possiblePostsetExpansions);
+            return new ImmutablePair<>(possiblePresetExpansions, possiblePostsetExpansions);
         }
     }
 

@@ -1,90 +1,54 @@
-DEBUG - [⟳100ms] performance @ 09:08:41.481: Performance Statistics: {
-	Tree Expansion={μ=0ms±0ms (0ms-0ms), Σ=0S, N=8, 2147483647it/s}}
-DEBUG - performance.accumulation @ 09:08:41.481: Performance Statistics: {
-	Tree Expansion={μ=0ms±0ms (0ms-0ms), Σ=0S, N=8, 2147483647it/s}}
-DEBUG - [⟳100ms] performance @ 09:08:41.597: Performance Statistics: {
-	Candidate Composition={μ=0.086ms±1.208ms (0ms-22ms), Σ=0.075S, N=872, 11626it/s}
-	Candidate Proposal={μ=0.055ms±0.937ms (0ms-16ms), Σ=0.048S, N=873, 18187it/s}
-	Concurrent Replay Based Implicitness={μ=0.733ms±3.084ms (0ms-16ms), Σ=0.022S, N=30, 1363it/s}
-	PEC Cycle={μ=0.141ms±1.526ms (0ms-22ms), Σ=0.123S, N=872, 7089it/s}
-	Short Circuiting Aggregated Fitness Evaluation={μ=0.024ms±0.567ms (0ms-16ms), Σ=0.021S, N=872, 41523it/s}
-	Tree Expansion={μ=0.037ms±0.765ms (0ms-16ms), Σ=0.032S, N=873, 27281it/s}}
-DEBUG - performance.accumulation @ 09:08:41.597: Performance Statistics: {
-	Candidate Composition={μ=0.086ms±1.208ms (0ms-22ms), Σ=0.075S, N=872, 11626it/s}
-	Candidate Proposal={μ=0.055ms±0.937ms (0ms-16ms), Σ=0.048S, N=873, 18187it/s}
-	Concurrent Replay Based Implicitness={μ=0.733ms±3.084ms (0ms-16ms), Σ=0.022S, N=30, 1363it/s}
-	PEC Cycle={μ=0.141ms±1.526ms (0ms-22ms), Σ=0.123S, N=872, 7089it/s}
-	Short Circuiting Aggregated Fitness Evaluation={μ=0.024ms±0.567ms (0ms-16ms), Σ=0.021S, N=872, 41523it/s}
-	Tree Expansion={μ=0.036ms±0.762ms (0ms-16ms), Σ=0.032S, N=881, 27531it/s}}
-DEBUG - tree.events.count @ 09:08:41.697: CountStatistics:{Class(LeafAdditionEvent)=3458, Class(NodeExpansionEvent)=3458, Class(LeafRemovalEvent)=1542, Class(NodeExhaustionEvent)=1542}
-DEBUG - tree.events.accumulation @ 09:08:41.697: EventCount Statistics: {
-	Class(LeafAdditionEvent)=3458
-	Class(LeafRemovalEvent)=1542
-	Class(NodeExhaustionEvent)=1542
-	Class(NodeExpansionEvent)=3458}
-DEBUG - heuristic.count @ 09:08:41.713: CountStatistics:{Class(HeuristicComputationEvent)=4026, Class(EnqueueNodeEvent)=4026, Class(DequeueNodeEvent)=1948}
-DEBUG - heuristics.count.accumulation @ 09:08:41.713: EventCount Statistics: {
-	Class(DequeueNodeEvent)=1948
-	Class(EnqueueNodeEvent)=4026
-	Class(HeuristicComputationEvent)=4026}
-DEBUG - [⟳100ms] performance @ 09:08:41.713: Performance Statistics: {
-	Candidate Composition={μ=0.026ms±0.637ms (0ms-16ms), Σ=0.081S, N=3081, 38037it/s}
-	Candidate Proposal={μ=0.011ms±0.384ms (0ms-15ms), Σ=0.034S, N=3081, 90617it/s}
-	Concurrent Replay Based Implicitness={μ=0.515ms±2.785ms (0ms-16ms), Σ=0.017S, N=33, 1941it/s}
-	PEC Cycle={μ=0.038ms±0.743ms (0ms-16ms), Σ=0.116S, N=3081, 26560it/s}
-	Short Circuiting Aggregated Fitness Evaluation={μ=0.021ms±0.568ms (0ms-16ms), Σ=0.064S, N=3081, 48140it/s}
-	Tree Expansion={μ=0.006ms±0.272ms (0ms-15ms), Σ=0.018S, N=3081, 171166it/s}}
-DEBUG - performance.accumulation @ 09:08:41.713: Performance Statistics: {
-	Candidate Composition={μ=0.039ms±0.799ms (0ms-22ms), Σ=0.156S, N=3953, 25339it/s}
-	Candidate Proposal={μ=0.021ms±0.556ms (0ms-16ms), Σ=0.082S, N=3954, 48219it/s}
-	Concurrent Replay Based Implicitness={μ=0.619ms±2.91ms (0ms-16ms), Σ=0.039S, N=63, 1615it/s}
-	PEC Cycle={μ=0.06ms±0.972ms (0ms-22ms), Σ=0.239S, N=3953, 16539it/s}
-	Short Circuiting Aggregated Fitness Evaluation={μ=0.022ms±0.568ms (0ms-16ms), Σ=0.085S, N=3953, 46505it/s}
-	Tree Expansion={μ=0.013ms±0.432ms (0ms-16ms), Σ=0.05S, N=3962, 79240it/s}}
-DEBUG - tree.events.count @ 09:08:41.755: CountStatistics:{Class(LeafAdditionEvent)=2011, Class(NodeExpansionEvent)=2010, Class(LeafRemovalEvent)=2989, Class(NodeExhaustionEvent)=2990}
-DEBUG - tree.events.accumulation @ 09:08:41.755: EventCount Statistics: {
-	Class(LeafAdditionEvent)=5469
-	Class(LeafRemovalEvent)=4531
-	Class(NodeExhaustionEvent)=4532
-	Class(NodeExpansionEvent)=5468}
-DEBUG - [⟳100ms] performance @ 09:08:41.803: Performance Statistics: {
-	Candidate Composition={μ=0.011ms±0.412ms (0ms-16ms), Σ=0.016S, N=1508, 94250it/s}
-	Candidate Proposal={μ=0.012ms±0.414ms (0ms-16ms), Σ=0.018S, N=1507, 83722it/s}
-	Concurrent Replay Based Implicitness={μ=0ms±0ms (0ms-0ms), Σ=0S, N=23, 2147483647it/s}
-	PEC Cycle={μ=0.023ms±0.584ms (0ms-16ms), Σ=0.035S, N=1509, 43114it/s}
-	Short Circuiting Aggregated Fitness Evaluation={μ=0.011ms±0.412ms (0ms-16ms), Σ=0.016S, N=1508, 94250it/s}
-	Total PEC Cycling={μ=289ms±0ms (289ms-289ms), Σ=0.289S, N=1, 3it/s}
-	Tree Expansion={μ=0.001ms±0.036ms (0ms-1ms), Σ=0.002S, N=1507, 753500it/s}
-	postprocessor.ReplayBasedImplicitness={μ=23ms±0ms (23ms-23ms), Σ=0.023S, N=1, 43it/s}
-	postprocessor.SelfLoopPlaceMerger={μ=10ms±0ms (10ms-10ms), Σ=0.01S, N=1, 100it/s}}
-DEBUG - performance.accumulation @ 09:08:41.803: Performance Statistics: {
-	Candidate Composition={μ=0.031ms±0.713ms (0ms-22ms), Σ=0.172S, N=5461, 31750it/s}
-	Candidate Proposal={μ=0.018ms±0.52ms (0ms-16ms), Σ=0.1S, N=5461, 54610it/s}
-	Concurrent Replay Based Implicitness={μ=0.453ms±2.5ms (0ms-16ms), Σ=0.039S, N=86, 2205it/s}
-	PEC Cycle={μ=0.05ms±0.882ms (0ms-22ms), Σ=0.274S, N=5462, 19934it/s}
-	Short Circuiting Aggregated Fitness Evaluation={μ=0.018ms±0.529ms (0ms-16ms), Σ=0.101S, N=5461, 54069it/s}
-	Total PEC Cycling={μ=289ms±0ms (289ms-289ms), Σ=0.289S, N=1, 3it/s}
-	Tree Expansion={μ=0.01ms±0.368ms (0ms-16ms), Σ=0.052S, N=5469, 105173it/s}
-	postprocessor.ReplayBasedImplicitness={μ=23ms±0ms (23ms-23ms), Σ=0.023S, N=1, 43it/s}
-	postprocessor.SelfLoopPlaceMerger={μ=10ms±0ms (10ms-10ms), Σ=0.01S, N=1, 100it/s}}
-DEBUG - heuristic.count @ 09:08:41.803: CountStatistics:{Class(HeuristicComputationEvent)=1443, Class(DequeueNodeEvent)=3521, Class(EnqueueNodeEvent)=1443}
-DEBUG - heuristics.count.accumulation @ 09:08:41.803: EventCount Statistics: {
-	Class(DequeueNodeEvent)=5469
-	Class(EnqueueNodeEvent)=5469
-	Class(HeuristicComputationEvent)=5469}
-DEBUG - tree.events.count @ 09:08:41.803: CountStatistics:{Class(LeafRemovalEvent)=938, Class(NodeExhaustionEvent)=937}
-DEBUG - tree.events.accumulation @ 09:08:41.803: EventCount Statistics: {
-	Class(LeafAdditionEvent)=5469
-	Class(LeafRemovalEvent)=5469
-	Class(NodeExhaustionEvent)=5469
-	Class(NodeExpansionEvent)=5468}
-DEBUG - proposer.constraints.count @ 09:08:41.803: CountStatistics:{Class(CullPostsetChildren)=1948, Class(RemoveWiredPlace)=4, Class(AddWiredPlace)=10}
-DEBUG - proposer.constraints.count.accumulation @ 09:08:41.803: EventCount Statistics: {
-	Class(AddWiredPlace)=10
-	Class(CullPostsetChildren)=1948
-	Class(RemoveWiredPlace)=4}
-DEBUG - composer.constraints.count @ 09:08:41.803: CountStatistics:{Class(RemoveWiredPlace)=4, Class(ClinicallyUnderfedPlace)=1948, Class(AddWiredPlace)=10}
-DEBUG - composer.constraints.count.accumulation @ 09:08:41.803: EventCount Statistics: {
-	Class(AddWiredPlace)=10
-	Class(ClinicallyUnderfedPlace)=1948
-	Class(RemoveWiredPlace)=4}
+DEBUG - [⟳100ms] performance @ 16:47:50.968: Performance Statistics: {
+	Tree Expansion={μ=0.5ms±1.069ms (0ms-3ms), Σ=0.004S, N=8, 2000it/s}}
+DEBUG - performance.accumulation @ 16:47:50.969: Performance Statistics: {
+	Tree Expansion={μ=0.5ms±1.069ms (0ms-3ms), Σ=0.004S, N=8, 2000it/s}}
+DEBUG - [⟳100ms] performance @ 16:47:51.089: Performance Statistics: {
+	Candidate Composition={μ=0.058ms±0.463ms (0ms-15ms), Σ=0.079S, N=1363, 17253it/s}
+	Candidate Proposal={μ=0.032ms±0.175ms (0ms-1ms), Σ=0.043S, N=1363, 31697it/s}
+	Concurrent Replay Based Implicitness={μ=1.333ms±2.345ms (0ms-7ms), Σ=0.012S, N=9, 750it/s}
+	PEC Cycle={μ=0.094ms±0.495ms (0ms-15ms), Σ=0.128S, N=1364, 10656it/s}
+	Simplest Fitness Evaluation={μ=0.036ms±0.256ms (0ms-7ms), Σ=0.049S, N=1363, 27816it/s}
+	Total PEC Cycling={μ=129ms±0ms (129ms-129ms), Σ=0.129S, N=1, 7it/s}
+	Tree Expansion={μ=0.025ms±0.156ms (0ms-1ms), Σ=0.034S, N=1363, 40088it/s}}
+DEBUG - performance.accumulation @ 16:47:51.09: Performance Statistics: {
+	Candidate Composition={μ=0.058ms±0.463ms (0ms-15ms), Σ=0.079S, N=1363, 17253it/s}
+	Candidate Proposal={μ=0.032ms±0.175ms (0ms-1ms), Σ=0.043S, N=1363, 31697it/s}
+	Concurrent Replay Based Implicitness={μ=1.333ms±2.345ms (0ms-7ms), Σ=0.012S, N=9, 750it/s}
+	PEC Cycle={μ=0.094ms±0.495ms (0ms-15ms), Σ=0.128S, N=1364, 10656it/s}
+	Simplest Fitness Evaluation={μ=0.036ms±0.256ms (0ms-7ms), Σ=0.049S, N=1363, 27816it/s}
+	Total PEC Cycling={μ=129ms±0ms (129ms-129ms), Σ=0.129S, N=1, 7it/s}
+	Tree Expansion={μ=0.028ms±0.177ms (0ms-3ms), Σ=0.038S, N=1371, 36078it/s}}
+DEBUG - [⟳100ms] performance @ 16:47:51.146: Performance Statistics: {
+	postprocessor.ReplayBasedImplicitness={μ=26ms±0ms (26ms-26ms), Σ=0.026S, N=1, 38it/s}
+	postprocessor.SelfLoopPlaceMerger={μ=2ms±0ms (2ms-2ms), Σ=0.002S, N=1, 500it/s}}
+DEBUG - performance.accumulation @ 16:47:51.147: Performance Statistics: {
+	Candidate Composition={μ=0.058ms±0.463ms (0ms-15ms), Σ=0.079S, N=1363, 17253it/s}
+	Candidate Proposal={μ=0.032ms±0.175ms (0ms-1ms), Σ=0.043S, N=1363, 31697it/s}
+	Concurrent Replay Based Implicitness={μ=1.333ms±2.345ms (0ms-7ms), Σ=0.012S, N=9, 750it/s}
+	PEC Cycle={μ=0.094ms±0.495ms (0ms-15ms), Σ=0.128S, N=1364, 10656it/s}
+	Simplest Fitness Evaluation={μ=0.036ms±0.256ms (0ms-7ms), Σ=0.049S, N=1363, 27816it/s}
+	Total PEC Cycling={μ=129ms±0ms (129ms-129ms), Σ=0.129S, N=1, 7it/s}
+	Tree Expansion={μ=0.028ms±0.177ms (0ms-3ms), Σ=0.038S, N=1371, 36078it/s}
+	postprocessor.ReplayBasedImplicitness={μ=26ms±0ms (26ms-26ms), Σ=0.026S, N=1, 38it/s}
+	postprocessor.SelfLoopPlaceMerger={μ=2ms±0ms (2ms-2ms), Σ=0.002S, N=1, 500it/s}}
+DEBUG - heuristic.count @ 16:47:51.148: CountStatistics:{Class(HeuristicComputationEvent)=1371, Class(DequeueNodeEvent)=1371, Class(EnqueueNodeEvent)=1371}
+DEBUG - heuristics.count.accumulation @ 16:47:51.148: EventCount Statistics: {
+	Class(DequeueNodeEvent)=1371
+	Class(EnqueueNodeEvent)=1371
+	Class(HeuristicComputationEvent)=1371}
+DEBUG - tree.events.count @ 16:47:51.149: CountStatistics:{Class(LeafAdditionEvent)=1371, Class(NodeExpansionEvent)=1370, Class(LeafRemovalEvent)=1371, Class(NodeExhaustionEvent)=1371}
+DEBUG - tree.events.accumulation @ 16:47:51.149: EventCount Statistics: {
+	Class(LeafAdditionEvent)=1371
+	Class(LeafRemovalEvent)=1371
+	Class(NodeExhaustionEvent)=1371
+	Class(NodeExpansionEvent)=1370}
+DEBUG - proposer.constraints.count @ 16:47:51.15: CountStatistics:{Class(RemoveWiredPlace)=2, Class(CullPostsetChildren)=803, Class(AddWiredPlace)=6}
+DEBUG - proposer.constraints.count.accumulation @ 16:47:51.15: EventCount Statistics: {
+	Class(AddWiredPlace)=6
+	Class(CullPostsetChildren)=803
+	Class(RemoveWiredPlace)=2}
+DEBUG - composer.constraints.count @ 16:47:51.15: CountStatistics:{Class(RemoveWiredPlace)=2, Class(ClinicallyUnderfedPlace)=803, Class(AddWiredPlace)=6}
+DEBUG - composer.constraints.count.accumulation @ 16:47:51.15: EventCount Statistics: {
+	Class(AddWiredPlace)=6
+	Class(ClinicallyUnderfedPlace)=803
+	Class(RemoveWiredPlace)=2}

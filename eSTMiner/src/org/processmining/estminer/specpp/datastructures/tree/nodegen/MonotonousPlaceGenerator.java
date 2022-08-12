@@ -16,7 +16,9 @@ import org.processmining.estminer.specpp.datastructures.tree.base.GenerationCons
 import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.*;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.SubtreeCutoffConstraint;
+import org.processmining.estminer.specpp.datastructures.util.ImmutablePair;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
+import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 
 import java.util.LinkedList;
@@ -87,20 +89,20 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
         DepthLimiter depthLimiter = new DepthLimiter(parameters.getMaxTreeDepth());
         expansionStoppers.add(depthLimiter);
         if (parameters.isAcceptSubtreeCutoffConstraints()) {
-            constraintHandlers.add(new Tuple2<>(SubtreeCutoffConstraint.class, this::handleCullChildrenConstraint));
+            constraintHandlers.add(new ImmutableTuple2<>(SubtreeCutoffConstraint.class, this::handleCullChildrenConstraint));
         }
         if (parameters.isAcceptWiringConstraints()) {
             WiringTester wiringTester = new WiringTester();
             potentialExpansionFilters.add(wiringTester);
-            constraintHandlers.add(new Tuple2<>(WiringConstraint.class, c -> handleWiringConstraint(wiringTester, c)));
+            constraintHandlers.add(new ImmutableTuple2<>(WiringConstraint.class, c -> handleWiringConstraint(wiringTester, c)));
         }
         if (parameters.isAcceptTransitionBlacklistingConstraints()) {
             TransitionBlacklister transitionBlacklister = new TransitionBlacklister(transitionEncodings);
             potentialExpansionFilters.add(transitionBlacklister);
-            constraintHandlers.add(new Tuple2<>(BlacklistTransition.class, c -> handleTransitionBlacklistingConstraint(transitionBlacklister, c)));
+            constraintHandlers.add(new ImmutableTuple2<>(BlacklistTransition.class, c -> handleTransitionBlacklistingConstraint(transitionBlacklister, c)));
         }
         if (parameters.isAcceptDepthConstraints()) {
-            constraintHandlers.add(new Tuple2<>(DepthConstraint.class, c -> handleDepthConstraint(depthLimiter, c)));
+            constraintHandlers.add(new ImmutableTuple2<>(DepthConstraint.class, c -> handleDepthConstraint(depthLimiter, c)));
         }
     }
 
@@ -236,7 +238,7 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
         if (expansionStoppers.stream().anyMatch(es -> es.notAllowedToExpand(parent))) {
             cullChildren(parent, ExpansionType.Preset);
             cullChildren(parent, ExpansionType.Postset);
-            return new Pair<>(new BitMask(), new BitMask());
+            return new ImmutablePair<>(new BitMask(), new BitMask());
         } else {
             Place place = parent.getPlace();
             BitMask possiblePresetExpansions = new BitMask(), possiblePostsetExpansions = new BitMask();
@@ -245,7 +247,7 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
             if (canHavePresetChildren(place))
                 possiblePresetExpansions = computeFilteredPotentialExpansions(state, ExpansionType.Preset);
 
-            return new Pair<>(possiblePresetExpansions, possiblePostsetExpansions);
+            return new ImmutablePair<>(possiblePresetExpansions, possiblePostsetExpansions);
         }
     }
 

@@ -8,6 +8,7 @@ import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.impls.*;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
+import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 
@@ -44,7 +45,7 @@ public class HardcodedTestInput {
         //trans.put(uniqueStart, start);
         //trans.put(uniqueEnd, end);
 
-        return new Tuple2<>(new IntEncodings<>(presetEncoding, postsetEncoding), trans);
+        return new ImmutableTuple2<>(new IntEncodings<>(presetEncoding, postsetEncoding), trans);
     }
 
     public static Map<String, Activity> setupActivities(String... activities) {

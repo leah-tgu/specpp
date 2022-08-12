@@ -12,6 +12,7 @@ import org.processmining.estminer.specpp.datastructures.vectorization.spliterato
 
 import java.util.Arrays;
 import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 
@@ -54,6 +55,16 @@ public class IntVectorSubsetStorage extends IntVectorStorage implements OnlyCove
     }
 
     @Override
+    public Spliterator.OfInt getVector(int index) {
+        if (!isInSubset(index)) return null;
+        return super.getVector(mapIndex(index));
+    }
+
+    public Spliterator.OfInt getVectorInternal(int index) {
+        return super.getVector(index);
+    }
+
+    @Override
     public void mapVector(int index, IntUnaryOperator mapper) {
         super.mapVector(mapIndex(index), mapper);
     }
@@ -85,25 +96,23 @@ public class IntVectorSubsetStorage extends IntVectorStorage implements OnlyCove
     }
 
     @Override
-    public Spliterator<Spliterator.OfInt> spliterator() {
-        return new Splitty(this, 0, indexSubset.getIndexCount());
+    public Spliterator<IntStream> spliterator() {
+        return new BitMaskSplitty(this, indexSubset.getIndices(), 0, indexSubset.getIndexCount());
     }
 
     @Override
-    public Spliterator<IndexedItem<Spliterator.OfInt>> indexedSpliterator() {
-        return new IndexedSplitty(this, 0, indexSubset.getIndexCount(), indexSubset::unmapIndex);
+    public Spliterator<IndexedItem<IntStream>> indexedSpliterator() {
+        return new IndexedBitMaskSplitty(this, indexSubset.getIndices(), 0, indexSubset.getIndexCount(), IntUnaryOperator.identity());
     }
 
-    public Spliterator<Spliterator.OfInt> spliterator(BitMask bitMask) {
+    public Spliterator<IntStream> spliterator(BitMask bitMask) {
         assert indexSubset.covers(bitMask);
-        BitMask mask = indexSubset.mapIndices(bitMask);
-        return new BitMaskSplitty(this, mask, 0, mask.cardinality());
+        return new BitMaskSplitty(this, bitMask, 0, bitMask.cardinality());
     }
 
-    public Spliterator<IndexedItem<Spliterator.OfInt>> indexedSpliterator(BitMask bitMask) {
+    public Spliterator<IndexedItem<IntStream>> indexedSpliterator(BitMask bitMask) {
         assert indexSubset.covers(bitMask);
-        BitMask mask = indexSubset.mapIndices(bitMask);
-        return new IndexedBitMaskSplitty(this, mask, 0, mask.cardinality(), indexSubset::unmapIndex);
+        return new IndexedBitMaskSplitty(this, bitMask, 0, bitMask.cardinality(), IntUnaryOperator.identity());
     }
 
     @Override

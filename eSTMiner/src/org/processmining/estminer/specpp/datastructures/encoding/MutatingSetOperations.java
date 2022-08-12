@@ -1,5 +1,6 @@
 package org.processmining.estminer.specpp.datastructures.encoding;
 
+import org.processmining.estminer.specpp.datastructures.util.ImmutablePair;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
 import org.processmining.estminer.specpp.traits.Copyable;
 
@@ -43,7 +44,7 @@ public interface MutatingSetOperations<T extends MutatingSetOperations<T>> {
         T r2 = s2.copy();
         r1.setminus(s2);
         r2.setminus(s1);
-        return new Pair<>(r1, r2);
+        return new ImmutablePair<>(r1, r2);
     }
 
     static <T extends MutatingSetOperations<T> & Copyable<T>> Pair<T> dualIntersection(T s1, T s2) {
@@ -51,7 +52,7 @@ public interface MutatingSetOperations<T extends MutatingSetOperations<T>> {
         T r2 = s2.copy();
         r1.intersection(s2);
         r2.intersection(s1);
-        return new Pair<>(r1, r2);
+        return new ImmutablePair<>(r1, r2);
     }
 
     @SafeVarargs

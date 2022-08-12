@@ -1,57 +1,31 @@
 package org.processmining.estminer.specpp.datastructures.log.impls;
 
-import com.google.common.collect.Streams;
 import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncoding;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
-import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
-import org.processmining.estminer.specpp.traits.Streamable;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.EfficientlySpliterable;
 
-import java.util.Iterator;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-public class EncodedLog implements Streamable<IndexedItem<IntStream>>, Iterable<IndexedItem<IntStream>> {
-    protected final IntEncoding<Activity> encoding;
-    protected final IntVectorStorage ivs;
+public interface EncodedLog extends EfficientlySpliterable<IntStream> {
+    IntEncoding<Activity> getEncoding();
 
-    public EncodedLog(IntVectorStorage ivs, IntEncoding<Activity> encoding) {
-        this.encoding = encoding;
-        this.ivs = ivs;
-    }
+    IntVectorStorage getEncodedVariantVectors();
 
-    protected EncodedLog(int[] data, int[] startIndices, IntEncoding<Activity> encoding) {
-        this(new IntVectorStorage(data, startIndices), encoding);
-    }
+    IntVector getVariantFrequencies();
 
-    public IntEncoding<Activity> getEncoding() {
-        return encoding;
-    }
+    int getVariantFrequency(int index);
 
-    public IntVectorStorage getEncodedVariantVectors() {
-        return ivs;
-    }
+    IntStream getEncodedVariant(int index);
 
-    public IntStream streamIndices() {
-        return ivs.indexStream();
-    }
+    IntStream streamIndices();
 
-    public BitMask variantIndices() {
-        return BitMask.of(streamIndices());
-    }
+    BitMask variantIndices();
 
-    public int getVariantCount() {
-        return ivs.getVectorCount();
-    }
+    int variantCount();
 
-    @Override
-    public Stream<IndexedItem<IntStream>> stream() {
-        return Streams.zip(streamIndices().boxed(), ivs.view(), IndexedItem::new);
-    }
+    int totalTraceCount();
 
-    @Override
-    public Iterator<IndexedItem<IntStream>> iterator() {
-        return stream().iterator();
-    }
 }

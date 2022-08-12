@@ -20,6 +20,7 @@ import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<IntVectorStorage>, Mappable<IntUnaryOperator>, PartiallyOrdered<IntVectorStorage> {
 
@@ -193,20 +194,20 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
         return IVSComputations.ltOn(indexStream(), this, other.indexStream(), other);
     }
 
-    public Spliterator<Spliterator.OfInt> spliterator() {
+    public Spliterator<IntStream> spliterator() {
         return new Splitty(this, 0, getVectorCount());
     }
 
-    public Spliterator<IndexedItem<Spliterator.OfInt>> indexedSpliterator() {
+    public Spliterator<IndexedItem<IntStream>> indexedSpliterator() {
         return new IndexedSplitty(this, 0, getVectorCount(), IntUnaryOperator.identity());
     }
 
-    public Spliterator<Spliterator.OfInt> spliterator(BitMask bitMask) {
+    public Spliterator<IntStream> spliterator(BitMask bitMask) {
         assert bitMask.length() <= getVectorCount();
         return new BitMaskSplitty(this, bitMask, 0, bitMask.cardinality());
     }
 
-    public Spliterator<IndexedItem<Spliterator.OfInt>> indexedSpliterator(BitMask bitMask) {
+    public Spliterator<IndexedItem<IntStream>> indexedSpliterator(BitMask bitMask) {
         assert bitMask.length() <= getVectorCount();
         return new IndexedBitMaskSplitty(this, bitMask, 0, bitMask.cardinality(), IntUnaryOperator.identity());
     }
