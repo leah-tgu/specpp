@@ -3,17 +3,20 @@ package org.processmining.estminer.specpp.supervision.supervisors;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingAdHocObservable;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingObservable;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
+import org.processmining.estminer.specpp.config.parameters.OutputPathParameters;
 import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicComputationEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicStatsEvent;
 import org.processmining.estminer.specpp.datastructures.tree.events.TreeHeuristicQueueingEvent;
 import org.processmining.estminer.specpp.datastructures.tree.events.TreeHeuristicsEvent;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.estminer.specpp.supervision.CSVLogger;
+import org.processmining.estminer.specpp.supervision.CSVWriter;
+import org.processmining.estminer.specpp.supervision.MessageLogger;
 import org.processmining.estminer.specpp.supervision.monitoring.TimeSeriesMonitor;
-import org.processmining.estminer.specpp.supervision.observations.HeuristicStatsEvent;
 import org.processmining.estminer.specpp.supervision.observations.TimedObservation;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
+import org.processmining.estminer.specpp.util.PathTools;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -31,12 +34,16 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
 
     @Override
     public void instantiateObservationHandlingFullySatisfied() {
-        CSVLogger<TreeHeuristicQueueingEvent<PlaceNode>> queueSizeChanges = new CSVLogger<>("queue.csv", new String[]{"time", "place", "change", "queue.size delta"}, e -> new String[]{LocalDateTime.now().toString(), e.getSource()
-                                                                                                                                                                                                                         .getProperties().toString(), e.getClass().getSimpleName(), Integer.toString(e.getDelta())});
+        OutputPathParameters outputPathParameters = pathParametersSource.getData();
 
-        CSVLogger<TimedObservation<HeuristicComputationEvent<DoubleScore>>> heuristicsLogger = new CSVLogger<>("heuristics.csv", new String[]{"time", "candidate", "score"}, e -> new String[]{e.getLocalDateTime().toString(), e.getObservation()
-                                                                                                                                                                                                                                 .getSource().toString(), e.getObservation()
-                                                                                                                                                                                                                                                           .getHeuristic().toString()});
+        CSVWriter<TreeHeuristicQueueingEvent<PlaceNode>> queueSizeExporter = new CSVWriter<>(outputPathParameters.getFilePath(PathTools.OutputFileType.CSV_EXPORT, "queue"), new String[]{"time", "place", "change", "queue.size delta"}, e -> new String[]{LocalDateTime.now().toString(), e.getSource()
+                                                                                                                                                                                                                                                                                             .getProperties().toString(), e.getClass().getSimpleName(), Integer.toString(e.getDelta())});
+
+        CSVWriter<TimedObservation<HeuristicComputationEvent<DoubleScore>>> heuristicsExporter = new CSVWriter<>(outputPathParameters.getFilePath(PathTools.OutputFileType.CSV_EXPORT, "heuristics"), new String[]{"time", "candidate", "score"}, e -> new String[]{e.getLocalDateTime().toString(), e.getObservation()
+                                                                                                                                                                                                                                                                                                      .getSource().toString(), e.getObservation()
+                                                                                                                                                                                                                                                                                                                        .getHeuristic().toString()});
+
+        MessageLogger heuristicsLogger = PipeWorks.fileLogger("heuristics", outputPathParameters.getFilePath(PathTools.OutputFileType.SUB_LOG, "heuristics"));
 
         beginLaying().source(heuristicsEvents)
                      .pipe(PipeWorks.<TreeHeuristicsEvent>concurrencyBridge())
@@ -44,16 +51,16 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
                      .split(lp -> lp.pipe(PipeWorks.asyncBuffer())
                                     .schedule(Duration.ofMillis(100))
                                     .pipe(PipeWorks.unpackingPipe())
-                                    .sink(PipeWorks.loggingSink("heuristics", PipeWorks.fileLogger("heuristics")))
+                                    .sink(PipeWorks.loggingSink("heuristics", heuristicsLogger))
                                     .apply())
                      .split(lp -> lp.pipe(PipeWorks.predicatePipe(e -> e instanceof HeuristicComputationEvent))
                                     .pipe(PipeWorks.timer())
-                                    .sink(heuristicsLogger)
+                                    .sink(heuristicsExporter)
                                     .schedule(Duration.ofMillis(100))
                                     .apply())
                      .pipe(PipeWorks.predicatePipe(e -> e instanceof TreeHeuristicQueueingEvent))
                      .sink(getMonitor("heuristics.queue.size"))
-                     .sink(queueSizeChanges)
+                     .sink(queueSizeExporter)
                      .schedule(Duration.ofMillis(100))
                      .apply();
 

@@ -1,13 +1,10 @@
 package org.processmining.estminer.specpp.base.impls;
 
-import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.base.Composer;
-import org.processmining.estminer.specpp.base.MutableCappedComposition;
-import org.processmining.estminer.specpp.base.Result;
+import org.processmining.estminer.specpp.base.*;
 
 import java.util.function.Function;
 
-public abstract class AbstractComposer<C extends Candidate, I extends MutableCappedComposition<C>, R extends Result> implements Composer<C, I, R> {
+public abstract class AbstractComposer<C extends Candidate, I extends AdvancedComposition<C>, R extends Result> implements Composer<C, I, R> {
 
     protected final Function<? super I, R> assembleResult;
     protected final I composition;

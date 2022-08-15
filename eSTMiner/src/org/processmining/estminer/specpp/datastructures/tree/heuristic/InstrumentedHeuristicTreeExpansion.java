@@ -12,7 +12,7 @@ import org.processmining.estminer.specpp.datastructures.tree.events.EnqueueNodeE
 import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicComputationEvent;
 import org.processmining.estminer.specpp.datastructures.tree.events.TreeHeuristicsEvent;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
-import org.processmining.estminer.specpp.supervision.observations.HeuristicStatsEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicStatsEvent;
 import org.processmining.estminer.specpp.supervision.piping.AsyncAdHocObservableWrapper;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;

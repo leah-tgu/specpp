@@ -4,13 +4,14 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingAdHoc
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingObservable;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.datastructures.tree.events.LeafEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.TreeEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.TreeStatsEvent;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.estminer.specpp.supervision.CSVLogger;
+import org.processmining.estminer.specpp.supervision.CSVWriter;
 import org.processmining.estminer.specpp.supervision.monitoring.TimeSeriesMonitor;
 import org.processmining.estminer.specpp.supervision.observations.EventCountStatistics;
-import org.processmining.estminer.specpp.supervision.observations.TreeEvent;
-import org.processmining.estminer.specpp.supervision.observations.TreeStatsEvent;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
+import org.processmining.estminer.specpp.util.PathTools;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -30,8 +31,9 @@ public class DetailedTreeSupervisor extends MonitoringSupervisor {
     @Override
     protected void instantiateObservationHandlingFullySatisfied() {
 
-        CSVLogger<LeafEvent<PlaceNode>> leafCountChanges = new CSVLogger<>("tree.csv", new String[]{"time", "place", "change", "tree.leaves.count delta"}, e -> new String[]{LocalDateTime.now().toString(), e.getSource()
-                                                                                                                                                                                                              .getProperties().toString(), e.getClass().getSimpleName(), Integer.toString(e.getDelta())});
+        CSVWriter<LeafEvent<PlaceNode>> leafCountChanges = new CSVWriter<>(pathParametersSource.getData()
+                                                                                               .getFilePath(PathTools.OutputFileType.CSV_EXPORT, "tree"), new String[]{"time", "place", "change", "tree.leaves.count delta"}, e -> new String[]{LocalDateTime.now().toString(), e.getSource()
+                                                                                                                                                                                                                                                                                 .getProperties().toString(), e.getClass().getSimpleName(), Integer.toString(e.getDelta())});
 
 
         beginLaying().source(treeEvents)

@@ -41,14 +41,10 @@ public class TreeTrackerParameters implements Parameters {
         return drawNodeLimit;
     }
 
+
+
     @Override
     public String toString() {
-        return "TreeTrackerParameters{" +
-                "eventLimit=" + eventLimit +
-                ", fromLevel=" + fromLevel +
-                ", toLevel=" + toLevel +
-                ", printNodeLimit=" + printNodeLimit +
-                ", drawNodeLimit=" + drawNodeLimit +
-                '}';
+        return "TreeTrackerParameters{" + "eventLimit=" + eventLimit + ", fromLevel=" + fromLevel + ", toLevel=" + toLevel + ", printNodeLimit=" + printNodeLimit + ", drawNodeLimit=" + drawNodeLimit + '}';
     }
 }

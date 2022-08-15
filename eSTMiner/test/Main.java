@@ -12,6 +12,7 @@ import org.processmining.estminer.specpp.componenting.supervision.FulfilledObser
 import org.processmining.estminer.specpp.componenting.supervision.ObservableRequirement;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
+import org.processmining.estminer.specpp.config.parameters.OutputPathParameters;
 import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.*;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
@@ -41,12 +42,14 @@ import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.processmining.estminer.specpp.orchestra.SpecOpsSetup.executeSpecOps;
-import static org.processmining.estminer.specpp.orchestra.SpecOpsSetup.setupSpecOps;
+import static org.processmining.estminer.specpp.orchestra.SpecOps.executeSpecOps;
+import static org.processmining.estminer.specpp.orchestra.SpecOps.setupSpecOps;
 import static org.processmining.estminer.specpp.util.HardcodedTestInput.getDummyInputBundle;
 
 public class Main {
@@ -271,7 +274,7 @@ public class Main {
 
         SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setupSpecOps(new BaseSpecOpsConfigBundle(), bundle);
 
-        executeSpecOps(specPP);
+        executeSpecOps(specPP, true);
 
     }
 
@@ -284,7 +287,7 @@ public class Main {
 
         SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setupSpecOps(new BaseSpecOpsConfigBundle(), bundle);
 
-        executeSpecOps(specPP);
+        executeSpecOps(specPP, true);
     }
 
 
@@ -395,5 +398,14 @@ public class Main {
         System.out.println(slpm.postProcess(pn));
     }
 
+    @Test
+    public void paths() throws IOException {
+        OutputPathParameters aDefault = new OutputPathParameters("eSTMiner\\", "mypre_", "_mypost");
+        for (PathTools.OutputFileType value : PathTools.OutputFileType.values()) {
+            String filePath = aDefault.getFilePath(value, "myname");
+            File file = new File(filePath);
+            file.createNewFile();
+        }
+    }
 
 }

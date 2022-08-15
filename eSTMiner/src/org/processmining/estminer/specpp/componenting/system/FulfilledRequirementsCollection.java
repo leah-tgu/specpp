@@ -39,7 +39,7 @@ public abstract class FulfilledRequirementsCollection<R extends Requirement<?, R
     }
 
     @SuppressWarnings("unchecked")
-    public <D> FulfilledRequirement<D, R> satisfyRequirement(R requirement) {
+    public <D> FulfilledRequirement<D, R> satisfyRequirement(R requirement) throws RequirementNotSatisfiableException {
         if (!hasCorrectComponentType(requirement)) throw new RequirementNotSatisfiableException();
         return fulfilledRequirements().stream()
                                       .filter(f -> f.gt(requirement))
@@ -49,7 +49,7 @@ public abstract class FulfilledRequirementsCollection<R extends Requirement<?, R
                                       .orElseThrow(RequirementNotSatisfiableException::new);
     }
 
-    public List<FulfilledRequirement<?, R>> multiSatisfyRequirement(R requirement) {
+    public List<FulfilledRequirement<?, R>> multiSatisfyRequirement(R requirement) throws RequirementNotSatisfiableException {
         if (!hasCorrectComponentType(requirement)) throw new RequirementNotSatisfiableException();
         return fulfilledRequirements().stream()
                                       .filter(f -> f.gt(requirement))

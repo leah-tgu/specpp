@@ -6,6 +6,7 @@ import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.componenting.system.ComponentType;
 import org.processmining.estminer.specpp.componenting.system.FulfilledRequirement;
 import org.processmining.estminer.specpp.componenting.system.FulfilledRequirementsCollection;
+import org.processmining.estminer.specpp.componenting.system.RequirementNotSatisfiableException;
 
 public class EvaluatorCollection extends FulfilledRequirementsCollection<EvaluatorRequirement<?, ?>> {
 
@@ -23,8 +24,12 @@ public class EvaluatorCollection extends FulfilledRequirementsCollection<Evaluat
     }
 
     public <I extends Evaluable, E extends Evaluation> Evaluator<I, E> askForEvaluator(EvaluatorRequirement<I, E> requirement) {
-        FulfilledRequirement<Evaluator<I, E>, EvaluatorRequirement<?, ?>> fulfilledRequirement = satisfyRequirement(requirement);
-        return fulfilledRequirement.getContent();
+        try {
+            FulfilledRequirement<Evaluator<I, E>, EvaluatorRequirement<?, ?>> fulfilledRequirement = satisfyRequirement(requirement);
+            return fulfilledRequirement.getContent();
+        } catch (RequirementNotSatisfiableException ignored) {
+        }
+        return null;
     }
 
 }

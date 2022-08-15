@@ -12,6 +12,7 @@ import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.evaluation.markings.QuickReplay;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
+import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 
 import java.util.EnumSet;
 import java.util.PrimitiveIterator;
@@ -52,7 +53,6 @@ public class SimplestFitnessEvaluator extends AbstractFitnessEvaluator {
         // TODO probably incorrect logic here regarding normalization over all traces
         SimplestFitnessEvaluation evaluation = summarizeInto(like);
         timeStopper.stop(TaskDescription.SIMPLEST_EVALUATION);
-
         return evaluation;
     }
 

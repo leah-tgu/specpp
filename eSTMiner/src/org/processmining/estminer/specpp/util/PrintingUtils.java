@@ -1,6 +1,7 @@
 package org.processmining.estminer.specpp.util;
 
 import org.processmining.estminer.specpp.base.impls.SpecPP;
+import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.FulfilledDataRequirement;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
@@ -15,9 +16,8 @@ public class PrintingUtils {
     }
 
 
-    public static String printParameters(SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP) {
-        return specPP.getComponentRepository()
-                     .parameters()
+    public static String printParameters(DataSourceCollection parameters) {
+        return parameters
                      .fulfilledRequirements()
                      .stream()
                      .map(f -> (FulfilledDataRequirement<?>) f)

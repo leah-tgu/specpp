@@ -36,7 +36,6 @@ public class TreeMonitor implements MultiComputingMonitor<TreeNodeEvent<Property
         if (observedEvents++ < parameters.getEventLimit()) cht.observe(observation);
     }
 
-
     @Override
     public Collection<TypedItem<?>> computeResults() {
         TreePrinter printer = new TreePrinter(cht, parameters.getFromLevel(), parameters.getToLevel(), parameters.getPrintNodeLimit());

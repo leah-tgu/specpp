@@ -77,12 +77,9 @@ public class PipeWorks {
         return new EventSupervision<>();
     }
 
-    public static MessageLogger fileLogger() {
-        return new FileMessageLogger();
-    }
 
-    public static MessageLogger fileLogger(String loggerName) {
-        return FileMessageLogger.create(loggerName);
+    public static MessageLogger fileLogger(String loggerName, String filePath) {
+        return FileMessageLogger.create(loggerName, filePath);
     }
 
     public static MessageLogger consoleLogger() {

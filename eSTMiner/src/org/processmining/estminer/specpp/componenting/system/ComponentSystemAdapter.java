@@ -115,10 +115,7 @@ public class ComponentSystemAdapter implements RequiresComponents, ProvisionsCom
                                                                                                                                     .getClass()))
                                                                                      .filter(f -> comparable.lt(comparableClass.cast(f.getComparable())))
                                                                                      .collect(Collectors.toList());
-            System.out.println("REMOVING" + fulfilledRequirement);
-            System.out.println(existing);
             componentProvisions.get(componentType).fulfilledRequirements().removeAll(existing);
-            System.out.println(componentProvisions.get(componentType).fulfilledRequirements());
             return !existing.isEmpty();
         }
         return false;

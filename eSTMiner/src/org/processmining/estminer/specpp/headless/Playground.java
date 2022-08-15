@@ -8,6 +8,7 @@ import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorCollection;
 import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
+import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.SimpleBuilder;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
@@ -17,21 +18,17 @@ import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.ChangeTree;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
 import org.processmining.estminer.specpp.evaluation.fitness.FullBasicFitnessEvaluation;
-import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
-import org.processmining.estminer.specpp.orchestra.PreProcessingParameters;
-import org.processmining.estminer.specpp.orchestra.SpecOpsConfigBundle;
-import org.processmining.estminer.specpp.orchestra.SpecOpsSetup;
+import org.processmining.estminer.specpp.orchestra.*;
 import org.processmining.estminer.specpp.preprocessing.InputData;
 import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
-import org.processmining.estminer.specpp.util.JavaTypingUtils;
 import org.processmining.estminer.specpp.util.NaivePlacemaker;
 import org.processmining.estminer.specpp.util.PublicPaths;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class Playground {
 
@@ -39,8 +36,10 @@ public class Playground {
         play(BaseSpecOpsConfigBundle::new, InputData.loadData(PublicPaths.SAMPLE_EVENTLOG_1, PreProcessingParameters.getDefault()));
     }
 
+
+
     public static void play(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource) {
-        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = SpecOpsSetup.specOps(configBundleSource, inputDataBundleSource);
+        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = SpecOps.specOps(configBundleSource, inputDataBundleSource, true);
 
         System.out.println("// ========================================= //");
         System.out.println("POST EXECUTION");

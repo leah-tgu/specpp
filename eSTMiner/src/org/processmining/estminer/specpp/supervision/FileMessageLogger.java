@@ -11,7 +11,7 @@ import java.util.Set;
 public class FileMessageLogger extends MessageLogger {
 
 
-    public static final String LOG_PATH = "logs\\", DEFAULT_LOGNAME = "main", LOGFILE_SUFFIX = ".log";
+    public static final String DEFAULT_LOGNAME = "main", LOGFILE_SUFFIX = ".log";
 
     public static final Set<String> instantiatedLoggers = new HashSet<>();
 
@@ -20,16 +20,16 @@ public class FileMessageLogger extends MessageLogger {
         LogManager.getLogger("SPECPP File Logger").addAppender(fileAppender);
     }
 
-    public FileMessageLogger() {
+    protected FileMessageLogger() {
         super(LogManager.getLogger("SPECPP File Logger"));
     }
 
-    public static FileMessageLogger create(String loggerLabel) {
+    public static FileMessageLogger create(String loggerLabel, String filePath) {
         Logger logger = LogManager.getLogger(loggerLabel);
-        if (!instantiatedLoggers.contains(loggerLabel)) {
-            FileAppender fileAppender = FileUtils.createLogFileAppender(loggerLabel);
+        if (!instantiatedLoggers.contains(filePath + loggerLabel)) {
+            FileAppender fileAppender = FileUtils.createLogFileAppender(filePath);
             logger.addAppender(fileAppender);
-            instantiatedLoggers.add(loggerLabel);
+            instantiatedLoggers.add(filePath + loggerLabel);
         }
         return new FileMessageLogger(logger);
     }

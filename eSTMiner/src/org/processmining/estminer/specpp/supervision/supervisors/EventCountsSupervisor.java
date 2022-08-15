@@ -8,12 +8,10 @@ import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicCom
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.supervision.monitoring.KeepLastMonitor;
 import org.processmining.estminer.specpp.supervision.observations.EventCountStatistics;
-import org.processmining.estminer.specpp.supervision.observations.TreeEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.TreeEvent;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.supervision.transformers.Transformers;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
-
-import java.time.Duration;
 
 import static org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements.observable;
 
@@ -36,10 +34,6 @@ public class EventCountsSupervisor extends MonitoringSupervisor {
     }
 
 
-    @Override
-    protected void instantiateObservationHandlingFullySatisfied() {
-        instantiateObservationHandlingPartiallySatisfied();
-    }
 
     @Override
     protected void instantiateObservationHandlingPartiallySatisfied() {

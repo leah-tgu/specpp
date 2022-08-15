@@ -11,8 +11,8 @@ import org.processmining.estminer.specpp.datastructures.tree.events.LeafRemovalE
 import org.processmining.estminer.specpp.datastructures.tree.events.NodeExhaustionEvent;
 import org.processmining.estminer.specpp.datastructures.tree.events.NodeExpansionEvent;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
-import org.processmining.estminer.specpp.supervision.observations.EnumeratingTreeStatsEvent;
-import org.processmining.estminer.specpp.supervision.observations.TreeEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.EnumeratingTreeStatsEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.TreeEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.AsyncAdHocObservableWrapper;

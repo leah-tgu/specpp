@@ -2,7 +2,7 @@ package org.processmining.estminer.specpp.config.parameters;
 
 public class TauFitnessThresholds implements Parameters {
 
-    public static TauFitnessThresholds tau(int t) {
+    public static TauFitnessThresholds tau(double t) {
         return new TauFitnessThresholds(t, 1 - t, 1 - t);
     }
 

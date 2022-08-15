@@ -18,6 +18,7 @@ import org.processmining.estminer.specpp.evaluation.fitness.SimplifiedFitnessSta
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
+import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 
 /**
  * The base implementation of a {@code Composer} for candidates of type {@code Place}.
@@ -37,6 +38,7 @@ public class PlacesComposer<I extends AdvancedComposition<Place>> extends Abstra
     protected final DelegatingDataSource<TauFitnessThresholds> fitnessThresholds = new DelegatingDataSource<>();
 
     protected final TimeStopper timeStopper = new TimeStopper();
+
 
     public PlacesComposer(I placeComposition) {
         super(placeComposition, c -> new PetriNet(c.toSet()));

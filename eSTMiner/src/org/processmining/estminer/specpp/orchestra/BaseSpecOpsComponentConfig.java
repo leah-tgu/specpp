@@ -3,8 +3,9 @@ package org.processmining.estminer.specpp.orchestra;
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.composition.InstrumentedPlacesComposerWithCPR;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
-import org.processmining.estminer.specpp.composition.PlaceComposerWithConcurrentImplicitnessTesting;
+import org.processmining.estminer.specpp.composition.PlacesComposerWithCPR;
 import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
@@ -32,6 +33,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
                             .supervisor(BaseSupervisor::new)
                             .supervisor(PerformanceSupervisor::new)
                             .supervisor(AltEventCountsSupervisor::new)
+                            .supervisor(DetailedCompositionSupervisor::new)
                             .supervisor(TerminalSupervisor::new)
                             .build(csa);
     }
@@ -49,7 +51,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(PlaceCollection::new)
-                            .composer(PlaceComposerWithConcurrentImplicitnessTesting::new)
+                            .composer(InstrumentedPlacesComposerWithCPR::new)
                             .build(csa);
     }
 

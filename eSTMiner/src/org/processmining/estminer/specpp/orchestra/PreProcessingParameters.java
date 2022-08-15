@@ -18,6 +18,7 @@ public class PreProcessingParameters implements Parameters {
         return new PreProcessingParameters(true, AverageTracePositionOrdering.class);
     }
 
+
     @Override
     public String toString() {
         return "PreProcessingParameters{" +

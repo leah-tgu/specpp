@@ -1,9 +1,6 @@
 package org.processmining.estminer.specpp.base.impls;
 
-import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.base.ConstrainingComposer;
-import org.processmining.estminer.specpp.base.MutableCappedComposition;
-import org.processmining.estminer.specpp.base.Result;
+import org.processmining.estminer.specpp.base.*;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
 import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
@@ -27,25 +24,25 @@ import java.util.function.Function;
  * @see ConstrainingComposer
  * @see CandidateConstraint
  */
-public abstract class AbstractConstrainingComposer<C extends Candidate, I extends MutableCappedComposition<C>, R extends Result> extends AbstractComposer<C, I, R> implements ConstrainingComposer<C, I, R, CandidateConstraint<C>>, UsesComponentSystem {
+public abstract class AbstractConstrainingComposer<C extends Candidate, I extends AdvancedComposition<C>, R extends Result> extends AbstractComposer<C, I, R> implements ConstrainingComposer<C, I, R, CandidateConstraint<C>>, UsesComponentSystem {
 
     protected final ComponentSystemAdapter componentSystemAdapter = new ComponentSystemAdapter();
 
-    protected final EventSupervision<CandidateConstraint<C>> evs;
+    protected final EventSupervision<CandidateConstraint<C>> constraintEventSupervision;
 
     public AbstractConstrainingComposer(I composition, Function<? super I, R> assembleResult) {
         super(composition, assembleResult);
-        evs = PipeWorks.eventSupervision();
-        componentSystemAdapter().provide(SupervisionRequirements.observable("composer.constraints", JavaTypingUtils.castClass(CandidateConstraint.class), evs));
+        constraintEventSupervision = PipeWorks.eventSupervision();
+        componentSystemAdapter().provide(SupervisionRequirements.observable("composer.constraints", JavaTypingUtils.castClass(CandidateConstraint.class), constraintEventSupervision));
     }
 
     protected void publishConstraint(CandidateConstraint<C> constraint) {
-        evs.publish(constraint);
+        constraintEventSupervision.publish(constraint);
     }
 
     @Override
     public Observable<CandidateConstraint<C>> getConstraintPublisher() {
-        return evs;
+        return constraintEventSupervision;
     }
 
     @Override

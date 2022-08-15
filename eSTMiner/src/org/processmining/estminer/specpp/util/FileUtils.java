@@ -4,33 +4,39 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.SimpleLayout;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.processmining.estminer.specpp.supervision.FileMessageLogger;
-import org.processmining.plugins.graphviz.dot.Dot;
 import org.processmining.plugins.graphviz.visualisation.DotPanel;
-import org.processmining.plugins.graphviz.visualisation.export.ExporterSVG;
+import org.processmining.plugins.graphviz.visualisation.NavigableSVGPanel;
+import org.processmining.plugins.graphviz.visualisation.export.ExporterPDF;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 public class FileUtils {
 
+    public static void saveDotPanel(DotPanel panel) {
+        saveDotPanel(PathTools.getRelativeFilePath(PathTools.OutputFileType.GRAPH, panel.getName()), panel);
+    }
 
-    public static void saveDot(Dot dot) {
-        ExporterSVG exporter = new ExporterSVG();
-        File f = new File(PublicPaths.OUTPUT_PATH + "graph_" + dot.getLabel() + ".svg");
+    public static void saveDotPanel(String filePath, DotPanel panel) {
+        File f = new File(filePath);
         try {
-            exporter.export(new DotPanel(dot), f);
+            if (!panel.getExporters().isEmpty()) {
+                panel.getExporters().get(1).export(panel, f);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public static void saveChart(JFreeChart chart) {
-        File f = new File(PublicPaths.CHART_PATH + chart.getTitle()
-                                                        .getText()
-                                                        .replace(" ", "")
-                                                        .replace(".", "_") + ".png");
+        String s = chart.getTitle().getText().replace(" ", "").replace(".", "_");
+        saveChart(PathTools.getRelativeFilePath(PathTools.OutputFileType.CHART, s), chart);
+    }
+
+    public static void saveChart(String filePath, JFreeChart chart) {
+        File f = new File(filePath);
         try {
             ChartUtilities.saveChartAsPNG(f, chart, 1920, 1080);
         } catch (IOException e) {
@@ -38,23 +44,42 @@ public class FileUtils {
         }
     }
 
-    public static FileAppender createLogFileAppender(String loggerLabel) {
+    public static FileAppender createLogFileAppender(String filePath) {
         FileAppender fileAppender;
         try {
-            fileAppender = new FileAppender(new SimpleLayout(), PublicPaths.LOG_PATH + loggerLabel + FileMessageLogger.LOGFILE_SUFFIX, false);
+            fileAppender = new FileAppender(new SimpleLayout(), filePath, false);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return fileAppender;
     }
 
-    public static FileWriter createOutputFileWriter(String fileName) {
+    public static FileWriter createOutputFileWriter(String filePath) {
         FileWriter fileWriter;
         try {
-            fileWriter = new FileWriter(PublicPaths.OUTPUT_PATH + fileName);
+            fileWriter = new FileWriter(filePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return fileWriter;
+    }
+
+    public static void saveString(String filePath, String x) {
+        try (FileWriter outputFileWriter = createOutputFileWriter(filePath)) {
+            outputFileWriter.write(x);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void saveStrings(String filePath, List<String> strings) {
+
+        try (FileWriter outputFileWriter = createOutputFileWriter(filePath)) {
+            for (String string : strings) {
+                outputFileWriter.write(string + "\n");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

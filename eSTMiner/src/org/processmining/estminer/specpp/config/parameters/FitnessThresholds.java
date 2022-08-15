@@ -34,4 +34,5 @@ public class FitnessThresholds implements Parameters {
     public String toString() {
         return "FitnessThresholds(" + Arrays.toString(thresholds) + ')';
     }
+
 }

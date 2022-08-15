@@ -8,7 +8,8 @@ import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 public class DefaultParameters extends AbstractComponentSystemUser implements ProvidesParameters {
 
     public DefaultParameters() {
-        componentSystemAdapter().provide(ParameterRequirements.parameters(ParameterRequirements.FITNESS_THRESHOLDS, StaticDataSource.of(FitnessThresholds.tau(1))))
+        componentSystemAdapter().provide(ParameterRequirements.parameters(ParameterRequirements.OUTPUT_PATH_PARAMETERS, StaticDataSource.of(OutputPathParameters.getDefault())))
+                                .provide(ParameterRequirements.parameters("supervision.parameters", SupervisionParameters.class, StaticDataSource.of(SupervisionParameters.getDefault())))
                                 .provide(ParameterRequirements.parameters(ParameterRequirements.TAU_FITNESS_THRESHOLDS, StaticDataSource.of(TauFitnessThresholds.getDefault())))
                                 .provide(ParameterRequirements.parameters("tree.tracker.parameters", TreeTrackerParameters.class, StaticDataSource.of(TreeTrackerParameters.getDefault())))
                                 .provide(ParameterRequirements.parameters("placegenerator.parameters", PlaceGeneratorParameters.class, StaticDataSource.of(PlaceGeneratorParameters.getDefault())));

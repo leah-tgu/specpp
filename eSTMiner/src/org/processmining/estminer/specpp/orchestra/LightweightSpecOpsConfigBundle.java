@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.orchestra;
 
-import org.processmining.estminer.specpp.componenting.system.ExpansionLimitedParameters;
+import org.processmining.estminer.specpp.config.parameters.ExpansionLimitedParameters;
 
 public class LightweightSpecOpsConfigBundle extends SpecOpsConfigBundle {
     public LightweightSpecOpsConfigBundle() {
