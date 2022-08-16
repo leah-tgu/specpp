@@ -1,5 +1,6 @@
 package org.processmining.estminer.specpp.componenting.system;
 
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
 
 public abstract class AbstractComponentSystemUser implements UsesComponentSystem {

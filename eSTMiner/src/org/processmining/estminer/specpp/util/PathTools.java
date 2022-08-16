@@ -1,5 +1,7 @@
 package org.processmining.estminer.specpp.util;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 public class PathTools {
 
     public enum FolderStructure {
@@ -19,7 +21,7 @@ public class PathTools {
     }
 
     public enum OutputFileType {
-        MAIN_LOG(FolderStructure.LOG_FOLDER, ".log"), SUB_LOG(FolderStructure.LOG_FOLDER, ".log"), CHART(FolderStructure.VIS_FOLDER, "chart_", "", ".png"), GRAPH(FolderStructure.VIS_FOLDER, "graph_", "", ""), MISC_EXPORT(FolderStructure.EXPORT_FOLDER), CSV_EXPORT(FolderStructure.EXPORT_FOLDER, ".csv");
+        MAIN_LOG(FolderStructure.LOG_FOLDER, ".log"), SUB_LOG(FolderStructure.LOG_FOLDER, ".log"), CHART(FolderStructure.VIS_FOLDER, "chart_", "", ".png"), GRAPH(FolderStructure.VIS_FOLDER, "graph_", "", ".png"), MISC_EXPORT(FolderStructure.EXPORT_FOLDER), CSV_EXPORT(FolderStructure.EXPORT_FOLDER, ".csv");
 
         private final FolderStructure folder;
         private final String prefix, postfix, extension;
@@ -40,13 +42,17 @@ public class PathTools {
         }
     }
 
+    public static String weakSanitize(String fileName) {
+        return StringEscapeUtils.escapeJava(fileName.replace('\\', ' '));
+    }
+
     public static String getRelativeFilePath(OutputFileType outputFileType, String name, String prefix, String postfix) {
-        return prefix + outputFileType.prefix + name + outputFileType.postfix + postfix + outputFileType.extension;
+        return prefix + outputFileType.prefix + weakSanitize(name) + outputFileType.postfix + postfix + outputFileType.extension;
 
     }
 
     public static String getRelativeFilePath(OutputFileType outputFileType, String name) {
-        return outputFileType.prefix + name + outputFileType.postfix + outputFileType.extension;
+        return outputFileType.prefix + weakSanitize(name) + outputFileType.postfix + outputFileType.extension;
     }
 
     public static FolderStructure isRelativeTo(OutputFileType fileType) {

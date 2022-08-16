@@ -15,6 +15,10 @@ public class PetrinetVisualization extends Visualization<DotPanel> {
         return new PetrinetVisualization(petrinetWrapper.getLabel(), visPetrinetWrapper(petrinetWrapper));
     }
 
+    public static PetrinetVisualization of(String title, ProMPetrinetWrapper petrinetWrapper) {
+        return new PetrinetVisualization(title, visPetrinetWrapper(petrinetWrapper));
+    }
+
     private static DotPanel visPetrinetWrapper(ProMPetrinetWrapper petrinetWrapper) {
         GraphVisualizerAlgorithm alg = new GraphVisualizerAlgorithm();
         return (DotPanel) alg.apply(null, petrinetWrapper.getNet());

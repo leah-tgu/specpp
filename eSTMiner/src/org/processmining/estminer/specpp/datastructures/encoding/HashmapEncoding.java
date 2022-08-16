@@ -13,11 +13,13 @@ import java.util.stream.Stream;
 
 /**
  * Represents an {@code IntEncoding<T>} with an internal HashMap.
+ *
  * @param <T> domain of this encoding
  */
 public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Copyable<HashmapEncoding<T>>, ProperlyPrintable {
 
     protected final BiMap<T, Integer> internal;
+    protected final int size;
 
     public HashmapEncoding(Set<T> items, Comparator<T> ordering) {
         ArrayList<T> list = new ArrayList<>(items);
@@ -27,7 +29,10 @@ public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Cop
             builder.put(list.get(i), i);
         }
         internal = builder.build();
+        size = internal.size();
+        assertInvariant();
     }
+
 
     public HashmapEncoding(List<T> orderedDistinctItems) {
         ImmutableBiMap.Builder<T, Integer> builder = ImmutableBiMap.builder();
@@ -35,10 +40,18 @@ public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Cop
             builder.put(orderedDistinctItems.get(i), i);
         }
         internal = builder.build();
+        size = internal.size();
+        assertInvariant();
     }
 
     protected HashmapEncoding(ImmutableBiMap<T, Integer> indices) {
         this.internal = indices;
+        this.size = internal.size();
+        assertInvariant();
+    }
+
+    protected void assertInvariant() {
+        assert size == internal.values().stream().max(Comparator.naturalOrder()).get() + 1;
     }
 
     public static <T> HashmapEncoding<T> copyOf(Map<T, Integer> map) {
@@ -55,7 +68,7 @@ public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Cop
     }
 
     public int size() {
-        return internal.size();
+        return size;
     }
 
     @Override
@@ -65,12 +78,12 @@ public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Cop
 
     @Override
     public Stream<Integer> range() {
-        return internal.values().stream(); // IteratorUtils.asIterable(IntStream.range(0, size()).boxed().iterator());
+        return primitiveRange().boxed();
     }
 
     @Override
     public IntStream primitiveRange() {
-        return range().mapToInt(i -> i);
+        return IntStream.range(0, size);
     }
 
     @Override
@@ -80,12 +93,12 @@ public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Cop
 
     @Override
     public boolean isInRange(Integer toDecode) {
-        return internal.containsValue(toDecode);
+        return isIntInRange(toDecode);
     }
 
     @Override
     public boolean isIntInRange(int toDecode) {
-        return internal.containsValue(toDecode);
+        return toDecode < size && toDecode >= 0;
     }
 
     @Override

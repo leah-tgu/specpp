@@ -25,11 +25,13 @@ public class FileMessageLogger extends MessageLogger {
     }
 
     public static FileMessageLogger create(String loggerLabel, String filePath) {
-        Logger logger = LogManager.getLogger(loggerLabel);
-        if (!instantiatedLoggers.contains(filePath + loggerLabel)) {
+        String fullLabel = filePath + loggerLabel;
+        fullLabel = fullLabel.replace('\\', '.');
+        Logger logger = LogManager.getLogger(fullLabel);
+        if (!instantiatedLoggers.contains(fullLabel)) {
             FileAppender fileAppender = FileUtils.createLogFileAppender(filePath);
             logger.addAppender(fileAppender);
-            instantiatedLoggers.add(filePath + loggerLabel);
+            instantiatedLoggers.add(fullLabel);
         }
         return new FileMessageLogger(logger);
     }

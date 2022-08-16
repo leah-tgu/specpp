@@ -40,8 +40,9 @@ public class PostSpecOps {
         OutputPathParameters outputPathParameters = cr.parameters()
                                                       .askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS);
 
-        PetrinetVisualization petrinetVisualization = PetrinetVisualization.of(finalResult);
-        if (allowVisualOutput) showFinalResult(finalResult, petrinetVisualization);
+        String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.GRAPH, "petri");
+        PetrinetVisualization petrinetVisualization = PetrinetVisualization.of(filePath,finalResult);
+        if (true || allowVisualOutput) showFinalResult(finalResult, petrinetVisualization);
         saveFinalResult(outputPathParameters, finalResult, petrinetVisualization);
         List<Monitor<?, ?>> monitors = getMonitors(specPP);
         if (allowVisualOutput) showMonitoringResults(monitors);
@@ -49,7 +50,7 @@ public class PostSpecOps {
     }
 
     private static void saveFinalResult(OutputPathParameters outputPathParameters, ProMPetrinetWrapper finalResult, PetrinetVisualization petrinetVisualization) {
-        String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.GRAPH, petrinetVisualization.getTitle());
+        String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.GRAPH, "petri");
 
         FileUtils.saveDotPanel(filePath, petrinetVisualization.getComponent());
     }
@@ -58,7 +59,7 @@ public class PostSpecOps {
         int edgeCount = finalResult.getNet().getEdges().size();
         int transitionCount = finalResult.getNet().getTransitions().size();
         int placeCount = finalResult.getNet().getPlaces().size();
-        System.out.println("Resulting Petri net contains " + placeCount + " places (incl. artificial start & end), " + transitionCount + " transitions and " + edgeCount + " arcs.");
+        System.out.println("The resulting Petri net contains " + placeCount + " places (incl. artificial start & end), " + transitionCount + " transitions and " + edgeCount + " arcs.");
         VizUtils.showVisualization(petrinetVisualization);
         return petrinetVisualization;
     }
