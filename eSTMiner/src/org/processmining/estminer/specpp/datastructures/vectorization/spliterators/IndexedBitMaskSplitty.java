@@ -4,10 +4,11 @@ import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
+import java.nio.IntBuffer;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 
-public class IndexedBitMaskSplitty extends AbstractBitMaskSplitty<IndexedItem<IntStream>> {
+public class IndexedBitMaskSplitty extends AbstractBitMaskSplitty<IndexedItem<IntBuffer>> {
 
     private final IntUnaryOperator outsideMapper;
 
@@ -18,12 +19,12 @@ public class IndexedBitMaskSplitty extends AbstractBitMaskSplitty<IndexedItem<In
     }
 
     @Override
-    protected IndexedItem<IntStream> make(int index) {
-        return new IndexedItem<>(outsideMapper.applyAsInt(index), ivs.viewVector(index));
+    protected IndexedItem<IntBuffer> make(int index) {
+        return new IndexedItem<>(outsideMapper.applyAsInt(index), ivs.vectorBuffer(index));
     }
 
     @Override
-    protected AbstractBitMaskSplitty<IndexedItem<IntStream>> makePrefix(int oldStart, int half) {
+    protected AbstractBitMaskSplitty<IndexedItem<IntBuffer>> makePrefix(int oldStart, int half) {
         return new IndexedBitMaskSplitty(ivs, bitMask, oldStart, half, outsideMapper);
     }
 

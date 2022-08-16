@@ -15,6 +15,7 @@ import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessS
 import org.processmining.estminer.specpp.evaluation.fitness.SimplifiedFitnessStatus;
 import org.processmining.estminer.specpp.util.StreamUtils;
 
+import java.nio.IntBuffer;
 import java.util.EnumSet;
 import java.util.PrimitiveIterator;
 import java.util.Spliterator;
@@ -158,11 +159,11 @@ public class DenseVariantMarkingHistories implements VariantMarkingHistories<Den
         return BitMask.of(indexSubset.unmapIndices(markingHistories.vectorwisePredicateStream(indexSubset.mapIndices(variantMask.stream()), isNonnegativeMarkingHistory)));
     }
 
-    public Spliterator<IndexedItem<IntStream>> spliterator() {
+    public Spliterator<IndexedItem<IntBuffer>> spliterator() {
         return new IndexedBitMaskSplitty(markingHistories, indexSubset.getIndices(), 0, indexSubset.getIndexCount(), IntUnaryOperator.identity());
     }
 
-    public Spliterator<IndexedItem<IntStream>> spliterator(BitMask bitMask) {
+    public Spliterator<IndexedItem<IntBuffer>> spliterator(BitMask bitMask) {
         return new IndexedBitMaskSplitty(markingHistories, bitMask, 0, bitMask.cardinality(), IntUnaryOperator.identity());
     }
 

@@ -11,6 +11,7 @@ import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.PartiallyOrdered;
 import org.processmining.estminer.specpp.util.StreamUtils;
 
+import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -122,6 +123,10 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
         return Arrays.stream(storage, startIndices[index], startIndices[index + 1]);
     }
 
+    public IntBuffer vectorBuffer(int index) {
+        return IntBuffer.wrap(storage, startIndices[index], startIndices[index + 1] - startIndices[index]);
+    }
+
     public IntStream indexStream() {
         return IntStream.range(0, getVectorCount());
     }
@@ -194,20 +199,20 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
         return IVSComputations.ltOn(indexStream(), this, other.indexStream(), other);
     }
 
-    public Spliterator<IntStream> spliterator() {
+    public Spliterator<IntBuffer> spliterator() {
         return new Splitty(this, 0, getVectorCount());
     }
 
-    public Spliterator<IndexedItem<IntStream>> indexedSpliterator() {
+    public Spliterator<IndexedItem<IntBuffer>> indexedSpliterator() {
         return new IndexedSplitty(this, 0, getVectorCount(), IntUnaryOperator.identity());
     }
 
-    public Spliterator<IntStream> spliterator(BitMask bitMask) {
+    public Spliterator<IntBuffer> spliterator(BitMask bitMask) {
         assert bitMask.length() <= getVectorCount();
         return new BitMaskSplitty(this, bitMask, 0, bitMask.cardinality());
     }
 
-    public Spliterator<IndexedItem<IntStream>> indexedSpliterator(BitMask bitMask) {
+    public Spliterator<IndexedItem<IntBuffer>> indexedSpliterator(BitMask bitMask) {
         assert bitMask.length() <= getVectorCount();
         return new IndexedBitMaskSplitty(this, bitMask, 0, bitMask.cardinality(), IntUnaryOperator.identity());
     }

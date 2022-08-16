@@ -10,6 +10,7 @@ import org.processmining.estminer.specpp.datastructures.vectorization.spliterato
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedSplitty;
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.Splitty;
 
+import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -75,6 +76,11 @@ public class IntVectorSubsetStorage extends IntVectorStorage implements OnlyCove
     }
 
     @Override
+    public IntBuffer vectorBuffer(int index) {
+        return super.vectorBuffer(mapIndex(index));
+    }
+
+    @Override
     public IntStream indexStream() {
         return indexSubset.streamIndices();
     }
@@ -96,21 +102,21 @@ public class IntVectorSubsetStorage extends IntVectorStorage implements OnlyCove
     }
 
     @Override
-    public Spliterator<IntStream> spliterator() {
+    public Spliterator<IntBuffer> spliterator() {
         return new BitMaskSplitty(this, indexSubset.getIndices(), 0, indexSubset.getIndexCount());
     }
 
     @Override
-    public Spliterator<IndexedItem<IntStream>> indexedSpliterator() {
+    public Spliterator<IndexedItem<IntBuffer>> indexedSpliterator() {
         return new IndexedBitMaskSplitty(this, indexSubset.getIndices(), 0, indexSubset.getIndexCount(), IntUnaryOperator.identity());
     }
 
-    public Spliterator<IntStream> spliterator(BitMask bitMask) {
+    public Spliterator<IntBuffer> spliterator(BitMask bitMask) {
         assert indexSubset.covers(bitMask);
         return new BitMaskSplitty(this, bitMask, 0, bitMask.cardinality());
     }
 
-    public Spliterator<IndexedItem<IntStream>> indexedSpliterator(BitMask bitMask) {
+    public Spliterator<IndexedItem<IntBuffer>> indexedSpliterator(BitMask bitMask) {
         assert indexSubset.covers(bitMask);
         return new IndexedBitMaskSplitty(this, bitMask, 0, bitMask.cardinality(), IntUnaryOperator.identity());
     }

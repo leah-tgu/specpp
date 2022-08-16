@@ -7,6 +7,7 @@ import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
+import java.nio.IntBuffer;
 import java.util.Spliterator;
 import java.util.stream.IntStream;
 
@@ -68,12 +69,12 @@ public class EncodedLogImpl implements EncodedLog {
     }
 
     @Override
-    public Spliterator<IntStream> efficientSpliterator() {
+    public Spliterator<IntBuffer> efficientSpliterator() {
         return ivs.spliterator();
     }
 
     @Override
-    public Spliterator<IndexedItem<IntStream>> efficientIndexedSpliterator() {
+    public Spliterator<IndexedItem<IntBuffer>> efficientIndexedSpliterator() {
         return ivs.indexedSpliterator();
     }
 }

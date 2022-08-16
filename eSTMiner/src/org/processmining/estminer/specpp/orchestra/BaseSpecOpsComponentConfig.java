@@ -19,6 +19,7 @@ import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousP
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluator;
 import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
+import org.processmining.estminer.specpp.postprocessing.PlaceExporter;
 import org.processmining.estminer.specpp.postprocessing.ProMConverter;
 import org.processmining.estminer.specpp.postprocessing.ReplayBasedImplicitnessPostProcessing;
 import org.processmining.estminer.specpp.postprocessing.SelfLoopPlaceMerger;
@@ -70,6 +71,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
         return Configurators.<PetriNet>postProcessing()
                             .instrumentedProcessor("ReplayBasedImplicitness", new ReplayBasedImplicitnessPostProcessing.Builder())
                             .instrumentedProcessor("SelfLoopPlaceMerger", SelfLoopPlaceMerger::new)
+                            .processor(PlaceExporter::new)
                             .processor(ProMConverter::new)
                             .build(csa);
     }

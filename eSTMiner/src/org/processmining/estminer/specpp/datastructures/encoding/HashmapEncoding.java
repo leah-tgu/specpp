@@ -3,6 +3,8 @@ package org.processmining.estminer.specpp.datastructures.encoding;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
+import com.googlecode.cqengine.query.simple.Has;
+import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
 import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.ProperlyHashable;
 import org.processmining.estminer.specpp.traits.ProperlyPrintable;
@@ -16,35 +18,32 @@ import java.util.stream.Stream;
  *
  * @param <T> domain of this encoding
  */
-public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Copyable<HashmapEncoding<T>>, ProperlyPrintable {
+public class HashmapEncoding<T> extends NoRehashing<Map<T, Integer>> implements IntEncoding<T>, ProperlyHashable, Copyable<HashmapEncoding<T>>, ProperlyPrintable {
 
     protected final BiMap<T, Integer> internal;
     protected final int size;
 
-    public HashmapEncoding(Set<T> items, Comparator<T> ordering) {
+    public static <T> HashmapEncoding<T> ofComparableSet(Set<T> items, Comparator<T> ordering) {
         ArrayList<T> list = new ArrayList<>(items);
         list.sort(ordering);
         ImmutableBiMap.Builder<T, Integer> builder = ImmutableBiMap.builder();
         for (int i = 0; i < list.size(); i++) {
             builder.put(list.get(i), i);
         }
-        internal = builder.build();
-        size = internal.size();
-        assertInvariant();
+        return new HashmapEncoding<>(builder.build());
     }
 
-
-    public HashmapEncoding(List<T> orderedDistinctItems) {
+    public static <T> HashmapEncoding<T> ofList(List<T> orderedDistinctItems) {
         ImmutableBiMap.Builder<T, Integer> builder = ImmutableBiMap.builder();
         for (int i = 0; i < orderedDistinctItems.size(); i++) {
             builder.put(orderedDistinctItems.get(i), i);
         }
-        internal = builder.build();
-        size = internal.size();
-        assertInvariant();
+        return new HashmapEncoding<>(builder.build());
     }
 
+
     protected HashmapEncoding(ImmutableBiMap<T, Integer> indices) {
+        super(indices);
         this.internal = indices;
         this.size = internal.size();
         assertInvariant();
@@ -111,15 +110,6 @@ public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Cop
         return internal.inverse().get(index);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        HashmapEncoding<?> encoding = (HashmapEncoding<?>) o;
-
-        return internal.equals(encoding.internal);
-    }
 
     @Override
     public String toString() {
@@ -134,13 +124,9 @@ public class HashmapEncoding<T> implements IntEncoding<T>, ProperlyHashable, Cop
         return sb.toString();
     }
 
-    @Override
-    public int hashCode() {
-        return internal.hashCode();
-    }
 
     @Override
     public HashmapEncoding<T> copy() {
-        return new HashmapEncoding<>(ImmutableBiMap.copyOf(internal));
+        return HashmapEncoding.copyOf(internal);
     }
 }

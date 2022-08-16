@@ -6,6 +6,7 @@ import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMa
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorSubsetStorage;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Spliterator;
@@ -50,12 +51,12 @@ public class Spliterating {
         assertIndexedSpliterator(sh.spliterator(tm), tmArr, true);
     }
 
-    public void assertIndexedSpliterator(Spliterator<IndexedItem<IntStream>> spliterator, Integer[] arr, boolean print) {
+    public void assertIndexedSpliterator(Spliterator<IndexedItem<IntBuffer>> spliterator, Integer[] arr, boolean print) {
         Assert.assertEquals(spliterator.estimateSize(), arr.length);
         List<Integer> l1 = new ArrayList<>();
         List<Integer> l2 = new ArrayList<>();
         spliterator.forEachRemaining(ii -> {
-            l1.add((int) ii.getItem().count());
+            l1.add((int) ii.getItem().remaining());
             l2.add(ii.getIndex());
         });
         if (print) for (int i = 0; i < arr.length; i++) {
@@ -66,10 +67,10 @@ public class Spliterating {
         Assert.assertArrayEquals(l1.toArray(), l2.toArray());
     }
 
-    public void assertSpliterator(Spliterator<IntStream> spliterator, Integer[] arr, boolean print) {
+    public void assertSpliterator(Spliterator<IntBuffer> spliterator, Integer[] arr, boolean print) {
         Assert.assertEquals(spliterator.estimateSize(), arr.length);
         List<Integer> l = new ArrayList<>();
-        spliterator.forEachRemaining(v -> l.add((int) v.count()));
+        spliterator.forEachRemaining(v -> l.add((int) v.remaining()));
         if (print)
             for (int i = 0; i < arr.length; i++) {
                 System.out.println(arr[i] + "\t" + l.get(i));

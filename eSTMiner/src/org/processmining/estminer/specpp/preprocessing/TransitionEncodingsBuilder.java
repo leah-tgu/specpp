@@ -40,7 +40,7 @@ public abstract class TransitionEncodingsBuilder implements SimpleBuilder<IntEnc
         set.addAll(activities);
         set.removeAll(toIgnore);
         List<Transition> list = set.stream().map(mapping::get).collect(Collectors.toList());
-        return new HashmapEncoding<>(list);
+        return HashmapEncoding.ofList(list);
     }
 
 

@@ -56,16 +56,16 @@ public class BitEncodedSet<T> implements EncodedSet<T, Integer>, ProperlyHashabl
     }
 
     private void checkEnc(BitEncodedSet<T> other) {
-        if (!sameEnc(other)) throw new InconsistentEncodingException();
+        if (!hasSameEnc(other)) throw new InconsistentEncodingException();
     }
 
-    private boolean sameEnc(BitEncodedSet<T> other) {
-        return encoding.equals(other.getEncoding());
+    private boolean hasSameEnc(BitEncodedSet<T> other) {
+        return encoding == other.encoding || encoding.equals(other.getEncoding());
     }
 
     @Override
     public void intersection(BitEncodedSet<T> other) {
-        if (sameEnc(other)) set.and(other.set);
+        if (hasSameEnc(other)) set.and(other.set);
         else {
             Iterator<T> it = streamItems().iterator();
             while (it.hasNext()) {
@@ -77,7 +77,7 @@ public class BitEncodedSet<T> implements EncodedSet<T, Integer>, ProperlyHashabl
 
     @Override
     public void union(BitEncodedSet<T> other) {
-        if (sameEnc(other)) set.or(other.set);
+        if (hasSameEnc(other)) set.or(other.set);
         else {
             other.streamItems().filter(encoding::isInDomain).forEach(this::add);
         }
@@ -85,7 +85,7 @@ public class BitEncodedSet<T> implements EncodedSet<T, Integer>, ProperlyHashabl
 
     @Override
     public void setminus(BitEncodedSet<T> other) {
-        if (sameEnc(other)) set.andNot(other.set);
+        if (hasSameEnc(other)) set.andNot(other.set);
         else {
             other.streamItems().filter(encoding::isInDomain).forEach(this::remove);
         }
@@ -383,25 +383,25 @@ public class BitEncodedSet<T> implements EncodedSet<T, Integer>, ProperlyHashabl
 
     @Override
     public boolean intersects(BitEncodedSet<T> other) {
-        if (sameEnc(other)) return set.intersects(other.getBitMask());
+        if (hasSameEnc(other)) return set.intersects(other.getBitMask());
         else return streamItems().anyMatch(other::contains);
     }
 
     @Override
     public boolean setEquality(BitEncodedSet<T> other) {
-        if (sameEnc(other)) return set.setEquality(other.getBitMask());
+        if (hasSameEnc(other)) return set.setEquality(other.getBitMask());
         else return streamItems().allMatch(other::contains) && other.streamItems().allMatch(this::contains);
     }
 
     @Override
     public boolean isSubsetOf(BitEncodedSet<T> other) {
-        if (sameEnc(other)) return set.isSubsetOf(other.getBitMask());
+        if (hasSameEnc(other)) return set.isSubsetOf(other.getBitMask());
         else return streamItems().allMatch(other::contains);
     }
 
     @Override
     public boolean isSupersetOf(BitEncodedSet<T> other) {
-        if (sameEnc(other)) return set.isSupersetOf(other.getBitMask());
+        if (hasSameEnc(other)) return set.isSupersetOf(other.getBitMask());
         else return other.streamItems().allMatch(this::contains);
     }
 }

@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import org.processmining.estminer.specpp.supervision.observations.LogMessage;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.observations.TimedObservation;
+import org.processmining.estminer.specpp.supervision.observations.performance.HeavyPerformanceStatisticBuilder;
+import org.processmining.estminer.specpp.supervision.observations.performance.LightweightPerformanceStatisticBuilder;
 import org.processmining.estminer.specpp.supervision.piping.ObservationCollection;
 import org.processmining.estminer.specpp.supervision.piping.ObservationSummarizer;
 import org.processmining.estminer.specpp.supervision.piping.ObservationTransformer;
@@ -50,7 +52,11 @@ public class Transformers {
     }
 
     public static PerformanceEventSummarizer performanceEventSummarizer() {
-        return new PerformanceEventSummarizer();
+        return new PerformanceEventSummarizer(HeavyPerformanceStatisticBuilder::new);
+    }
+
+    public static PerformanceEventSummarizer lightweightPerformanceEventSummarizer() {
+        return new PerformanceEventSummarizer(LightweightPerformanceStatisticBuilder::new);
     }
 
     public static <O extends Observation> ObservationTransformer<O, TimedObservation<O>> addTime() {

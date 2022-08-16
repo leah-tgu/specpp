@@ -7,9 +7,10 @@ import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.EfficientlySpliterable;
 
+import java.nio.IntBuffer;
 import java.util.stream.IntStream;
 
-public interface EncodedLog extends EfficientlySpliterable<IntStream> {
+public interface EncodedLog extends EfficientlySpliterable<IntBuffer> {
     IntEncoding<Activity> getEncoding();
 
     IntVectorStorage getEncodedVariantVectors();

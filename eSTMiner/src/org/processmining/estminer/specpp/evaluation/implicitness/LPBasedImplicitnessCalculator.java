@@ -26,7 +26,7 @@ public class LPBasedImplicitnessCalculator {
         List<Transition> transitionList = Streams.concat(pair.pre().domain(), pair.post().domain())
                                                  .distinct()
                                                  .collect(Collectors.toList());
-        HashmapEncoding<Transition> allTransitions = new HashmapEncoding<>(transitionList);
+        HashmapEncoding<Transition> allTransitions = HashmapEncoding.ofList(transitionList);
 
         Triple<IntVectorStorage> matrices = incidenceMatrices(placeList, allTransitions);
 

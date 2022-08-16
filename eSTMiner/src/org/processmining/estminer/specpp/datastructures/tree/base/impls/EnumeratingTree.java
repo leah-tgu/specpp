@@ -35,7 +35,8 @@ public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends 
         N child = node.generateChild();
         nodeExpanded(node, child);
         insertNewNode(child);
-        softExpand(child);
+        // TODO not necessary in current and actually foreseeable usages
+        //softExpand(child);
         return child;
     }
 

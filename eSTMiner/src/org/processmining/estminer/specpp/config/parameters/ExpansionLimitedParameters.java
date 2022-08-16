@@ -10,9 +10,9 @@ import org.processmining.estminer.specpp.config.parameters.PlaceGeneratorParamet
 public class ExpansionLimitedParameters extends AbstractComponentSystemUser implements ProvidesParameters {
     public ExpansionLimitedParameters() {
         componentSystemAdapter()
-                .provide(ParameterRequirements.parameters(ParameterRequirements.FITNESS_THRESHOLDS, StaticDataSource.of(FitnessThresholds.tau(1))))
+                .provide(ParameterRequirements.parameters(ParameterRequirements.TAU_FITNESS_THRESHOLDS, StaticDataSource.of(TauFitnessThresholds.tau(1))))
                 .provide(ParameterRequirements.parameters("placegenerator.parameters", PlaceGeneratorParameters.class,
                         StaticDataSource.of(
-                                new PlaceGeneratorParameters(6, true, false, true, true))));
+                                new PlaceGeneratorParameters(5, true, false, true, true))));
     }
 }

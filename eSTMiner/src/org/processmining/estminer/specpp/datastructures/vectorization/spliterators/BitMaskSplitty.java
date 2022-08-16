@@ -3,10 +3,11 @@ package org.processmining.estminer.specpp.datastructures.vectorization.spliterat
 import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
+import java.nio.IntBuffer;
 import java.util.Spliterator;
 import java.util.stream.IntStream;
 
-public class BitMaskSplitty extends AbstractBitMaskSplitty<IntStream> {
+public class BitMaskSplitty extends AbstractBitMaskSplitty<IntBuffer> {
 
 
     public BitMaskSplitty(IntVectorStorage ivs, BitMask bitMask, int startIndex, int limit) {
@@ -14,12 +15,12 @@ public class BitMaskSplitty extends AbstractBitMaskSplitty<IntStream> {
     }
 
     @Override
-    protected IntStream make(int index) {
-        return ivs.viewVector(index);
+    protected IntBuffer make(int index) {
+        return ivs.vectorBuffer(index);
     }
 
     @Override
-    protected AbstractBitMaskSplitty<IntStream> makePrefix(int oldStart, int half) {
+    protected AbstractBitMaskSplitty<IntBuffer> makePrefix(int oldStart, int half) {
         return new BitMaskSplitty(ivs, bitMask, oldStart, half);
     }
 }

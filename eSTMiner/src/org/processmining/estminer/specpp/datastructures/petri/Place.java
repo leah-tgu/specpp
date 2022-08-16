@@ -6,6 +6,7 @@ import org.processmining.estminer.specpp.datastructures.encoding.MutatingSetOper
 import org.processmining.estminer.specpp.datastructures.encoding.NonMutatingSetOperations;
 import org.processmining.estminer.specpp.datastructures.encoding.SetQueries;
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
+import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
 import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.ProperlyHashable;
@@ -24,6 +25,7 @@ import org.processmining.estminer.specpp.traits.ProperlyPrintable;
 public class Place implements Candidate, NodeProperties, ProperlyHashable, ProperlyPrintable, Copyable<Place>, NonMutatingSetOperations<Place>, SetQueries<Place> {
 
     private final BitEncodedSet<Transition> ingoingTransitions, outgoingTransitions;
+    private final int computedHash = -1;
 
     public Place(Pair<BitEncodedSet<Transition>> encodedSetPair) {
         this(encodedSetPair.first(), encodedSetPair.second());

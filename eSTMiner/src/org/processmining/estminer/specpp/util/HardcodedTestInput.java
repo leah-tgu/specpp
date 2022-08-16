@@ -36,11 +36,11 @@ public class HardcodedTestInput {
         //ordering.put(end, i);
         Set<Transition> preset = new HashSet<>(trans.values());
         //preset.add(start);
-        HashmapEncoding<Transition> presetEncoding = new HashmapEncoding<>(preset, Comparator.comparingInt(ordering::get));
+        HashmapEncoding<Transition> presetEncoding = HashmapEncoding.ofComparableSet(preset, Comparator.comparingInt(ordering::get));
 
         Set<Transition> postset = new HashSet<>(trans.values());
         //postset.add(end);
-        HashmapEncoding<Transition> postsetEncoding = new HashmapEncoding<>(postset, Comparator.comparingInt(ordering::get));
+        HashmapEncoding<Transition> postsetEncoding = HashmapEncoding.ofComparableSet(postset, Comparator.comparingInt(ordering::get));
 
         //trans.put(uniqueStart, start);
         //trans.put(uniqueEnd, end);

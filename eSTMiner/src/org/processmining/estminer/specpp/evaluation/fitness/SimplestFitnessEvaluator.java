@@ -14,6 +14,7 @@ import org.processmining.estminer.specpp.evaluation.markings.QuickReplay;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 
+import java.nio.IntBuffer;
 import java.util.EnumSet;
 import java.util.PrimitiveIterator;
 import java.util.Spliterator;
@@ -40,13 +41,11 @@ public class SimplestFitnessEvaluator extends AbstractFitnessEvaluator {
         MultiEncodedLog encodedLog = getMultiEncodedLog();
 
         IntVector frequencies = encodedLog.getPresetEncodedLog().getVariantFrequencies();
-        Stream<IndexedItem<Tuple2<IntStream, IntStream>>> stream = encodedLog.efficientIndexedStream(false);
+        Stream<IndexedItem<Tuple2<IntBuffer, IntBuffer>>> stream = encodedLog.efficientIndexedStream(false);
 
-        Spliterator<IndexedItem<EnumSet<ReplayOutcomes>>> spliterator = stream.map(ip -> new IndexedItem<>(ip.getIndex(), myReplay(ip.getItem()
-                                                                                                                                     .getT1()
-                                                                                                                                     .map(presetIndicator), ip.getItem()
-                                                                                                                                                              .getT2()
-                                                                                                                                                              .map(postsetIndicator))))
+        Spliterator<IndexedItem<EnumSet<ReplayOutcomes>>> spliterator = stream.map(ip -> new IndexedItem<>(ip.getIndex(), myBufferBasedReplay(ip.getItem()
+                                                                                                                                                .getT1(), presetIndicator, ip.getItem()
+                                                                                                                                                                             .getT2(), postsetIndicator)))
                                                                               .spliterator();
 
         EnumCounts<ReplayOutcomes> like = computeForkJoinLike(spliterator, frequencies::get);
@@ -93,6 +92,32 @@ public class SimplestFitnessEvaluator extends AbstractFitnessEvaluator {
         boolean wentUnder = false, wentOver = false;
         while (postIt.hasNext() && preIt.hasNext()) {
             int postsetExecution = postIt.nextInt(), presetExecution = preIt.nextInt();
+            acc += postsetExecution;
+            wentUnder |= acc < 0;
+            acc += presetExecution;
+            wentOver |= acc > 1;
+        }
+        EnumSet<ReplayOutcomes> enumSet = EnumSet.noneOf(ReplayOutcomes.class);
+        if (wentUnder) enumSet.add(ReplayOutcomes.EVER_NEGATIVE);
+        if (wentOver) {
+            enumSet.add(ReplayOutcomes.EVER_ABOVE_ONE);
+            enumSet.add(ReplayOutcomes.OVERFED);
+        }
+        if (acc > 0) {
+            enumSet.add(ReplayOutcomes.NOT_ENDING_ON_ZERO);
+            enumSet.add(ReplayOutcomes.OVERFED);
+        }
+        if (acc == 0 && !wentUnder && !wentOver) enumSet.add(ReplayOutcomes.FITTING);
+        else enumSet.add(ReplayOutcomes.NON_FITTING);
+        return enumSet;
+    }
+
+    private static EnumSet<ReplayOutcomes> myBufferBasedReplay(IntBuffer presetBuffer, IntUnaryOperator presetIndicator, IntBuffer postsetBuffer, IntUnaryOperator postsetIndicator) {
+        int acc = 0;
+        boolean wentUnder = false, wentOver = false;
+        while (presetBuffer.hasRemaining() && postsetBuffer.hasRemaining()) {
+            int postsetExecution = postsetIndicator.applyAsInt(postsetBuffer.get());
+            int presetExecution = presetIndicator.applyAsInt(presetBuffer.get());
             acc += postsetExecution;
             wentUnder |= acc < 0;
             acc += presetExecution;

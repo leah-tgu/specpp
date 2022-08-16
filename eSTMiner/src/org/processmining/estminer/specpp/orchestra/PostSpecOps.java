@@ -28,8 +28,8 @@ import java.util.stream.Stream;
 public class PostSpecOps {
 
 
-    static void postExecution(SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowVisualOutput) {
-        if (allowVisualOutput) {
+    static void postExecution(SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowPrinting, boolean allowFinalResultOutput) {
+        if (allowPrinting) {
             System.out.println("// ========================================= //");
             System.out.println("Executed " + specPP.stepCount() + " ProposalEvaluationComposition cycles.");
         }
@@ -42,10 +42,12 @@ public class PostSpecOps {
 
         String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.GRAPH, "petri");
         PetrinetVisualization petrinetVisualization = PetrinetVisualization.of(filePath,finalResult);
-        if (true || allowVisualOutput) showFinalResult(finalResult, petrinetVisualization);
-        saveFinalResult(outputPathParameters, finalResult, petrinetVisualization);
+        if (allowFinalResultOutput){
+            showFinalResult(finalResult, petrinetVisualization);
+            saveFinalResult(outputPathParameters, finalResult, petrinetVisualization);
+        }
         List<Monitor<?, ?>> monitors = getMonitors(specPP);
-        if (allowVisualOutput) showMonitoringResults(monitors);
+        if (allowPrinting) showMonitoringResults(monitors);
         saveMonitoringResults(outputPathParameters, monitors);
     }
 

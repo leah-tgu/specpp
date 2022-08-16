@@ -10,10 +10,11 @@ import org.processmining.estminer.specpp.datastructures.vectorization.spliterato
 import org.processmining.estminer.specpp.util.CompatiblePairSpliteratorImpl;
 import org.processmining.estminer.specpp.util.StreamUtils;
 
+import java.nio.IntBuffer;
 import java.util.Spliterator;
 import java.util.stream.IntStream;
 
-public class MultiEncodedLog implements EfficientlySpliterable<Tuple2<IntStream, IntStream>> {
+public class MultiEncodedLog implements EfficientlySpliterable<Tuple2<IntBuffer, IntBuffer>> {
 
     private final EncodedLog presetEncodedLog;
     private final EncodedLog postsetEncodedLog;
@@ -65,20 +66,19 @@ public class MultiEncodedLog implements EfficientlySpliterable<Tuple2<IntStream,
     }
 
     @Override
-    public Spliterator<Tuple2<IntStream, IntStream>> efficientSpliterator() {
-        Spliterator<IntStream> spliteratorA = presetEncodedLog.efficientSpliterator();
-        Spliterator<IntStream> spliteratorB = postsetEncodedLog.efficientSpliterator();
-        CompatiblePairSpliteratorImpl<IntStream, Tuple2<IntStream, IntStream>> res = new CompatiblePairSpliteratorImpl<>(spliteratorA, spliteratorB, tup -> tup);
-        return res;
+    public Spliterator<Tuple2<IntBuffer, IntBuffer>> efficientSpliterator() {
+        Spliterator<IntBuffer> spliteratorA = presetEncodedLog.efficientSpliterator();
+        Spliterator<IntBuffer> spliteratorB = postsetEncodedLog.efficientSpliterator();
+        return new CompatiblePairSpliteratorImpl<>(spliteratorA, spliteratorB, tup -> tup);
     }
 
     @Override
-    public Spliterator<IndexedItem<Tuple2<IntStream, IntStream>>> efficientIndexedSpliterator() {
-        Spliterator<IndexedItem<IntStream>> spliteratorA = presetEncodedLog.efficientIndexedSpliterator();
-        Spliterator<IndexedItem<IntStream>> spliteratorB = postsetEncodedLog.efficientIndexedSpliterator();
+    public Spliterator<IndexedItem<Tuple2<IntBuffer, IntBuffer>>> efficientIndexedSpliterator() {
+        Spliterator<IndexedItem<IntBuffer>> spliteratorA = presetEncodedLog.efficientIndexedSpliterator();
+        Spliterator<IndexedItem<IntBuffer>> spliteratorB = postsetEncodedLog.efficientIndexedSpliterator();
         return new CompatiblePairSpliteratorImpl<>(spliteratorA, spliteratorB, tup -> {
-            IndexedItem<IntStream> t1 = tup.getT1();
-            IndexedItem<IntStream> t2 = tup.getT2();
+            IndexedItem<IntBuffer> t1 = tup.getT1();
+            IndexedItem<IntBuffer> t2 = tup.getT2();
             return new IndexedItem<>(t1.getIndex(), new ImmutablePair<>(t1.getItem(), t2.getItem()));
         });
     }

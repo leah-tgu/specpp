@@ -3,11 +3,12 @@ package org.processmining.estminer.specpp.datastructures.vectorization.spliterat
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
+import java.nio.IntBuffer;
 import java.util.Spliterator;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 
-public class IndexedSplitty extends AbstractSplitty<IndexedItem<IntStream>> {
+public class IndexedSplitty extends AbstractSplitty<IndexedItem<IntBuffer>> {
     private final IntUnaryOperator outsideMapper;
 
     public IndexedSplitty(IntVectorStorage ivs, int startVectorIndex, int fenceVectorIndex, IntUnaryOperator outsideMapper) {
@@ -16,12 +17,12 @@ public class IndexedSplitty extends AbstractSplitty<IndexedItem<IntStream>> {
     }
 
     @Override
-    protected IndexedItem<IntStream> make(int index) {
-        return new IndexedItem<>(outsideMapper.applyAsInt(index), ivs.viewVector(index));
+    protected IndexedItem<IntBuffer> make(int index) {
+        return new IndexedItem<>(outsideMapper.applyAsInt(index), ivs.vectorBuffer(index));
     }
 
     @Override
-    protected AbstractSplitty<IndexedItem<IntStream>> makePrefix(int low, int mid) {
+    protected AbstractSplitty<IndexedItem<IntBuffer>> makePrefix(int low, int mid) {
         return new IndexedSplitty(ivs, low, mid, outsideMapper);
     }
 }

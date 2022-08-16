@@ -25,7 +25,7 @@ public class PerformanceSupervisor extends MonitoringSupervisor {
     protected void instantiateObservationHandlingFullySatisfied() {
         beginLaying().source(performanceEventConcurrencyBridge)
                      .giveBackgroundThread()
-                     .pipe(PipeWorks.summarizingBuffer(Transformers.performanceEventSummarizer()))
+                     .pipe(PipeWorks.summarizingBuffer(Transformers.lightweightPerformanceEventSummarizer()))
                      .schedule(RefreshRates.REFRESH_INTERVAL)
                      .sinks(PipeWorks.loggingSinks(RefreshRates.REFRESH_STRING + " performance", PerformanceStatistics::toPrettyString, consoleLogger, fileLogger))
                      .pipe(PipeWorks.accumulatingPipe(PerformanceStatistics::new))

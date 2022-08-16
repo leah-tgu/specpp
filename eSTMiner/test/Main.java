@@ -71,8 +71,8 @@ public class Main {
         Comparator<Transition> presetOrdering = new FixedOrdering<>(start, a, b, c, d);
         Comparator<Transition> postsetOrdering = new FixedOrdering<>(a, b, c, d, end);
 
-        HashmapEncoding<Transition> presetEncoding = new HashmapEncoding<>(presetTransitions, presetOrdering);
-        HashmapEncoding<Transition> postEncoding = new HashmapEncoding<>(postsetTransitions, postsetOrdering);
+        HashmapEncoding<Transition> presetEncoding = HashmapEncoding.ofComparableSet(presetTransitions, presetOrdering);
+        HashmapEncoding<Transition> postEncoding = HashmapEncoding.ofComparableSet(postsetTransitions, postsetOrdering);
 
         BitEncodedSet<Transition> s1 = BitEncodedSet.empty(presetEncoding);
         s1.addAll(start, b, c);
@@ -106,7 +106,7 @@ public class Main {
         FixedOrdering<Transition> presetOrdering = new FixedOrdering<>(start, a, b, c);
         FixedOrdering<Transition> postsetOrdering = new FixedOrdering<>(a, b, c, end);
 
-        MonotonousPlaceGenerator pg = new MonotonousPlaceGenerator(new IntEncodings<>(new HashmapEncoding<>(presetTransitions, presetOrdering), new HashmapEncoding<>(postsetTransitions, postsetOrdering)));
+        MonotonousPlaceGenerator pg = new MonotonousPlaceGenerator(new IntEncodings<>(HashmapEncoding.ofComparableSet(presetTransitions, presetOrdering), HashmapEncoding.ofComparableSet(postsetTransitions, postsetOrdering)));
         EnumeratingTree<PlaceNode> tree = new EnumeratingTree<>(pg.generateRoot(), new VariableExpansion<>());
 
         System.out.println(tree);
@@ -125,7 +125,7 @@ public class Main {
                                                .mapToObj(i -> new Transition("" + i))
                                                .collect(Collectors.toSet());
 
-        HashmapEncoding<Transition> encoding = new HashmapEncoding<>(transitions, Comparator.comparingInt(o -> Integer.parseInt(o.toString())));
+        HashmapEncoding<Transition> encoding = HashmapEncoding.ofComparableSet(transitions, Comparator.comparingInt(o -> Integer.parseInt(o.toString())));
 
         MonotonousPlaceGenerator pg = new MonotonousPlaceGenerator(new IntEncodings<>(encoding, encoding));
 

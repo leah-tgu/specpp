@@ -61,7 +61,11 @@ public class SpecOps {
         return collect;
     }
 
-    public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean allowPrinting) {
+
+    public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean forbidAnyOutput) {
+        return specOps(configBundleSource, inputDataBundleSource, !forbidAnyOutput, !forbidAnyOutput);
+    }
+        public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean allowPrinting, boolean allowFinalResultOutput) {
         SpecOpsConfigBundle configBundle = configBundleSource.getData();
         InputDataBundle inputDataBundle = inputDataBundleSource.getData();
 
@@ -71,7 +75,7 @@ public class SpecOps {
 
         executeSpecOps(specPP, allowPrinting);
 
-        PostSpecOps.postExecution(specPP, allowPrinting);
+        PostSpecOps.postExecution(specPP, allowPrinting, allowFinalResultOutput);
 
         return specPP;
     }
