@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.DelayedRooting;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 
-public abstract class AbstractEfficientTree<N extends TreeNode & LocallyExpandable<N>> implements EfficientTree<N>, DelayedRooting<N> {
+public abstract class AbstractEfficientTree<N extends TreeNode & LocallyExpandable<N>> implements EfficientTree<N> {
 
     protected N root;
 

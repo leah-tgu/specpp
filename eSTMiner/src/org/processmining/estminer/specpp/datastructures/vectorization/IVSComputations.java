@@ -3,6 +3,7 @@ package org.processmining.estminer.specpp.datastructures.vectorization;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -289,11 +290,11 @@ public class IVSComputations {
         while (leftIds.hasNext() && rightIds.hasNext()) {
             int i = leftIds.nextInt();
             int j = rightIds.nextInt();
-            PrimitiveIterator.OfInt left = leftVectors.viewVector(i).iterator();
-            PrimitiveIterator.OfInt right = rightVectors.viewVector(j).iterator();
+            IntBuffer left = leftVectors.vectorBuffer(i);
+            IntBuffer right = rightVectors.vectorBuffer(j);
             A acc = computation.newAccumulatorSupplier.get();
-            while (left.hasNext() && right.hasNext()) {
-                int l = left.nextInt(), r = right.nextInt();
+            while (left.hasRemaining() && right.hasRemaining()) {
+                int l = left.get(), r = right.get();
                 E v = computation.elementComputation.apply(l, r);
                 acc = computation.accumulationCombiner.apply(acc, v);
             }
@@ -312,10 +313,10 @@ public class IVSComputations {
         while (leftIds.hasNext() && rightIds.hasNext()) {
             int i = leftIds.nextInt();
             int j = rightIds.nextInt();
-            PrimitiveIterator.OfInt left = leftVectors.viewVector(i).iterator();
-            PrimitiveIterator.OfInt right = rightVectors.viewVector(j).iterator();
-            while (left.hasNext() && right.hasNext()) {
-                int c = computation.compute.applyAsInt(left.nextInt(), right.nextInt());
+            IntBuffer left = leftVectors.vectorBuffer(i);
+            IntBuffer right = rightVectors.vectorBuffer(j);
+            while (left.hasRemaining() && right.hasRemaining()) {
+                int c = computation.compute.applyAsInt(left.get(), right.get());
                 res.addAll(computation.toAdd.apply(c));
                 res.removeAll(computation.toRemove.apply(c));
             }

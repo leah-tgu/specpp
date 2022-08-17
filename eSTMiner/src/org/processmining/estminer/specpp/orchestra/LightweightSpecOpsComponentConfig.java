@@ -3,7 +3,7 @@ package org.processmining.estminer.specpp.orchestra;
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
-import org.processmining.estminer.specpp.composition.PlacesComposerWithCPR;
+import org.processmining.estminer.specpp.composition.PlacesComposerWithCIPR;
 import org.processmining.estminer.specpp.config.Configurators;
 import org.processmining.estminer.specpp.config.GeneratingTreeConfiguration;
 import org.processmining.estminer.specpp.config.ProposerComposerConfiguration;
@@ -36,7 +36,7 @@ public class LightweightSpecOpsComponentConfig extends BaseSpecOpsComponentConfi
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(PlaceCollection::new)
-                            .composer(PlacesComposerWithCPR::new)
+                            .composer(PlacesComposerWithCIPR::new)
                             .build(csa);
     }
 

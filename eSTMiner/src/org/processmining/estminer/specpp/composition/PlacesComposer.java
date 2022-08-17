@@ -2,6 +2,7 @@ package org.processmining.estminer.specpp.composition;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.base.impls.AbstractConstrainingComposer;
+import org.processmining.estminer.specpp.base.impls.CandidateConstraint;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
@@ -15,10 +16,9 @@ import org.processmining.estminer.specpp.datastructures.tree.constraints.Clinica
 import org.processmining.estminer.specpp.datastructures.tree.constraints.RemoveWiredPlace;
 import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.SimplifiedFitnessStatus;
-import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
-import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
+import org.processmining.estminer.specpp.supervision.instrumentators.InstrumentedComposer;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
-import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
+import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 /**
  * The base implementation of a {@code Composer} for candidates of type {@code Place}.
@@ -30,28 +30,20 @@ import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSuperv
  * @param <I> the type of the internally used {@code Composition}
  * @see AbstractConstrainingComposer
  */
-public class PlacesComposer<I extends AdvancedComposition<Place>> extends AbstractConstrainingComposer<Place, I, PetriNet> {
+public class PlacesComposer<I extends AdvancedComposition<Place>> extends AbstractConstrainingComposer<Place, I, PetriNet, CandidateConstraint<Place>> {
 
 
     protected final DelegatingEvaluator<Place, SimplestFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
 
     protected final DelegatingDataSource<TauFitnessThresholds> fitnessThresholds = new DelegatingDataSource<>();
 
-    protected final TimeStopper timeStopper = new TimeStopper();
-
 
     public PlacesComposer(I placeComposition) {
         super(placeComposition, c -> new PetriNet(c.toSet()));
         componentSystemAdapter().require(ParameterRequirements.TAU_FITNESS_THRESHOLDS, fitnessThresholds)
                                 .require(EvaluationRequirements.SIMPLE_FITNESS, fitnessEvaluator)
-                                .provide(SupervisionRequirements.observable("composer.performance", PerformanceEvent.class, timeStopper));
-    }
+                                .provide(SupervisionRequirements.observable("composer.constraints", JavaTypingUtils.castClass(CandidateConstraint.class), getConstraintPublisher()));
 
-    @Override
-    public void accept(Place candidate) {
-        timeStopper.start(TaskDescription.CANDIDATE_COMPOSITION);
-        super.accept(candidate);
-        timeStopper.stop(TaskDescription.CANDIDATE_COMPOSITION);
     }
 
     @Override
@@ -64,11 +56,18 @@ public class PlacesComposer<I extends AdvancedComposition<Place>> extends Abstra
     }
 
     protected boolean isSufficientlyFitting(SimplestFitnessEvaluation fitness) {
-        return fitness.getFraction(SimplifiedFitnessStatus.FITTING) >= fitnessThresholds.getData().getFittingThreshold();
+        return fitness.getFraction(SimplifiedFitnessStatus.FITTING) >= fitnessThresholds.getData()
+                                                                                        .getFittingThreshold();
     }
 
     protected boolean isSufficientlyUnderfed(SimplestFitnessEvaluation fitness) {
-        return fitness.getFraction(SimplifiedFitnessStatus.UNDERFED) > fitnessThresholds.getData().getUnderfedThreshold();
+        return fitness.getFraction(SimplifiedFitnessStatus.UNDERFED) > fitnessThresholds.getData()
+                                                                                        .getUnderfedThreshold();
+    }
+
+    @Override
+    public Class<CandidateConstraint<Place>> getPublishedConstraintClass() {
+        return JavaTypingUtils.castClass(CandidateConstraint.class);
     }
 
     @Override

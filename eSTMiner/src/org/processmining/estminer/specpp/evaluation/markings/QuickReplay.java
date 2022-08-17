@@ -8,7 +8,7 @@ import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLo
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.vectorization.IVSComputations;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
-import org.processmining.estminer.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
+import org.processmining.estminer.specpp.evaluation.fitness.ReplayUtils;
 
 public class QuickReplay {
 
@@ -16,7 +16,7 @@ public class QuickReplay {
     public static DenseVariantMarkingHistories makeHistoryOn(BitMask interestingVariants, MultiEncodedLog multiEncodedLog, Place place) {
         assert multiEncodedLog.variantIndices().isSupersetOf(interestingVariants);
         EncodedLog pre = multiEncodedLog.pre(), post = multiEncodedLog.post();
-        IntVectorStorage interleft = IVSComputations.interleaveOn(interestingVariants, post.getEncodedVariantVectors(), ForkJoinFitnessEvaluator.postsetIndicator(place), pre.getEncodedVariantVectors(), ForkJoinFitnessEvaluator.presetIndicator(place));
+        IntVectorStorage interleft = IVSComputations.interleaveOn(interestingVariants, post.getEncodedVariantVectors(), ReplayUtils.postsetIndicator(place), pre.getEncodedVariantVectors(), ReplayUtils.presetIndicator(place));
         return new DenseVariantMarkingHistories(IndexSubset.of(interestingVariants), IVSComputations.vectorwiseCumulation(interleft));
     }
 

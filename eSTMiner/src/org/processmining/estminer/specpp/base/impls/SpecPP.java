@@ -14,6 +14,7 @@ import org.processmining.estminer.specpp.config.SupervisionConfiguration;
 import org.processmining.estminer.specpp.supervision.Supervisor;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
+import org.processmining.estminer.specpp.supervision.piping.LayingPipe;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 import org.processmining.estminer.specpp.traits.Initializable;
 import org.processmining.estminer.specpp.traits.Joinable;
@@ -47,7 +48,20 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
         this.composer = composer;
         this.postProcessor = postProcessor;
 
+        linkConstraintsIfPossible(composer, proposer);
+
         componentSystemAdapter().provide(SupervisionRequirements.observable("pec.performance", PerformanceEvent.class, timeStopper));
+    }
+
+    protected static void linkConstraintsIfPossible(Composer<?, ?, ?> composer, Proposer<?> proposer) {
+        if (composer instanceof Constrainer && proposer instanceof Constrainable) {
+            Constrainable<?> constrainable = (Constrainable<?>) proposer;
+            Class<?> acceptedConstraintClass = constrainable.getAcceptedConstraintClass();
+            Constrainer<?> constrainer = (Constrainer<?>) composer;
+            Class<?> constraintClass = constrainer.getPublishedConstraintClass();
+            if (acceptedConstraintClass.isAssignableFrom(constraintClass))
+                LayingPipe.link(constrainer.getConstraintPublisher(), constrainable);
+        }
     }
 
     public ComponentRepository getComponentRepository() {

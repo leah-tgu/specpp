@@ -3,17 +3,17 @@ package org.processmining.estminer.specpp.orchestra;
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.composition.InstrumentedPlacesComposerWithCPR;
+import org.processmining.estminer.specpp.composition.EventingPlacesComposerWithCIPR;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.InstrumentedEnumeratingTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.EventingEnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicUtils;
-import org.processmining.estminer.specpp.datastructures.tree.heuristic.InstrumentedHeuristicTreeExpansion;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.EventingHeuristicTreeExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
@@ -51,7 +51,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(PlaceCollection::new)
-                            .composer(InstrumentedPlacesComposerWithCPR::new)
+                            .composer(EventingPlacesComposerWithCIPR::new)
                             .build(csa);
     }
 
@@ -59,8 +59,8 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     public GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentSystemAdapter csa) {
         return Configurators.<PlaceNode, PlaceGenerator, DoubleScore>heuristicTree()
                             .heuristic(HeuristicUtils::bfs)
-                            .heuristicExpansion(InstrumentedHeuristicTreeExpansion::new)
-                            .enumeratingTree(InstrumentedEnumeratingTree::new)
+                            .heuristicExpansion(EventingHeuristicTreeExpansion::new)
+                            .enumeratingTree(EventingEnumeratingTree::new)
                             .constrainableGenerator(new MonotonousPlaceGenerator.Builder())
                             .build(csa);
     }

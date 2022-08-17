@@ -1,15 +1,16 @@
 package org.processmining.estminer.specpp.evaluation.fitness;
 
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
-import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
-import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.util.EnumCounts;
+import org.processmining.estminer.specpp.datastructures.util.EvaluationParameterTuple2;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
+import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 import java.nio.IntBuffer;
 import java.util.EnumSet;
@@ -26,60 +27,50 @@ public class ForkJoinFitnessEvaluator extends AbstractFitnessEvaluator {
 
     public ForkJoinFitnessEvaluator() {
         componentSystemAdapter().provide(EvaluationRequirements.evaluator(Place.class, SimplestFitnessEvaluation.class, this::eval));
+        componentSystemAdapter().provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), SimplestFitnessEvaluation.class, this::subsetEval));
+
     }
 
-    // TODO efficiency improvement opportunity
-    public static IntUnaryOperator presetIndicator(final Place place) {
-        final BitEncodedSet<Transition> preset = place.preset();
-        return i -> preset.containsIndex(i) ? 1 : 0;
+    private SimplestFitnessEvaluation subsetEval(EvaluationParameterTuple2<Place, BitMask> tuple) {
+        return eval(tuple.getT1(), tuple.getT2());
     }
 
-    public static IntUnaryOperator postsetIndicator(final Place place) {
-        final BitEncodedSet<Transition> postset = place.postset();
-        return i -> postset.containsIndex(i) ? -1 : 0;
-    }
 
     public SimplestFitnessEvaluation eval(Place place) {
+        return eval(place, getConsideredVariants());
+    }
+
+    public SimplestFitnessEvaluation eval(Place place, BitMask consideredVariants) {
         timeStopper.start(TaskDescription.SIMPLEST_EVALUATION);
 
-        IntUnaryOperator presetIndicator = presetIndicator(place);
-        IntUnaryOperator postsetIndicator = postsetIndicator(place);
+        IntUnaryOperator presetIndicator = ReplayUtils.presetIndicator(place);
+        IntUnaryOperator postsetIndicator = ReplayUtils.postsetIndicator(place);
         MultiEncodedLog encodedLog = getMultiEncodedLog();
 
-        IntVector frequencies = encodedLog.getPresetEncodedLog().getVariantFrequencies();
         Stream<IndexedItem<Tuple2<IntBuffer, IntBuffer>>> stream = encodedLog.efficientIndexedStream(false);
+        if (consideredVariants != null) stream = stream.filter(ip -> consideredVariants.get(ip.getIndex()));
+        Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator = stream.map(ip -> new IndexedItem<>(ip.getIndex(), myBufferBasedReplay(ip.getItem()
+                                                                                                                                                            .getT1(), presetIndicator, ip.getItem()
+                                                                                                                                                                                         .getT2(), postsetIndicator)))
+                                                                                          .spliterator();
 
-        Spliterator<IndexedItem<EnumSet<ReplayOutcomes>>> spliterator = stream.map(ip -> new IndexedItem<>(ip.getIndex(), myBufferBasedReplay(ip.getItem()
-                                                                                                                                                .getT1(), presetIndicator, ip.getItem()
-                                                                                                                                                                             .getT2(), postsetIndicator)))
-                                                                              .spliterator();
-
-        EnumCounts<ReplayOutcomes> like = computeForkJoinLike(spliterator, frequencies::get);
-        // TODO probably incorrect logic here regarding normalization over all traces
-        SimplestFitnessEvaluation evaluation = summarizeInto(like);
+        IntVector frequencies = encodedLog.getPresetEncodedLog().getVariantFrequencies();
+        EnumCounts<ReplayUtils.ReplayOutcomes> like = computeHere(spliterator, frequencies::get);
+        SimplestFitnessEvaluation evaluation = ReplayUtils.summarizeInto(like);
         timeStopper.stop(TaskDescription.SIMPLEST_EVALUATION);
         return evaluation;
     }
 
-    public SimplestFitnessEvaluation summarizeInto(EnumCounts<ReplayOutcomes> enumCounts) {
-        int fitting = enumCounts.getCount(ReplayOutcomes.FITTING);
-        int nonFitting = enumCounts.getCount(ReplayOutcomes.NON_FITTING);
-        int underfed = enumCounts.getCount(ReplayOutcomes.EVER_NEGATIVE);
-        int overfed = enumCounts.getCount(ReplayOutcomes.OVERFED);
-        double sum = fitting + nonFitting;
-        return new SimplestFitnessEvaluation(fitting / sum, underfed / sum, overfed / sum, nonFitting / sum);
+    public static MyReplayTask<ReplayUtils.ReplayOutcomes> createReplayTask(Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator, IntUnaryOperator variantFrequencyGetter) {
+        return new MyReplayTask<>(ReplayUtils.ReplayOutcomes.values().length, spliterator, variantFrequencyGetter);
     }
 
-    public static MyReplayTask<ReplayOutcomes> createReplayTask(Spliterator<IndexedItem<EnumSet<ReplayOutcomes>>> spliterator, IntUnaryOperator variantFrequencyGetter) {
-        return new MyReplayTask<>(ReplayOutcomes.values().length, spliterator, variantFrequencyGetter);
-    }
-
-    public static EnumCounts<ReplayOutcomes> computeHere(Spliterator<IndexedItem<EnumSet<ReplayOutcomes>>> spliterator, IntUnaryOperator variantFrequencyGetter) {
+    public static EnumCounts<ReplayUtils.ReplayOutcomes> computeHere(Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator, IntUnaryOperator variantFrequencyGetter) {
         return createReplayTask(spliterator, variantFrequencyGetter).computeCountsHere();
     }
 
-    public static EnumCounts<ReplayOutcomes> computeForkJoinLike(Spliterator<IndexedItem<EnumSet<ReplayOutcomes>>> spliterator, IntUnaryOperator variantFrequencyGetter) {
-        MyReplayTask<ReplayOutcomes> task = createReplayTask(spliterator, variantFrequencyGetter);
+    public static EnumCounts<ReplayUtils.ReplayOutcomes> computeForkJoinLike(Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator, IntUnaryOperator variantFrequencyGetter) {
+        MyReplayTask<ReplayUtils.ReplayOutcomes> task = createReplayTask(spliterator, variantFrequencyGetter);
         task.fork();
         try {
             return task.get();
@@ -88,11 +79,7 @@ public class ForkJoinFitnessEvaluator extends AbstractFitnessEvaluator {
         }
     }
 
-    public enum ReplayOutcomes {
-        FITTING, OVERFED, NON_FITTING, EVER_ABOVE_ONE, EVER_NEGATIVE, NOT_ENDING_ON_ZERO
-    }
-
-    private static EnumSet<ReplayOutcomes> myReplay(IntStream presetStream, IntStream postsetStream) {
+    private static EnumSet<ReplayUtils.ReplayOutcomes> myReplay(IntStream presetStream, IntStream postsetStream) {
         PrimitiveIterator.OfInt postIt = postsetStream.iterator(), preIt = presetStream.iterator();
         int acc = 0;
         boolean wentUnder = false, wentOver = false;
@@ -103,44 +90,45 @@ public class ForkJoinFitnessEvaluator extends AbstractFitnessEvaluator {
             acc += presetExecution;
             wentOver |= acc > 1;
         }
-        EnumSet<ReplayOutcomes> enumSet = EnumSet.noneOf(ReplayOutcomes.class);
-        if (wentUnder) enumSet.add(ReplayOutcomes.EVER_NEGATIVE);
-        if (wentOver) {
-            enumSet.add(ReplayOutcomes.EVER_ABOVE_ONE);
-            enumSet.add(ReplayOutcomes.OVERFED);
+        boolean notZeroAtEnd = acc > 0;
+        if (!notZeroAtEnd && !wentUnder && !wentOver) return EnumSet.of(ReplayUtils.ReplayOutcomes.FITTING);
+        else {
+            EnumSet<ReplayUtils.ReplayOutcomes> enumSet = EnumSet.of(ReplayUtils.ReplayOutcomes.NON_FITTING);
+            if (notZeroAtEnd) {
+                enumSet.add(ReplayUtils.ReplayOutcomes.NOT_ENDING_ON_ZERO);
+                enumSet.add(ReplayUtils.ReplayOutcomes.OVERFED);
+            }
+            if (wentOver) {
+                enumSet.add(ReplayUtils.ReplayOutcomes.WENT_ABOVE_ONE);
+            }
+            if (wentUnder) enumSet.add(ReplayUtils.ReplayOutcomes.WENT_NEGATIVE);
+            return enumSet;
         }
-        if (acc > 0) {
-            enumSet.add(ReplayOutcomes.NOT_ENDING_ON_ZERO);
-            enumSet.add(ReplayOutcomes.OVERFED);
-        }
-        if (acc == 0 && !wentUnder && !wentOver) enumSet.add(ReplayOutcomes.FITTING);
-        else enumSet.add(ReplayOutcomes.NON_FITTING);
-        return enumSet;
     }
 
-    private static EnumSet<ReplayOutcomes> myBufferBasedReplay(IntBuffer presetBuffer, IntUnaryOperator presetIndicator, IntBuffer postsetBuffer, IntUnaryOperator postsetIndicator) {
+    private static EnumSet<ReplayUtils.ReplayOutcomes> myBufferBasedReplay(IntBuffer presetVariantBuffer, IntUnaryOperator presetIndicator, IntBuffer postsetVariantBuffer, IntUnaryOperator postsetIndicator) {
         int acc = 0;
         boolean wentUnder = false, wentOver = false;
-        while (presetBuffer.hasRemaining() && postsetBuffer.hasRemaining()) {
-            int postsetExecution = postsetIndicator.applyAsInt(postsetBuffer.get());
-            int presetExecution = presetIndicator.applyAsInt(presetBuffer.get());
+        while (presetVariantBuffer.hasRemaining() && postsetVariantBuffer.hasRemaining()) {
+            int postsetExecution = postsetIndicator.applyAsInt(postsetVariantBuffer.get());
+            int presetExecution = presetIndicator.applyAsInt(presetVariantBuffer.get());
             acc += postsetExecution;
             wentUnder |= acc < 0;
             acc += presetExecution;
             wentOver |= acc > 1;
         }
-        EnumSet<ReplayOutcomes> enumSet = EnumSet.noneOf(ReplayOutcomes.class);
-        if (wentUnder) enumSet.add(ReplayOutcomes.EVER_NEGATIVE);
+        EnumSet<ReplayUtils.ReplayOutcomes> enumSet = EnumSet.noneOf(ReplayUtils.ReplayOutcomes.class);
+        if (wentUnder) enumSet.add(ReplayUtils.ReplayOutcomes.WENT_NEGATIVE);
         if (wentOver) {
-            enumSet.add(ReplayOutcomes.EVER_ABOVE_ONE);
-            enumSet.add(ReplayOutcomes.OVERFED);
+            enumSet.add(ReplayUtils.ReplayOutcomes.WENT_ABOVE_ONE);
+            enumSet.add(ReplayUtils.ReplayOutcomes.OVERFED);
         }
         if (acc > 0) {
-            enumSet.add(ReplayOutcomes.NOT_ENDING_ON_ZERO);
-            enumSet.add(ReplayOutcomes.OVERFED);
+            enumSet.add(ReplayUtils.ReplayOutcomes.NOT_ENDING_ON_ZERO);
+            enumSet.add(ReplayUtils.ReplayOutcomes.OVERFED);
         }
-        if (acc == 0 && !wentUnder && !wentOver) enumSet.add(ReplayOutcomes.FITTING);
-        else enumSet.add(ReplayOutcomes.NON_FITTING);
+        if (acc == 0 && !wentUnder && !wentOver) enumSet.add(ReplayUtils.ReplayOutcomes.FITTING);
+        else enumSet.add(ReplayUtils.ReplayOutcomes.NON_FITTING);
         return enumSet;
     }
 

@@ -4,7 +4,7 @@ import org.processmining.estminer.specpp.base.PostProcessor;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.base.impls.PostProcessorPipe;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.postprocessing.InstrumentedPostProcessor;
+import org.processmining.estminer.specpp.supervision.instrumentators.InstrumentedPostProcessor;
 
 import java.util.Deque;
 import java.util.Iterator;

@@ -2,19 +2,17 @@ package org.processmining.estminer.specpp.composition;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.composition.events.CandidateAcceptanceRevoked;
-import org.processmining.estminer.specpp.composition.events.CandidateAccepted;
-import org.processmining.estminer.specpp.composition.events.CandidateCompositionEvent;
-import org.processmining.estminer.specpp.composition.events.CandidateRejected;
+import org.processmining.estminer.specpp.composition.events.*;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
-public class InstrumentedPlacesComposerWithCPR<I extends AdvancedComposition<Place>> extends PlacesComposerWithCPR<I> {
+public class EventingPlacesComposer<I extends AdvancedComposition<Place>> extends PlacesComposer<I> {
+
     private final EventSupervision<CandidateCompositionEvent<Place>> compositionEventSupervision = PipeWorks.eventSupervision();
 
-    public InstrumentedPlacesComposerWithCPR(I placeComposition) {
+    public EventingPlacesComposer(I placeComposition) {
         super(placeComposition);
         componentSystemAdapter().provide(SupervisionRequirements.observable("composer.events", JavaTypingUtils.castClass(CandidateCompositionEvent.class), compositionEventSupervision));
     }

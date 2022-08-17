@@ -1,4 +1,4 @@
-package org.processmining.estminer.specpp.base;
+package org.processmining.estminer.specpp.datastructures.util;
 
 import java.util.Set;
 import java.util.function.Consumer;

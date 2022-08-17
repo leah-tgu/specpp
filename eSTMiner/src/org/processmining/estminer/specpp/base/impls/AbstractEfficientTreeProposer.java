@@ -2,22 +2,22 @@ package org.processmining.estminer.specpp.base.impls;
 
 import org.processmining.estminer.specpp.base.Candidate;
 import org.processmining.estminer.specpp.base.Proposer;
+import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 import org.processmining.estminer.specpp.datastructures.tree.iterators.PreAdvancingIterator;
 import org.processmining.estminer.specpp.traits.Initializable;
 
-public abstract class AbstractEnumeratingTreeProposer<C extends Candidate, N extends TreeNode & LocallyExpandable<N>> extends PreAdvancingIterator<N> implements Proposer<C>, Initializable {
+public abstract class AbstractEfficientTreeProposer<C extends Candidate, N extends TreeNode & LocallyExpandable<N>> extends PreAdvancingIterator<N> implements Proposer<C>, Initializable {
 
-    protected final EnumeratingTree<N> tree;
+    protected final EfficientTree<N> tree;
     private N previousProposedNode;
 
-    protected N getPreviousProposedNode() {
+    public N getPreviousProposedNode() {
         return previousProposedNode;
     }
 
-    protected AbstractEnumeratingTreeProposer(EnumeratingTree<N> tree) {
+    protected AbstractEfficientTreeProposer(EfficientTree<N> tree) {
         this.tree = tree;
     }
 

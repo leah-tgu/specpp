@@ -3,7 +3,7 @@ package org.processmining.estminer.specpp.base;
 import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.traits.ExposesObservable;
 
-public interface ConstraintPublisher<L extends ConstraintEvent> extends ExposesObservable<L> {
+public interface Constrainer<L extends ConstraintEvent> extends ExposesObservable<L> {
 
     Observable<L> getConstraintPublisher();
 
@@ -11,4 +11,7 @@ public interface ConstraintPublisher<L extends ConstraintEvent> extends ExposesO
     default Observable<L> getObservable() {
         return getConstraintPublisher();
     }
+
+    Class<L> getPublishedConstraintClass();
+
 }

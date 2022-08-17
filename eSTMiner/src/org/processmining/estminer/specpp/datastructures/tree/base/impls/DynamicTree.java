@@ -8,7 +8,7 @@ import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 
 @Deprecated
-public class DynamicTree<P extends NodeProperties, S extends NodeState, N extends AbstractLocalNode<P, S, N>> extends InstrumentedEnumeratingTree<N> implements EfficientBacktrackableTree<N> {
+public class DynamicTree<P extends NodeProperties, S extends NodeState, N extends AbstractLocalNode<P, S, N>> extends EventingEnumeratingTree<N> implements EfficientBacktrackableTree<N> {
 
     private final LocalTreeTraversalStrategy<N> traversalStrategy;
     private final MultiValuedMap<N, N> subtreeRelation;

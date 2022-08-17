@@ -20,7 +20,7 @@ import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlaceCollection extends LightweightPlaceCollection implements ExaminingComposition<Place>, ProvidesEvaluators {
+public class PlaceCollection extends LightweightPlaceCollection implements ExaminingComposition<Place> {
     private final Evaluator<Place, DenseVariantMarkingHistories> historyMaker;
     private final Map<Place, DenseVariantMarkingHistories> histories;
 

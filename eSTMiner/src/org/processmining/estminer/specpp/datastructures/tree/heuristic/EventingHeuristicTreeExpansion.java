@@ -17,13 +17,13 @@ import org.processmining.estminer.specpp.supervision.piping.AsyncAdHocObservable
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
-public class InstrumentedHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends NodeHeuristic<H>> extends HeuristicTreeExpansion<N, H> implements UsesComponentSystem {
+public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends NodeHeuristic<H>> extends HeuristicTreeExpansion<N, H> implements UsesComponentSystem {
 
     private final EventSupervision<TreeHeuristicsEvent> eventSupervision = PipeWorks.eventSupervision();
 
     private final ComponentSystemAdapter componentSystemAdapter = new ComponentSystemAdapter();
 
-    public InstrumentedHeuristicTreeExpansion(HeuristicStrategy<N, H> heuristicStrategy) {
+    public EventingHeuristicTreeExpansion(HeuristicStrategy<N, H> heuristicStrategy) {
         super(heuristicStrategy);
         componentSystemAdapter.provide(SupervisionRequirements.observable("heuristics.events", JavaTypingUtils.castClass(HeuristicComputationEvent.class), eventSupervision))
                               .provide(SupervisionRequirements.adHocObservable("heuristics.stats", HeuristicStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new HeuristicStatsEvent(priorityQueue.size()))));

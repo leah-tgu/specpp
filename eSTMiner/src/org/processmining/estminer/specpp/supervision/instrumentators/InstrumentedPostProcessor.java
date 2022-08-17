@@ -1,4 +1,4 @@
-package org.processmining.estminer.specpp.postprocessing;
+package org.processmining.estminer.specpp.supervision.instrumentators;
 
 import org.processmining.estminer.specpp.base.PostProcessor;
 import org.processmining.estminer.specpp.base.Result;
@@ -11,20 +11,15 @@ import org.processmining.estminer.specpp.supervision.observations.performance.Pe
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 
-public class InstrumentedPostProcessor<R extends Result, F extends Result> extends AbstractComponentSystemUser implements PostProcessor<R, F> {
+public class InstrumentedPostProcessor<R extends Result, F extends Result> extends AbstractInstrumentingDelegator<PostProcessor<R, F>> implements PostProcessor<R, F> {
 
-    private final TimeStopper timeStopper = new TimeStopper();
     private final TaskDescription task;
-    private final PostProcessor<R, F> postProcessor;
 
     public InstrumentedPostProcessor(String label, PostProcessor<R, F> postProcessor) {
-        this.postProcessor = postProcessor;
+        super(postProcessor);
         String fullLabel = "postprocessor." + label;
         task = new TaskDescription(fullLabel);
         componentSystemAdapter().provide(SupervisionRequirements.observable(fullLabel + ".performance", PerformanceEvent.class, timeStopper));
-        if (postProcessor instanceof UsesComponentSystem) {
-            componentSystemAdapter().consumeEntirely(((UsesComponentSystem) postProcessor).componentSystemAdapter());
-        }
     }
 
     public static class Builder<R extends Result, F extends Result> extends ComponentSystemAwareBuilder<InstrumentedPostProcessor<R, F>> {
@@ -48,7 +43,7 @@ public class InstrumentedPostProcessor<R extends Result, F extends Result> exten
     @Override
     public F postProcess(R result) {
         timeStopper.start(task);
-        F f = postProcessor.postProcess(result);
+        F f = delegate.postProcess(result);
         timeStopper.stop(task);
         return f;
     }

@@ -19,7 +19,7 @@ import org.processmining.estminer.specpp.supervision.piping.AsyncAdHocObservable
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 
-public class InstrumentedEnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends EnumeratingTree<N> implements UsesComponentSystem {
+public class EventingEnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends EnumeratingTree<N> implements UsesComponentSystem {
 
 
     private final ComponentSystemAdapter componentSystemAdapter = new ComponentSystemAdapter();
@@ -28,29 +28,24 @@ public class InstrumentedEnumeratingTree<N extends TreeNode & LocallyExpandable<
 
     protected final TimeStopper timeStopper = new TimeStopper();
 
-    public InstrumentedEnumeratingTree(N root, ExpansionStrategy<N> expansionStrategy) {
+    public EventingEnumeratingTree(N root, ExpansionStrategy<N> expansionStrategy) {
         super(root, expansionStrategy);
         makeProvisions();
     }
 
-    public InstrumentedEnumeratingTree(ExpansionStrategy<N> expansionStrategy) {
+    public EventingEnumeratingTree(ExpansionStrategy<N> expansionStrategy) {
         super(expansionStrategy);
         makeProvisions();
     }
 
     protected void makeProvisions() {
         componentSystemAdapter.provide(SupervisionRequirements.observable("tree.events", TreeEvent.class, eventSupervision))
-                              .provide(SupervisionRequirements.adHocObservable("tree.stats", EnumeratingTreeStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new EnumeratingTreeStatsEvent(leaves.size()))))
-                              .provide(SupervisionRequirements.observable("tree.performance", PerformanceEvent.class, timeStopper));
-
+                              .provide(SupervisionRequirements.adHocObservable("tree.stats", EnumeratingTreeStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new EnumeratingTreeStatsEvent(leaves.size()))));
     }
 
     @Override
     protected N expand() {
-        timeStopper.start(TaskDescription.TREE_EXPANSION);
-        N child = super.expand();
-        timeStopper.stop(TaskDescription.TREE_EXPANSION);
-        return child;
+        return super.expand();
     }
 
     @Override

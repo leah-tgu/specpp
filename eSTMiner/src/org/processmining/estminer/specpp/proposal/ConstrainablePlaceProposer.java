@@ -1,10 +1,8 @@
 package org.processmining.estminer.specpp.proposal;
 
-import org.processmining.estminer.specpp.base.ConstrainableProposer;
-import org.processmining.estminer.specpp.base.ConstraintPublisher;
+import org.processmining.estminer.specpp.base.impls.AbstractConstrainableGeneratingTreeProposer;
 import org.processmining.estminer.specpp.base.impls.CandidateConstraint;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
-import org.processmining.estminer.specpp.componenting.delegators.ContainerUtils;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwareBuilder;
@@ -12,16 +10,12 @@ import org.processmining.estminer.specpp.config.GeneratingTreeConfiguration;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableLocalNodeGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.base.GenerationConstraint;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.CullPostsetChildren;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.WiringConstraint;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceState;
-import org.processmining.estminer.specpp.supervision.EventSupervision;
-import org.processmining.estminer.specpp.supervision.piping.Observable;
-import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 /**
@@ -32,24 +26,7 @@ import org.processmining.estminer.specpp.util.JavaTypingUtils;
  * @see CandidateConstraint
  * @see ConstrainableLocalNodeGenerator
  */
-public class ConstrainablePlaceProposer extends PlaceProposer implements ConstrainableProposer<Place, CandidateConstraint<Place>>, ConstraintPublisher<GenerationConstraint> {
-
-    private final EventSupervision<GenerationConstraint> evs;
-
-    public ConstrainablePlaceProposer(ConstrainableLocalNodeGenerator<Place, PlaceState, PlaceNode, GenerationConstraint> generator, EnumeratingTree<PlaceNode> tree) {
-        super(generator, tree);
-        evs = PipeWorks.eventSupervision();
-        evs.addObserver(generator);
-
-        componentSystemAdapter().require(SupervisionRequirements.observable("composer.constraints", JavaTypingUtils.castClass(CandidateConstraint.class)), ContainerUtils.observeResults(this))
-                                .provide(SupervisionRequirements.observable("proposer.constraints", GenerationConstraint.class, evs));
-    }
-
-    @Override
-    public Observable<GenerationConstraint> getConstraintPublisher() {
-        return evs;
-    }
-
+public class ConstrainablePlaceProposer extends AbstractConstrainableGeneratingTreeProposer<Place, PlaceNode, CandidateConstraint<Place>, GenerationConstraint> {
     public static class Builder extends ComponentSystemAwareBuilder<ConstrainablePlaceProposer> {
 
         private final DelegatingDataSource<GeneratingTreeConfiguration<PlaceNode, MonotonousPlaceGenerator>> delegatingDataSource = DataRequirements.<PlaceNode, MonotonousPlaceGenerator>generatingTreeConfiguration()
@@ -62,18 +39,33 @@ public class ConstrainablePlaceProposer extends PlaceProposer implements Constra
         @Override
         protected ConstrainablePlaceProposer buildIfFullySatisfied() {
             GeneratingTreeConfiguration<PlaceNode, MonotonousPlaceGenerator> config = delegatingDataSource.getData();
-            return new ConstrainablePlaceProposer(config.createGenerator(), config.createTree());
+            PlaceProposer<MonotonousPlaceGenerator> pp = new PlaceProposer<>(config.createGenerator(), config.createTree());
+            return new ConstrainablePlaceProposer(pp);
         }
 
     }
 
+    public ConstrainablePlaceProposer(PlaceProposer<? extends PlaceGenerator> delegate) {
+        super(delegate);
+        componentSystemAdapter.provide(SupervisionRequirements.observable("proposer.constraints", GenerationConstraint.class, constraintOutput));
+    }
 
     @Override
     public void acceptConstraint(CandidateConstraint<Place> candidateConstraint) {
         if (candidateConstraint instanceof WiringConstraint) {
-            evs.observe((GenerationConstraint) candidateConstraint);
+            constraintOutput.observe((GenerationConstraint) candidateConstraint);
         } else if (candidateConstraint instanceof ClinicallyUnderfedPlace)
-            evs.observe(new CullPostsetChildren(getPreviousProposedNode()));
+            constraintOutput.observe(new CullPostsetChildren(delegate.getPreviousProposedNode()));
+    }
+
+    @Override
+    public Class<GenerationConstraint> getPublishedConstraintClass() {
+        return GenerationConstraint.class;
+    }
+
+    @Override
+    public Class<CandidateConstraint<Place>> getAcceptedConstraintClass() {
+        return JavaTypingUtils.castClass(CandidateConstraint.class);
     }
 
 }

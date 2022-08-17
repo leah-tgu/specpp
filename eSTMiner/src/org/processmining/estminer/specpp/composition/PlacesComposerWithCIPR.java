@@ -21,11 +21,11 @@ import org.processmining.estminer.specpp.evaluation.implicitness.*;
  * @see EvaluationRequirements#PLACE_IMPLICITNESS
  * @see PlaceCollection
  */
-public class PlacesComposerWithCPR<I extends AdvancedComposition<Place>> extends PlacesComposer<I> {
+public class PlacesComposerWithCIPR<I extends AdvancedComposition<Place>> extends PlacesComposer<I> {
 
     protected final DelegatingEvaluator<Place, ImplicitnessRating> implicitnessEvaluator = new DelegatingEvaluator<>(p -> BooleanImplicitness.NOT_IMPLICIT);
 
-    public PlacesComposerWithCPR(I placeComposition) {
+    public PlacesComposerWithCIPR(I placeComposition) {
         super(placeComposition);
         componentSystemAdapter().require(EvaluationRequirements.PLACE_IMPLICITNESS, implicitnessEvaluator);
         if (placeComposition instanceof ProvidesEvaluators) {
