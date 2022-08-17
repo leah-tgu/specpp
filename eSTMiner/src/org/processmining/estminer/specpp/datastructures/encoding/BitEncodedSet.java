@@ -1,6 +1,5 @@
 package org.processmining.estminer.specpp.datastructures.encoding;
 
-import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.ProperlyHashable;
 
@@ -91,8 +90,9 @@ public class BitEncodedSet<T> implements EncodedSet<T, Integer>, ProperlyHashabl
         }
     }
 
+    // TODO this needs optimization
     public boolean containsIndex(int index) {
-        return encoding.isIntInRange(index) && set.get(index);
+        return index >= 0 && set.get(index);
     }
 
     @Override

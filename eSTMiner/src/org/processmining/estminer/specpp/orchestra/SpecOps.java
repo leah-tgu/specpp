@@ -40,7 +40,7 @@ public class SpecOps {
         System.out.println("# Commencing " + parametersList.size() + " Multi SpecOps" + (doInParallel ? " in parallel" : "") + " @" + start);
         System.out.println("// ========================================= //");
 
-        List<SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper>> collect = stream.map(pp -> SpecOps.specOps(() -> new CustomSpecOpsConfigBundle(pp), inputDataBundleSource, false))
+        List<SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper>> collect = stream.map(pp -> SpecOps.specOps(() -> new CustomSpecOpsConfigBundle(pp), inputDataBundleSource, false, true))
                                                                                             .collect(Collectors.toList());
         System.out.println("// ========================================= //");
         LocalDateTime end = LocalDateTime.now();
@@ -62,10 +62,11 @@ public class SpecOps {
     }
 
 
-    public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean forbidAnyOutput) {
-        return specOps(configBundleSource, inputDataBundleSource, !forbidAnyOutput, !forbidAnyOutput);
+    public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean suppressAnyOutput) {
+        return specOps(configBundleSource, inputDataBundleSource, !suppressAnyOutput, !suppressAnyOutput);
     }
-        public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean allowPrinting, boolean allowFinalResultOutput) {
+
+    public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean allowPrinting, boolean allowFinalResultOutput) {
         SpecOpsConfigBundle configBundle = configBundleSource.getData();
         InputDataBundle inputDataBundle = inputDataBundleSource.getData();
 

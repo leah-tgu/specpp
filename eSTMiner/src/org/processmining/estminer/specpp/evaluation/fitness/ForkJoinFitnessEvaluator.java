@@ -1,18 +1,15 @@
 package org.processmining.estminer.specpp.evaluation.fitness;
 
-import org.processmining.estminer.specpp.componenting.data.DataRequirements;
-import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
-import org.processmining.estminer.specpp.datastructures.log.Log;
+import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.util.EnumCounts;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
-import org.processmining.estminer.specpp.evaluation.markings.QuickReplay;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
-import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 
 import java.nio.IntBuffer;
 import java.util.EnumSet;
@@ -24,20 +21,29 @@ import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class SimplestFitnessEvaluator extends AbstractFitnessEvaluator {
+public class ForkJoinFitnessEvaluator extends AbstractFitnessEvaluator {
 
-    private final DelegatingDataSource<Log> logSource = new DelegatingDataSource<>();
 
-    public SimplestFitnessEvaluator() {
-        componentSystemAdapter().require(DataRequirements.RAW_LOG, logSource)
-                                .provide(EvaluationRequirements.evaluator(Place.class, SimplestFitnessEvaluation.class, this::eval));
+    public ForkJoinFitnessEvaluator() {
+        componentSystemAdapter().provide(EvaluationRequirements.evaluator(Place.class, SimplestFitnessEvaluation.class, this::eval));
+    }
+
+    // TODO efficiency improvement opportunity
+    public static IntUnaryOperator presetIndicator(final Place place) {
+        final BitEncodedSet<Transition> preset = place.preset();
+        return i -> preset.containsIndex(i) ? 1 : 0;
+    }
+
+    public static IntUnaryOperator postsetIndicator(final Place place) {
+        final BitEncodedSet<Transition> postset = place.postset();
+        return i -> postset.containsIndex(i) ? -1 : 0;
     }
 
     public SimplestFitnessEvaluation eval(Place place) {
         timeStopper.start(TaskDescription.SIMPLEST_EVALUATION);
 
-        IntUnaryOperator presetIndicator = QuickReplay.presetIndicator(place);
-        IntUnaryOperator postsetIndicator = QuickReplay.postsetIndicator(place);
+        IntUnaryOperator presetIndicator = presetIndicator(place);
+        IntUnaryOperator postsetIndicator = postsetIndicator(place);
         MultiEncodedLog encodedLog = getMultiEncodedLog();
 
         IntVector frequencies = encodedLog.getPresetEncodedLog().getVariantFrequencies();

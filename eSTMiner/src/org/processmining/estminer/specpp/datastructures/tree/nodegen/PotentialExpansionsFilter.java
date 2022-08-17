@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.datastructures.tree.nodegen;
 
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 

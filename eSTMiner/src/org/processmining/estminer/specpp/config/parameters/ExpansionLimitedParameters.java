@@ -11,7 +11,7 @@ public class ExpansionLimitedParameters extends AbstractComponentSystemUser impl
     public ExpansionLimitedParameters() {
         componentSystemAdapter()
                 .provide(ParameterRequirements.parameters(ParameterRequirements.TAU_FITNESS_THRESHOLDS, StaticDataSource.of(TauFitnessThresholds.tau(1))))
-                .provide(ParameterRequirements.parameters("placegenerator.parameters", PlaceGeneratorParameters.class,
+                .provide(ParameterRequirements.parameters(ParameterRequirements.PLACE_GENERATOR_PARAMETERS,
                         StaticDataSource.of(
                                 new PlaceGeneratorParameters(5, true, false, true, true))));
     }

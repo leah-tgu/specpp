@@ -6,7 +6,7 @@ import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.ComponentInitializer;
 import org.processmining.estminer.specpp.config.*;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;

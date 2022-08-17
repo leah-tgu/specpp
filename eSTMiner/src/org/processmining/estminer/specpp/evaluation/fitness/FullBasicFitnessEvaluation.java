@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.evaluation.fitness;
 
 import org.processmining.estminer.specpp.base.CandidateEvaluation;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.util.EnumBitMasks;
 import org.processmining.estminer.specpp.datastructures.util.EnumFractions;
 

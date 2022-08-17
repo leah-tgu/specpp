@@ -7,15 +7,15 @@ import org.processmining.estminer.specpp.componenting.supervision.SupervisionReq
 import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 
 public abstract class AbstractFitnessEvaluator extends AbstractComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
 
-    private final DelegatingDataSource<MultiEncodedLog> multiEncodedLogSource = DataRequirements.ENC_LOG.emptyDelegator();
-    private final DelegatingDataSource<BitMask> variantSubsetSource = DataRequirements.CONSIDERED_VARIANTS.emptyDelegator();
+    private final DelegatingDataSource<MultiEncodedLog> multiEncodedLogSource = new DelegatingDataSource<>();
+    private final DelegatingDataSource<BitMask> variantSubsetSource = new DelegatingDataSource<>();
 
     protected final TimeStopper timeStopper = new TimeStopper();
     private BitMask consideredVariants;

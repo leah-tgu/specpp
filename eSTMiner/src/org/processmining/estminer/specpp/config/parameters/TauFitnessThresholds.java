@@ -33,6 +33,6 @@ public class TauFitnessThresholds implements Parameters {
 
     @Override
     public String toString() {
-        return "TauFitnessThresholds(\uD835\uDED5=" + fitting +")";
+        return "TauFitnessThresholds(\uD835\uDED5=" + fitting + ")";
     }
 }

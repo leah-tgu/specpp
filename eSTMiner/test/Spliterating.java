@@ -1,6 +1,6 @@
 import org.junit.Assert;
 import org.junit.Test;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
 import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
@@ -10,7 +10,6 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Spliterator;
-import java.util.stream.IntStream;
 
 public class Spliterating {
 

@@ -5,11 +5,10 @@ import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 
-public class ExhaustiveParameters extends AbstractComponentSystemUser implements ProvidesParameters {
+public class UniwiredParameters extends AbstractComponentSystemUser implements ProvidesParameters {
 
-    public ExhaustiveParameters() {
+    public UniwiredParameters() {
         componentSystemAdapter().provide(ParameterRequirements.parameters(ParameterRequirements.TAU_FITNESS_THRESHOLDS, StaticDataSource.of(TauFitnessThresholds.tau(1))))
-                                .provide(ParameterRequirements.parameters(ParameterRequirements.PLACE_GENERATOR_PARAMETERS, StaticDataSource.of(PlaceGeneratorParameters.getDefault())));
+                                .provide(ParameterRequirements.parameters(ParameterRequirements.PLACE_GENERATOR_PARAMETERS, StaticDataSource.of(new PlaceGeneratorParameters(Integer.MAX_VALUE, true, true, true, true))));
     }
-
 }

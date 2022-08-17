@@ -8,7 +8,7 @@ import org.processmining.estminer.specpp.componenting.supervision.SupervisionReq
 import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;

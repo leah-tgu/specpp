@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.datastructures.log;
 
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.log.impls.IndexedVariant;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.traits.Immutable;

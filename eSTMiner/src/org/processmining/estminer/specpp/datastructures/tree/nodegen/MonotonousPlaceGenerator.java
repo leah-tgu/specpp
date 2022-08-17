@@ -7,7 +7,7 @@ import org.processmining.estminer.specpp.componenting.data.ParameterRequirements
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwareBuilder;
 import org.processmining.estminer.specpp.config.parameters.PlaceGeneratorParameters;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
@@ -53,7 +53,7 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
 
         public Builder() {
             componentSystemAdapter().require(DataRequirements.ENC_TRANS, transitionEncodings)
-                                    .require(ParameterRequirements.parameters("placegenerator.parameters", PlaceGeneratorParameters.class), parameters);
+                                    .require(ParameterRequirements.PLACE_GENERATOR_PARAMETERS, parameters);
         }
 
         @Override

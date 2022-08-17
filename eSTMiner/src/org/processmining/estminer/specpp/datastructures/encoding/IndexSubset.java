@@ -1,6 +1,5 @@
 package org.processmining.estminer.specpp.datastructures.encoding;
 
-import org.processmining.estminer.specpp.datastructures.BitMask;
 import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.PartiallyOrdered;
 

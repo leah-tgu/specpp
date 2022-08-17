@@ -13,7 +13,7 @@ import org.processmining.estminer.specpp.componenting.supervision.ObservableRequ
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.parameters.OutputPathParameters;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.*;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.log.Log;

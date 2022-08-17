@@ -1,10 +1,9 @@
 package org.processmining.estminer.specpp.datastructures.tree.nodegen;
 
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 import org.processmining.estminer.specpp.traits.ProperlyPrintable;
 
-import java.util.BitSet;
 import java.util.Objects;
 
 /**

@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.datastructures.vectorization.spliterators;
 
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
 import java.util.Spliterator;

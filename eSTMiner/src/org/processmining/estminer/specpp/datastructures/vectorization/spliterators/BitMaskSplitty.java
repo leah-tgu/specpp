@@ -1,11 +1,9 @@
 package org.processmining.estminer.specpp.datastructures.vectorization.spliterators;
 
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
 import java.nio.IntBuffer;
-import java.util.Spliterator;
-import java.util.stream.IntStream;
 
 public class BitMaskSplitty extends AbstractBitMaskSplitty<IntBuffer> {
 

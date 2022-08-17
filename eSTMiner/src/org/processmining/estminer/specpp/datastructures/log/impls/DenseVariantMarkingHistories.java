@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.datastructures.log.impls;
 
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
 import org.processmining.estminer.specpp.datastructures.log.NotCoveringRequiredVariantsException;
 import org.processmining.estminer.specpp.datastructures.log.NotCoveringSameVariantsException;
@@ -12,7 +12,6 @@ import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorS
 import org.processmining.estminer.specpp.datastructures.vectorization.OrderingRelation;
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedBitMaskSplitty;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
-import org.processmining.estminer.specpp.evaluation.fitness.SimplifiedFitnessStatus;
 import org.processmining.estminer.specpp.util.StreamUtils;
 
 import java.nio.IntBuffer;

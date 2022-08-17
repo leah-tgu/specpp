@@ -42,7 +42,6 @@ public class TreeTrackerParameters implements Parameters {
     }
 
 
-
     @Override
     public String toString() {
         return "TreeTrackerParameters{" + "eventLimit=" + eventLimit + ", fromLevel=" + fromLevel + ", toLevel=" + toLevel + ", printNodeLimit=" + printNodeLimit + ", drawNodeLimit=" + drawNodeLimit + '}';

@@ -1,7 +1,5 @@
-package org.processmining.estminer.specpp.datastructures;
+package org.processmining.estminer.specpp.datastructures.encoding;
 
-import org.processmining.estminer.specpp.datastructures.encoding.MutatingSetOperations;
-import org.processmining.estminer.specpp.datastructures.encoding.SetQueries;
 import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.PartiallyOrdered;
 

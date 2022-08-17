@@ -5,7 +5,6 @@ import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfig
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
 import org.processmining.estminer.specpp.composition.InstrumentedPlacesComposerWithCPR;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
-import org.processmining.estminer.specpp.composition.PlacesComposerWithCPR;
 import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
@@ -17,7 +16,7 @@ import org.processmining.estminer.specpp.datastructures.tree.heuristic.Heuristic
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.InstrumentedHeuristicTreeExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluator;
+import org.processmining.estminer.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
 import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.estminer.specpp.postprocessing.PlaceExporter;
 import org.processmining.estminer.specpp.postprocessing.ProMConverter;
@@ -43,7 +42,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     public EvaluatorConfiguration getEvaluatorConfiguration(ComponentSystemAdapter csa) {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
-                            .evaluatorProvider(SimplestFitnessEvaluator::new)
+                            .evaluatorProvider(ForkJoinFitnessEvaluator::new)
                             .build(csa);
     }
 

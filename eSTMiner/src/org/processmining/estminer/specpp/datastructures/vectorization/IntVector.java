@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.datastructures.vectorization;
 
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.traits.Copyable;
 
 import java.util.Arrays;

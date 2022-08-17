@@ -1,5 +1,5 @@
 import org.junit.Test;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorSubsetStorage;
 

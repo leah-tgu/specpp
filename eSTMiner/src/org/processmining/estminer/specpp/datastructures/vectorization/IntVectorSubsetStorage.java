@@ -1,19 +1,16 @@
 package org.processmining.estminer.specpp.datastructures.vectorization;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
 import org.processmining.estminer.specpp.datastructures.log.OnlyCoversIndexSubset;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.BitMaskSplitty;
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedBitMaskSplitty;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedSplitty;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.Splitty;
 
 import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 

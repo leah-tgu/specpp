@@ -1,9 +1,7 @@
 package org.processmining.estminer.specpp.orchestra;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
-import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.composition.InstrumentedPlacesComposerWithCPR;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.composition.PlacesComposerWithCPR;
 import org.processmining.estminer.specpp.config.Configurators;
@@ -17,8 +15,6 @@ import org.processmining.estminer.specpp.datastructures.tree.base.impls.Enumerat
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.VariableExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluator;
-import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.estminer.specpp.proposal.ConstrainablePlaceProposer;
 import org.processmining.estminer.specpp.supervision.supervisors.BaseSupervisor;
 import org.processmining.estminer.specpp.supervision.supervisors.PerformanceSupervisor;

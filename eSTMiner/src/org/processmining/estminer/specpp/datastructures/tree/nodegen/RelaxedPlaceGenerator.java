@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.datastructures.tree.nodegen;
 
 import org.processmining.estminer.specpp.config.parameters.PlaceGeneratorParameters;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;

@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.datastructures.vectorization;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.processmining.estminer.specpp.datastructures.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.BitMaskSplitty;
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedBitMaskSplitty;
@@ -21,7 +21,6 @@ import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<IntVectorStorage>, Mappable<IntUnaryOperator>, PartiallyOrdered<IntVectorStorage> {
 
