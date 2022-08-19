@@ -5,7 +5,6 @@ import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 
 import java.util.OptionalInt;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractLocalNode<P extends NodeProperties, S extends NodeState, N extends AbstractLocalNode<P, S, N>> implements LocalNode<P, S, N> {
 

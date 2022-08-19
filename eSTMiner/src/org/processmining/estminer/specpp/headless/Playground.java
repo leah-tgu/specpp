@@ -7,8 +7,7 @@ import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorCollection;
-import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
-import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.SimpleBuilder;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
@@ -21,21 +20,22 @@ import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
 import org.processmining.estminer.specpp.evaluation.fitness.FullBasicFitnessEvaluation;
-import org.processmining.estminer.specpp.orchestra.*;
+import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
+import org.processmining.estminer.specpp.orchestra.PreProcessingParameters;
+import org.processmining.estminer.specpp.orchestra.SpecOps;
+import org.processmining.estminer.specpp.orchestra.SpecOpsConfigBundle;
 import org.processmining.estminer.specpp.preprocessing.InputData;
 import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 import org.processmining.estminer.specpp.util.NaivePlacemaker;
 import org.processmining.estminer.specpp.util.PublicPaths;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class Playground {
 
     public static void main(String[] args) {
         play(BaseSpecOpsConfigBundle::new, InputData.loadData(PublicPaths.SAMPLE_EVENTLOG_1, PreProcessingParameters.getDefault()));
     }
-
 
 
     public static void play(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource) {
@@ -46,7 +46,7 @@ public class Playground {
 
         // ========================================= //
 
-        ComponentRepository cr = specPP.getComponentRepository();
+        GlobalComponentRepository cr = specPP.getComponentRepository();
 
         DataSourceCollection dc = cr.dataSources();
 
@@ -62,7 +62,7 @@ public class Playground {
         //playAround(cr, new NaivePlacemaker(transitionEncodings), historiesEvaluator, aggregatedBasicFitnessEvaluator, fullBasicFitnessEvaluator);
     }
 
-    public static void playAround(ComponentRepository cr, NaivePlacemaker placemaker, Evaluator<Place, DenseVariantMarkingHistories> markingHistoriesEvaluator, Evaluator<Place, AggregatedBasicFitnessEvaluation> basicFitnessFractionsEvaluator, Evaluator<Place, FullBasicFitnessEvaluation> fullBasicFitnessEvaluator) {
+    public static void playAround(GlobalComponentRepository cr, NaivePlacemaker placemaker, Evaluator<Place, DenseVariantMarkingHistories> markingHistoriesEvaluator, Evaluator<Place, AggregatedBasicFitnessEvaluation> basicFitnessFractionsEvaluator, Evaluator<Place, FullBasicFitnessEvaluation> fullBasicFitnessEvaluator) {
 
         Log data = cr.dataSources().askForData(DataRequirements.RAW_LOG);
         System.out.println("Log");

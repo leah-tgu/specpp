@@ -8,6 +8,9 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataS
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
+import org.processmining.estminer.specpp.componenting.system.LocalComponentRepository;
+import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
 import org.processmining.estminer.specpp.config.parameters.TauFitnessThresholds;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
@@ -16,8 +19,6 @@ import org.processmining.estminer.specpp.datastructures.tree.constraints.Clinica
 import org.processmining.estminer.specpp.datastructures.tree.constraints.RemoveWiredPlace;
 import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.SimplifiedFitnessStatus;
-import org.processmining.estminer.specpp.supervision.instrumentators.InstrumentedComposer;
-import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 /**
@@ -36,7 +37,7 @@ public class PlacesComposer<I extends AdvancedComposition<Place>> extends Abstra
     protected final DelegatingEvaluator<Place, SimplestFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
 
     protected final DelegatingDataSource<TauFitnessThresholds> fitnessThresholds = new DelegatingDataSource<>();
-
+    protected final LocalComponentRepository lcr = new LocalComponentRepository();
 
     public PlacesComposer(I placeComposition) {
         super(placeComposition, c -> new PetriNet(c.toSet()));
@@ -44,6 +45,12 @@ public class PlacesComposer<I extends AdvancedComposition<Place>> extends Abstra
                                 .require(EvaluationRequirements.SIMPLE_FITNESS, fitnessEvaluator)
                                 .provide(SupervisionRequirements.observable("composer.constraints", JavaTypingUtils.castClass(CandidateConstraint.class), getConstraintPublisher()));
 
+        if (placeComposition instanceof UsesLocalComponentSystem) {
+            ComponentCollection other = ((UsesLocalComponentSystem) placeComposition).localComponentSystem();
+            lcr.fulfilFrom(other);
+            other.fulfil(lcr);
+            lcr.absorb(other);
+        }
     }
 
     @Override

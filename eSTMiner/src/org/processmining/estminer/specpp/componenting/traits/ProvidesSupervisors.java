@@ -4,10 +4,10 @@ import org.processmining.estminer.specpp.componenting.supervision.SupervisionReq
 import org.processmining.estminer.specpp.componenting.system.ComponentType;
 import org.processmining.estminer.specpp.componenting.system.FulfilledRequirementsCollection;
 
-public interface ProvidesSupervisors extends UsesComponentSystem {
+public interface ProvidesSupervisors extends HasComponentCollection {
 
     default FulfilledRequirementsCollection<SupervisionRequirement> supervisors() {
-        return componentSystemAdapter().getProvisions(ComponentType.Supervision);
+        return getComponentCollection().getProvisions(ComponentType.Supervision);
     }
 
 }

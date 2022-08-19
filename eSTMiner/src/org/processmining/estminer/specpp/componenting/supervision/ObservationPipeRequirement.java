@@ -4,7 +4,6 @@ import org.processmining.estminer.specpp.datastructures.util.Label;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.piping.ObservationPipe;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
-import org.processmining.estminer.specpp.util.PrintingUtils;
 
 public class ObservationPipeRequirement<I extends Observation, O extends Observation> extends SupervisionRequirement implements RequiresObserver<I>, RequiresObservable<O> {
 

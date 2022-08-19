@@ -5,16 +5,15 @@ import org.processmining.estminer.specpp.base.Proposer;
 import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
-import org.processmining.estminer.specpp.datastructures.tree.iterators.PreAdvancingIterator;
 import org.processmining.estminer.specpp.traits.Initializable;
 
-public abstract class AbstractEfficientTreeProposer<C extends Candidate, N extends TreeNode & LocallyExpandable<N>> extends PreAdvancingIterator<N> implements Proposer<C>, Initializable {
+public abstract class AbstractEfficientTreeProposer<C extends Candidate, N extends TreeNode & LocallyExpandable<N>> implements Proposer<C>, Initializable {
 
     protected final EfficientTree<N> tree;
-    private N previousProposedNode;
+    private N currentNode;
 
     public N getPreviousProposedNode() {
-        return previousProposedNode;
+        return currentNode;
     }
 
     protected AbstractEfficientTreeProposer(EfficientTree<N> tree) {
@@ -27,27 +26,16 @@ public abstract class AbstractEfficientTreeProposer<C extends Candidate, N exten
 
     @Override
     public C proposeCandidate() {
-        previousProposedNode = next();
-        return extractCandidate(previousProposedNode);
+        currentNode = advance();
+        return extractCandidate(currentNode);
     }
 
-    @Override
-    public boolean isExhausted() {
-        return !hasNext();
-    }
-
-    @Override
     protected N advance() {
         N nextNode;
         do {
-            nextNode = tree.expandTree();
+            nextNode = tree.tryExpandingTree();
         } while (nextNode != null && !describesValidCandidate(nextNode));
         return nextNode;
-    }
-
-    @Override
-    public void init() {
-        current = advance();
     }
 
 }

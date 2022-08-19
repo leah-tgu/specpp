@@ -3,36 +3,38 @@ package org.processmining.estminer.specpp.config.parameters;
 public class TauFitnessThresholds implements Parameters {
 
     public static TauFitnessThresholds tau(double t) {
-        return new TauFitnessThresholds(t, 1 - t, 1 - t);
+        return new TauFitnessThresholds(t);
     }
 
     public static TauFitnessThresholds getDefault() {
         return tau(1);
     }
 
-    private final double fitting, underfed, overfed;
+    private final double tau;
 
-    public TauFitnessThresholds(double fitting, double underfed, double overfed) {
-        this.fitting = fitting;
-        this.underfed = underfed;
-        this.overfed = overfed;
+    public TauFitnessThresholds(double tau) {
+        this.tau = tau;
+    }
+
+    public double getTau() {
+        return tau;
     }
 
     public double getFittingThreshold() {
-        return fitting;
+        return tau;
     }
 
     public double getUnderfedThreshold() {
-        return underfed;
+        return 1 - tau;
     }
 
     public double getOverfedThreshold() {
-        return overfed;
+        return 1 - tau;
     }
 
 
     @Override
     public String toString() {
-        return "TauFitnessThresholds(\uD835\uDED5=" + fitting + ")";
+        return "TauFitnessThresholds(\uD835\uDED5=" + tau + ")";
     }
 }

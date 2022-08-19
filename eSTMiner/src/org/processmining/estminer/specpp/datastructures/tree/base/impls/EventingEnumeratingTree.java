@@ -1,28 +1,21 @@
 package org.processmining.estminer.specpp.datastructures.tree.base.impls;
 
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
+import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
 import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
-import org.processmining.estminer.specpp.datastructures.tree.events.LeafAdditionEvent;
-import org.processmining.estminer.specpp.datastructures.tree.events.LeafRemovalEvent;
-import org.processmining.estminer.specpp.datastructures.tree.events.NodeExhaustionEvent;
-import org.processmining.estminer.specpp.datastructures.tree.events.NodeExpansionEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.*;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
-import org.processmining.estminer.specpp.datastructures.tree.events.EnumeratingTreeStatsEvent;
-import org.processmining.estminer.specpp.datastructures.tree.events.TreeEvent;
-import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
-import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.AsyncAdHocObservableWrapper;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 
-public class EventingEnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends EnumeratingTree<N> implements UsesComponentSystem {
+public class EventingEnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends EnumeratingTree<N> implements UsesGlobalComponentSystem {
 
 
-    private final ComponentSystemAdapter componentSystemAdapter = new ComponentSystemAdapter();
+    private final ComponentCollection componentSystemAdapter = new ComponentCollection();
 
     private final EventSupervision<TreeEvent> eventSupervision = PipeWorks.eventSupervision();
 
@@ -75,7 +68,7 @@ public class EventingEnumeratingTree<N extends TreeNode & LocallyExpandable<N>> 
     }
 
     @Override
-    public ComponentSystemAdapter componentSystemAdapter() {
+    public ComponentCollection componentSystemAdapter() {
         return componentSystemAdapter;
     }
 }

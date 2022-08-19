@@ -8,7 +8,7 @@ import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGener
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
-import org.processmining.estminer.specpp.datastructures.tree.heuristic.NodeHeuristic;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicValue;
 
 public class Configurators {
 
@@ -28,7 +28,7 @@ public class Configurators {
         return new GeneratingTreeConfiguration.Configurator<>();
     }
 
-    public static <N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends NodeHeuristic<H>> HeuristicTreeConfiguration.Configurator<N, G, H> heuristicTree() {
+    public static <N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends HeuristicValue<H>> HeuristicTreeConfiguration.Configurator<N, G, H> heuristicTree() {
         return new HeuristicTreeConfiguration.Configurator<>();
     }
 

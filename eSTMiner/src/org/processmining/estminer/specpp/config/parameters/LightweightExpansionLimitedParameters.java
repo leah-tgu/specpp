@@ -1,6 +1,5 @@
 package org.processmining.estminer.specpp.config.parameters;
 
-import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 

@@ -1,6 +1,9 @@
 package org.processmining.estminer.specpp.base.impls;
 
-import org.processmining.estminer.specpp.base.*;
+import org.processmining.estminer.specpp.base.AdvancedComposition;
+import org.processmining.estminer.specpp.base.Candidate;
+import org.processmining.estminer.specpp.base.Composer;
+import org.processmining.estminer.specpp.base.Result;
 
 import java.util.function.Function;
 

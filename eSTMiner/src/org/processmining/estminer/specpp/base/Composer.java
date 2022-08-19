@@ -4,7 +4,6 @@ import java.util.function.Consumer;
 
 
 /**
- *
  * @param <C>
  * @param <I>
  * @param <R>

@@ -18,8 +18,9 @@ import org.processmining.estminer.specpp.datastructures.util.Pair;
  * A subclass of {@code MonotonousPlaceGenerator} with relaxed requirements as well as guarantees.
  * It operates along the relaxed premise that widening constraints, e.g. removing constraints like {@code RemoveWiredPlace}, will at least be correctly considered in the following node expansions.
  * As a difference to the aforementioned base version, the potential expansion bitmasks stored in the node state are not shrunk to keep up with <it>currently</it> active constraints.
- * @deprecated Not functioning as expected. Quite the opposite in fact.
+ *
  * @see MonotonousPlaceGenerator
+ * @deprecated Not functioning as expected. Quite the opposite in fact.
  */
 @Deprecated
 public class RelaxedPlaceGenerator extends MonotonousPlaceGenerator {

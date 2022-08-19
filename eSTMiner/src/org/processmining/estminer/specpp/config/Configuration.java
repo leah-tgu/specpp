@@ -1,10 +1,10 @@
 package org.processmining.estminer.specpp.config;
 
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.componenting.system.ComponentInitializer;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
 
 public class Configuration extends ComponentInitializer {
-    public Configuration(ComponentSystemAdapter componentSystemAdapter) {
+    public Configuration(ComponentCollection componentSystemAdapter) {
         super(componentSystemAdapter);
     }
 

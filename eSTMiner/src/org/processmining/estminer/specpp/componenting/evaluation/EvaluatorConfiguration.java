@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import org.processmining.estminer.specpp.base.Evaluable;
 import org.processmining.estminer.specpp.base.Evaluation;
 import org.processmining.estminer.specpp.base.Evaluator;
-import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.config.ComponentInitializerBuilder;
 import org.processmining.estminer.specpp.config.Configuration;
@@ -19,8 +19,8 @@ public class EvaluatorConfiguration extends Configuration {
 
     private final ImmutableList<SimpleBuilder<ProvidesEvaluators>> evaluatorProviderBuilders;
 
-    public EvaluatorConfiguration(ComponentSystemAdapter csa, ImmutableList<SimpleBuilder<ProvidesEvaluators>> evaluatorProviderBuilders) {
-        super(csa);
+    public EvaluatorConfiguration(ComponentCollection cc, ImmutableList<SimpleBuilder<ProvidesEvaluators>> evaluatorProviderBuilders) {
+        super(cc);
         this.evaluatorProviderBuilders = evaluatorProviderBuilders;
     }
 
@@ -40,7 +40,7 @@ public class EvaluatorConfiguration extends Configuration {
 
         public <I extends Evaluable, E extends Evaluation> Configurator evaluator(Class<I> evaluableClass, Class<E> evaluationClass, Class<Evaluator<? super I, ? extends E>> evaluatorClass) {
             SimpleBuilder<ProvidesEvaluators> builder = () -> {
-                class Wrap extends AbstractComponentSystemUser implements ProvidesEvaluators {
+                class Wrap extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators {
                     public Wrap() {
                         componentSystemAdapter().provide(EvaluationRequirements.evaluator(evaluableClass, evaluationClass, Reflection.instance(evaluatorClass)::eval));
                     }
@@ -56,8 +56,8 @@ public class EvaluatorConfiguration extends Configuration {
             return this;
         }
 
-        public EvaluatorConfiguration build(ComponentSystemAdapter cs) {
-            return new EvaluatorConfiguration(cs, ImmutableList.copyOf(evaluatorProviderBuilders));
+        public EvaluatorConfiguration build(ComponentCollection cc) {
+            return new EvaluatorConfiguration(cc, ImmutableList.copyOf(evaluatorProviderBuilders));
         }
     }
 

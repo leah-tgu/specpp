@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.orchestra;
 
-import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 
 public class AdaptedSpecOpsAlgorithmParameterConfig implements SpecOpsAlgorithmParameterConfig {
@@ -12,7 +12,7 @@ public class AdaptedSpecOpsAlgorithmParameterConfig implements SpecOpsAlgorithmP
     }
 
     @Override
-    public void registerAlgorithmParameters(ComponentRepository cr) {
+    public void registerAlgorithmParameters(GlobalComponentRepository cr) {
         SpecOpsAlgorithmParameterConfig.super.registerAlgorithmParameters(cr);
         cr.overridingAbsorb(parameters);
     }

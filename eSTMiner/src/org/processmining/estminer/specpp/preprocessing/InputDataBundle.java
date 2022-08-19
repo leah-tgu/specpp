@@ -6,8 +6,6 @@ import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 
-import java.util.Map;
-
 public class InputDataBundle {
 
     private final Log log;

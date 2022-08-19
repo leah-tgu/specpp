@@ -4,7 +4,6 @@ import org.processmining.estminer.specpp.base.Candidate;
 import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
 
 public abstract class GeneratingTreeProposer<C extends Candidate & NodeProperties, N extends GeneratingLocalNode<C, ?, N>, G extends LocalNodeGenerator<C, ?, N>> extends AbstractEfficientTreeProposer<C, N> {
@@ -28,7 +27,6 @@ public abstract class GeneratingTreeProposer<C extends Candidate & NodePropertie
     @Override
     public void init() {
         tree.setRootOnce(generator.generateRoot());
-        super.init();
     }
 
 

@@ -3,7 +3,7 @@ package org.processmining.estminer.specpp.orchestra;
 import org.jfree.chart.ChartPanel;
 import org.processmining.estminer.specpp.base.impls.SpecPP;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.parameters.OutputPathParameters;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
@@ -36,13 +36,13 @@ public class PostSpecOps {
 
         ProMPetrinetWrapper finalResult = specPP.getFinalResult();
 
-        ComponentRepository cr = specPP.getComponentRepository();
+        GlobalComponentRepository cr = specPP.getComponentRepository();
         OutputPathParameters outputPathParameters = cr.parameters()
                                                       .askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS);
 
         String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.GRAPH, "petri");
-        PetrinetVisualization petrinetVisualization = PetrinetVisualization.of(filePath,finalResult);
-        if (allowFinalResultOutput){
+        PetrinetVisualization petrinetVisualization = PetrinetVisualization.of(filePath, finalResult);
+        if (allowFinalResultOutput) {
             showFinalResult(finalResult, petrinetVisualization);
             saveFinalResult(outputPathParameters, finalResult, petrinetVisualization);
         }

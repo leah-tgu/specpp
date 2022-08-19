@@ -5,8 +5,8 @@ import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
-import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.config.GeneratingTreeConfiguration;
 import org.processmining.estminer.specpp.config.PostProcessingConfiguration;
 import org.processmining.estminer.specpp.config.ProposerComposerConfiguration;
@@ -19,8 +19,8 @@ import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 
 public interface SpecOpsComponentConfig {
 
-    default void registerConfigurations(ComponentRepository cr) {
-        ComponentSystemAdapter csa = cr.componentSystemAdapter();
+    default void registerConfigurations(GlobalComponentRepository cr) {
+        ComponentCollection csa = cr.componentSystemAdapter();
         DataSourceCollection dc = cr.dataSources();
         dc.register(DataRequirements.EVALUATOR_CONFIG, StaticDataSource.of(getEvaluatorConfiguration(csa)));
         dc.register(DataRequirements.SUPERVISOR_CONFIG, StaticDataSource.of(getSupervisionConfiguration(csa)));
@@ -29,14 +29,14 @@ public interface SpecOpsComponentConfig {
         dc.register(DataRequirements.generatingTreeConfiguration(), StaticDataSource.of(getGeneratingTreeConfiguration(csa)));
     }
 
-    EvaluatorConfiguration getEvaluatorConfiguration(ComponentSystemAdapter csa);
+    EvaluatorConfiguration getEvaluatorConfiguration(ComponentCollection csa);
 
-    SupervisionConfiguration getSupervisionConfiguration(ComponentSystemAdapter csa);
+    SupervisionConfiguration getSupervisionConfiguration(ComponentCollection csa);
 
-    ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(ComponentSystemAdapter csa);
+    ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(ComponentCollection csa);
 
-    PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(ComponentSystemAdapter csa);
+    PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(ComponentCollection csa);
 
-    GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentSystemAdapter csa);
+    GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentCollection csa);
 
 }

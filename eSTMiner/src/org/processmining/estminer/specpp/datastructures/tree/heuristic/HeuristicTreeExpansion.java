@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-public class HeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends NodeHeuristic<H>> implements ExpansionStrategy<N> {
+public class HeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends HeuristicValue<H>> implements ExpansionStrategy<N> {
 
     protected final PriorityQueue<N> priorityQueue;
     protected final Map<N, H> nodeHeuristics;

@@ -14,4 +14,8 @@ public class ComputingCache<K, V> extends BasicCache<K, V> {
         return getOrCompute(key, computationFunction);
     }
 
+    public Function<K, V> readOnlyGet() {
+        return internal::get;
+    }
+
 }

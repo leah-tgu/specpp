@@ -2,7 +2,7 @@ package org.processmining.estminer.specpp.orchestra;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.composition.EventingPlacesComposerWithCIPR;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.*;
@@ -12,8 +12,8 @@ import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrappe
 import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EventingEnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
-import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicUtils;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.EventingHeuristicTreeExpansion;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicUtils;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
@@ -28,7 +28,7 @@ import org.processmining.estminer.specpp.supervision.supervisors.*;
 public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
 
     @Override
-    public SupervisionConfiguration getSupervisionConfiguration(ComponentSystemAdapter csa) {
+    public SupervisionConfiguration getSupervisionConfiguration(ComponentCollection csa) {
         return Configurators.supervisors()
                             .supervisor(BaseSupervisor::new)
                             .supervisor(PerformanceSupervisor::new)
@@ -39,7 +39,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     }
 
     @Override
-    public EvaluatorConfiguration getEvaluatorConfiguration(ComponentSystemAdapter csa) {
+    public EvaluatorConfiguration getEvaluatorConfiguration(ComponentCollection csa) {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
                             .evaluatorProvider(ForkJoinFitnessEvaluator::new)
@@ -47,7 +47,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     }
 
     @Override
-    public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(ComponentSystemAdapter csa) {
+    public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(ComponentCollection csa) {
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(PlaceCollection::new)
@@ -56,7 +56,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     }
 
     @Override
-    public GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentSystemAdapter csa) {
+    public GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentCollection csa) {
         return Configurators.<PlaceNode, PlaceGenerator, DoubleScore>heuristicTree()
                             .heuristic(HeuristicUtils::bfs)
                             .heuristicExpansion(EventingHeuristicTreeExpansion::new)
@@ -66,7 +66,7 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     }
 
     @Override
-    public PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(ComponentSystemAdapter csa) {
+    public PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(ComponentCollection csa) {
         return Configurators.<PetriNet>postProcessing()
                             .instrumentedProcessor("ReplayBasedImplicitness", new ReplayBasedImplicitnessPostProcessing.Builder())
                             .instrumentedProcessor("SelfLoopPlaceMerger", SelfLoopPlaceMerger::new)

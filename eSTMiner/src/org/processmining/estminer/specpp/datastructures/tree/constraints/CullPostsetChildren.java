@@ -1,6 +1,5 @@
 package org.processmining.estminer.specpp.datastructures.tree.constraints;
 
-import org.processmining.estminer.specpp.datastructures.tree.heuristic.LocalNodeGenerationConstraint;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.SubtreeCutoffConstraint;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 

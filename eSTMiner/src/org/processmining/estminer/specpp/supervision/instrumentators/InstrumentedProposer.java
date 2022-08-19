@@ -21,7 +21,4 @@ public class InstrumentedProposer<C extends Candidate> extends AbstractInstrumen
         return c;
     }
 
-    public boolean isExhausted() {
-        return delegate.isExhausted();
-    }
 }

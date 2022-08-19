@@ -1,11 +1,16 @@
 package org.processmining.estminer.specpp.datastructures.tree.heuristic;
 
-public class DoubleScore implements NodeHeuristic<DoubleScore> {
+public class DoubleScore implements HeuristicValue<DoubleScore> {
 
     private final double score;
 
     public DoubleScore(double score) {
         this.score = score;
+    }
+
+
+    public double getScore() {
+        return score;
     }
 
     @Override

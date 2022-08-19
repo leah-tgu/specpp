@@ -61,10 +61,10 @@ public class XLogBasedInputDataBundle implements DataSource<InputDataBundle> {
         BidiMap<Activity, Transition> transitionMapping = new DualHashBidiMap<>();
         activityMapping.forEach((label, activity) -> transitionMapping.put(activity, makeTransition(activity, label)));
         IntEncodings<Transition> transitionEncodings;
-        try{
+        try {
             TransitionEncodingsBuilder teb = Reflection.instance(transitionEncodingsBuilderClass, log, activityMapping, transitionMapping);
             transitionEncodings = teb.build();
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             throw new InputLoadingException(e);
         }
         return new ImmutableTuple2<>(transitionEncodings, transitionMapping);

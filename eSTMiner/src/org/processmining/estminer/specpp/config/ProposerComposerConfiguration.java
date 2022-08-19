@@ -1,14 +1,14 @@
 package org.processmining.estminer.specpp.config;
 
 import org.processmining.estminer.specpp.base.*;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 
 public class ProposerComposerConfiguration<C extends Candidate, I extends Composition<C>, R extends Result> extends Configuration {
     private final SimpleBuilder<? extends Proposer<C>> proposerBuilder;
     private final SimpleBuilder<? extends I> compositionBuilder;
     private final InitializingBuilder<? extends Composer<C, I, R>, ? super I> composerBuilder;
 
-    public ProposerComposerConfiguration(ComponentSystemAdapter cs, SimpleBuilder<? extends Proposer<C>> proposerBuilder, SimpleBuilder<? extends I> compositionBuilder, InitializingBuilder<? extends Composer<C, I, R>, ? super I> composerBuilder) {
+    public ProposerComposerConfiguration(ComponentCollection cs, SimpleBuilder<? extends Proposer<C>> proposerBuilder, SimpleBuilder<? extends I> compositionBuilder, InitializingBuilder<? extends Composer<C, I, R>, ? super I> composerBuilder) {
         super(cs);
         this.compositionBuilder = compositionBuilder;
         this.composerBuilder = composerBuilder;
@@ -54,7 +54,7 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
 
         }
 
-        public ProposerComposerConfiguration<C, I, R> build(ComponentSystemAdapter cs) {
+        public ProposerComposerConfiguration<C, I, R> build(ComponentCollection cs) {
             return new ProposerComposerConfiguration<>(cs, proposerBuilder, compositionBuilder, composerBuilder);
         }
 

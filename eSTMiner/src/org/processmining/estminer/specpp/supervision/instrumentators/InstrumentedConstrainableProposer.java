@@ -13,10 +13,6 @@ public class InstrumentedConstrainableProposer<C extends Candidate, L extends Ca
         return delegate.proposeCandidate();
     }
 
-    public boolean isExhausted() {
-        return delegate.isExhausted();
-    }
-
     public void acceptConstraint(L constraint) {
         delegate.acceptConstraint(constraint);
     }

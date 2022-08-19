@@ -5,7 +5,6 @@ import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.supervision.piping.AdHocObservable;
 import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
-import org.processmining.estminer.specpp.util.PrintingUtils;
 
 public class AdHocObservableRequirement<O extends Observation> extends ObservableRequirement<O> {
 

@@ -1,17 +1,13 @@
 package org.processmining.estminer.specpp.proposal;
 
+import org.processmining.estminer.specpp.base.Proposer;
 import org.processmining.estminer.specpp.base.impls.GeneratingTreeProposer;
-import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
-import org.processmining.estminer.specpp.datastructures.tree.base.*;
+import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableLocalNodeGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
+import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.estminer.specpp.supervision.instrumentators.InstrumentedProposer;
-import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
-import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
-import org.processmining.estminer.specpp.base.Proposer;
 
 /**
  * The base implementation of a {@code Proposer} for candidates of type {@code Place}.

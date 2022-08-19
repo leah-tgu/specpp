@@ -3,8 +3,6 @@ package org.processmining.estminer.specpp.datastructures.vectorization.spliterat
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
 import java.nio.IntBuffer;
-import java.util.Spliterator;
-import java.util.stream.IntStream;
 
 public class Splitty extends AbstractSplitty<IntBuffer> {
 

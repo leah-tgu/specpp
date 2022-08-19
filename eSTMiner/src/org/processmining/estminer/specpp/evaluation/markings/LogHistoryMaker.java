@@ -3,7 +3,7 @@ package org.processmining.estminer.specpp.evaluation.markings;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
-import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
+import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
@@ -11,7 +11,7 @@ import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMa
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 
-public class LogHistoryMaker extends AbstractComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
+public class LogHistoryMaker extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
 
     private final DelegatingDataSource<MultiEncodedLog> encodedLogSource = DataRequirements.ENC_LOG.emptyDelegator();
     private final DelegatingDataSource<BitMask> consideredVariantsSource = DataRequirements.CONSIDERED_VARIANTS.emptyDelegator();

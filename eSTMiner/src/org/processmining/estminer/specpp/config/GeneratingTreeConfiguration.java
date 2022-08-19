@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.config;
 
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableLocalNodeGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
 import org.processmining.estminer.specpp.datastructures.tree.base.GenerationConstraint;
@@ -12,7 +12,7 @@ public class GeneratingTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>,
 
     protected final SimpleBuilder<? extends G> generatorBuilder;
 
-    public GeneratingTreeConfiguration(ComponentSystemAdapter csa, InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder, SimpleBuilder<? extends G> generatorBuilder) {
+    public GeneratingTreeConfiguration(ComponentCollection csa, InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder, SimpleBuilder<? extends G> generatorBuilder) {
         super(csa, treeFunction, expansionStrategyBuilder);
         this.generatorBuilder = generatorBuilder;
     }
@@ -55,7 +55,7 @@ public class GeneratingTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>,
         }
 
         @Override
-        public GeneratingTreeConfiguration<N, G> build(ComponentSystemAdapter cs) {
+        public GeneratingTreeConfiguration<N, G> build(ComponentCollection cs) {
             return new GeneratingTreeConfiguration<>(cs, treeFunction, expansionStrategyBuilder, generatorBuilder);
         }
 

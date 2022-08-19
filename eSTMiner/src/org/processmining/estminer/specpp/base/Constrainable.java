@@ -1,6 +1,5 @@
 package org.processmining.estminer.specpp.base;
 
-import org.processmining.estminer.specpp.base.ConstraintEvent;
 import org.processmining.estminer.specpp.supervision.piping.Observer;
 
 public interface Constrainable<L extends ConstraintEvent> extends Observer<L> {

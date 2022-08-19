@@ -6,7 +6,6 @@ import org.processmining.estminer.specpp.datastructures.encoding.MutatingSetOper
 import org.processmining.estminer.specpp.datastructures.encoding.NonMutatingSetOperations;
 import org.processmining.estminer.specpp.datastructures.encoding.SetQueries;
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
-import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
 import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.ProperlyHashable;

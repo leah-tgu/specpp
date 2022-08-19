@@ -2,15 +2,15 @@ package org.processmining.estminer.specpp.componenting.system;
 
 import org.processmining.estminer.specpp.config.SimpleBuilder;
 
-public abstract class ComponentSystemAwareBuilder<T> extends AbstractComponentSystemUser implements SimpleBuilder<T> {
+public abstract class ComponentSystemAwareBuilder<T> extends AbstractGlobalComponentSystemUser implements SimpleBuilder<T> {
 
     protected abstract T buildIfFullySatisfied();
 
     @Override
     public T build() {
-        if (componentSystemAdapter().areAllRequirementsMet())
+        if (getComponentCollection().areAllRequirementsMet())
             return buildIfFullySatisfied();
-        else throw new RequirementsNotSatisfiedException(componentSystemAdapter().toString());
+        else throw new RequirementsNotSatisfiedException(getComponentCollection().toString());
     }
 
 }

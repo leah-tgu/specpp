@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataS
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
+import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
@@ -18,7 +18,7 @@ import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 
 import java.util.Spliterator;
 
-public class MarkingHistoryBasedFitnessEvaluator extends AbstractComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
+public class MarkingHistoryBasedFitnessEvaluator extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
 
     private final DelegatingEvaluator<Place, DenseVariantMarkingHistories> historyMaker = EvaluationRequirements.PLACE_MARKING_HISTORY.emptyDelegator();
 

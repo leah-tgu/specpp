@@ -3,9 +3,10 @@ package org.processmining.estminer.specpp.supervision.piping;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceMeasurement;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
-import org.processmining.estminer.specpp.supervision.observations.performance.TimedPerformanceMeasurement;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 

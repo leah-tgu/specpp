@@ -7,8 +7,8 @@ import org.processmining.estminer.specpp.componenting.data.ParameterRequirements
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwareBuilder;
 import org.processmining.estminer.specpp.config.parameters.PlaceGeneratorParameters;
-import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
@@ -17,8 +17,8 @@ import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator
 import org.processmining.estminer.specpp.datastructures.tree.constraints.*;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.SubtreeCutoffConstraint;
 import org.processmining.estminer.specpp.datastructures.util.ImmutablePair;
-import org.processmining.estminer.specpp.datastructures.util.Pair;
 import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
+import org.processmining.estminer.specpp.datastructures.util.Pair;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 
 import java.util.LinkedList;
@@ -375,6 +375,11 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
                 break;
             }
         }
+    }
+
+    @Override
+    public Class<GenerationConstraint> getAcceptedConstraintClass() {
+        return GenerationConstraint.class;
     }
 
     protected void handleTransitionBlacklistingConstraint(TransitionBlacklister transitionBlacklister, GenerationConstraint constraint) {

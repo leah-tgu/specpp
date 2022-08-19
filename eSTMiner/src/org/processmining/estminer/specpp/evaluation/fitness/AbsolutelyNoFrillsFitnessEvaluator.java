@@ -1,7 +1,5 @@
 package org.processmining.estminer.specpp.evaluation.fitness;
 
-import org.processmining.estminer.specpp.base.Evaluable;
-import org.processmining.estminer.specpp.base.Evaluation;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
@@ -20,8 +18,8 @@ import java.util.function.IntUnaryOperator;
 
 public class AbsolutelyNoFrillsFitnessEvaluator extends AbstractFitnessEvaluator {
     public AbsolutelyNoFrillsFitnessEvaluator() {
-        componentSystemAdapter().provide(EvaluationRequirements.evaluator(Place.class, SimplestFitnessEvaluation.class, this::eval));
-        componentSystemAdapter().provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), SimplestFitnessEvaluation.class, this::subsetEval));
+        componentSystemAdapter().provide(EvaluationRequirements.SIMPLE_FITNESS.fulfilWith(this::eval))
+                                .provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), SimplestFitnessEvaluation.class, this::subsetEval));
     }
 
     private SimplestFitnessEvaluation subsetEval(EvaluationParameterTuple2<Place, BitMask> tuple) {

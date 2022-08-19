@@ -3,8 +3,9 @@ package org.processmining.estminer.specpp.composition;
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
+import org.processmining.estminer.specpp.componenting.system.LocalComponentRepository;
+import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluation;
@@ -21,17 +22,24 @@ import org.processmining.estminer.specpp.evaluation.implicitness.*;
  * @see EvaluationRequirements#PLACE_IMPLICITNESS
  * @see PlaceCollection
  */
-public class PlacesComposerWithCIPR<I extends AdvancedComposition<Place>> extends PlacesComposer<I> {
+public class PlacesComposerWithCIPR<I extends AdvancedComposition<Place>> extends PlacesComposer<I> implements UsesLocalComponentSystem {
 
+    protected final LocalComponentRepository lcr = new LocalComponentRepository();
     protected final DelegatingEvaluator<Place, ImplicitnessRating> implicitnessEvaluator = new DelegatingEvaluator<>(p -> BooleanImplicitness.NOT_IMPLICIT);
 
     public PlacesComposerWithCIPR(I placeComposition) {
         super(placeComposition);
-        componentSystemAdapter().require(EvaluationRequirements.PLACE_IMPLICITNESS, implicitnessEvaluator);
-        if (placeComposition instanceof ProvidesEvaluators) {
-            ComponentSystemAdapter evc = ((ProvidesEvaluators) placeComposition).componentSystemAdapter();
-            componentSystemAdapter().fulfilFrom(evc);
+        lcr.require(EvaluationRequirements.PLACE_IMPLICITNESS, implicitnessEvaluator);
+        if (placeComposition instanceof UsesLocalComponentSystem) {
+            ComponentCollection other = ((UsesLocalComponentSystem) placeComposition).localComponentSystem();
+            lcr.fulfilFrom(other);
+            lcr.fulfil(other);
         }
+    }
+
+    @Override
+    public ComponentCollection localComponentSystem() {
+        return lcr;
     }
 
     @Override

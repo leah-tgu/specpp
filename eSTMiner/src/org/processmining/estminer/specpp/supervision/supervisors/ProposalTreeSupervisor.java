@@ -5,9 +5,9 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataS
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingObservable;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.config.parameters.TreeTrackerParameters;
+import org.processmining.estminer.specpp.datastructures.tree.events.TreeEvent;
 import org.processmining.estminer.specpp.datastructures.tree.events.TreeNodeEvent;
 import org.processmining.estminer.specpp.supervision.monitoring.TreeMonitor;
-import org.processmining.estminer.specpp.datastructures.tree.events.TreeEvent;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 
 public class ProposalTreeSupervisor extends MonitoringSupervisor {

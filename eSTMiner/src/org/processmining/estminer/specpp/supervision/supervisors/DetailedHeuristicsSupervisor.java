@@ -41,7 +41,7 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
 
         CSVWriter<TimedObservation<HeuristicComputationEvent<DoubleScore>>> heuristicsExporter = new CSVWriter<>(outputPathParameters.getFilePath(PathTools.OutputFileType.CSV_EXPORT, "heuristics"), new String[]{"time", "candidate", "score"}, e -> new String[]{e.getLocalDateTime().toString(), e.getObservation()
                                                                                                                                                                                                                                                                                                       .getSource().toString(), e.getObservation()
-                                                                                                                                                                                                                                                                                                                        .getHeuristic().toString()});
+                                                                                                                                                                                                                                                                                                                                .getHeuristic().toString()});
 
         MessageLogger heuristicsLogger = PipeWorks.fileLogger("heuristics", outputPathParameters.getFilePath(PathTools.OutputFileType.SUB_LOG, "heuristics"));
 

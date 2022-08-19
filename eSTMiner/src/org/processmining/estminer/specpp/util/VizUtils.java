@@ -1,7 +1,5 @@
 package org.processmining.estminer.specpp.util;
 
-import org.processmining.estminer.specpp.datastructures.petri.PetrinetVisualization;
-import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.supervision.observations.Visualization;
 
 import javax.swing.*;

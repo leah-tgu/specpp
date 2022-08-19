@@ -4,8 +4,6 @@ import org.processmining.estminer.specpp.supervision.observations.Visualization;
 import org.processmining.graphvisualizers.algorithms.GraphVisualizerAlgorithm;
 import org.processmining.plugins.graphviz.visualisation.DotPanel;
 
-import javax.swing.*;
-
 public class PetrinetVisualization extends Visualization<DotPanel> {
     public PetrinetVisualization(String title, DotPanel dotPanel) {
         super(title, dotPanel);

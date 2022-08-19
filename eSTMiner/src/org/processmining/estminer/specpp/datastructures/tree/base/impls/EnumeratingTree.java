@@ -1,15 +1,30 @@
 package org.processmining.estminer.specpp.datastructures.tree.base.impls;
 
-import org.apache.commons.collections4.IteratorUtils;
+import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.traits.DelayedRooting;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
-public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends AbstractEfficientTree<N> {
+public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> implements EfficientTree<N> {
+
+    protected N root;
+
+    @Override
+    public N getRoot() {
+        return root;
+    }
+
+    @Override
+    public void setRootOnce(N root) {
+        if (this.root != null) throw new DelayedRooting.Treexecption();
+        this.root = root;
+        insertNewNode(root);
+    }
 
     private final ExpansionStrategy<N> expansionStrategy;
     protected final Set<N> leaves;
@@ -27,8 +42,8 @@ public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends 
     }
 
     @Override
-    public Iterator<N> getLeaves() {
-        return leaves.iterator();
+    public Collection<N> getLeaves() {
+        return leaves;
     }
 
     protected final N expandNode(N node) {
@@ -90,19 +105,14 @@ public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends 
     }
 
     @Override
-    public N expandTree() {
+    public N tryExpandingTree() {
         return expand();
     }
 
-    @Override
-    public void setRootOnce(N root) {
-        super.setRootOnce(root);
-        insertNewNode(root);
-    }
 
     @Override
     public String toString() {
-        return lastExpansion + "::" + IteratorUtils.toString(getLeaves());
+        return "EnumeratingTree(root=" + root + ", lastExpansion=" + lastExpansion + ")";
     }
 
 }

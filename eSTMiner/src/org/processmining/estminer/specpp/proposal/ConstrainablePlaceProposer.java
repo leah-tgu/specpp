@@ -47,7 +47,7 @@ public class ConstrainablePlaceProposer extends AbstractConstrainableGeneratingT
 
     public ConstrainablePlaceProposer(PlaceProposer<? extends PlaceGenerator> delegate) {
         super(delegate);
-        componentSystemAdapter.provide(SupervisionRequirements.observable("proposer.constraints", GenerationConstraint.class, constraintOutput));
+        gcr.provide(SupervisionRequirements.observable("proposer.constraints", GenerationConstraint.class, constraintOutput));
     }
 
     @Override

@@ -12,13 +12,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"rawuse", "unchecked"})
-public class ComponentSystemAdapter implements RequiresComponents, ProvisionsComponents {
+public class ComponentCollection implements RequiresComponents, ProvisionsComponents {
 
     private final Map<ComponentType, FulfilledRequirementsCollection<?>> componentProvisions;
     private final Table<ComponentType, Requirement<?, ?>, Container<?>> componentRequirements;
 
 
-    public ComponentSystemAdapter() {
+    public ComponentCollection() {
         componentRequirements = HashBasedTable.create();
         componentProvisions = new HashMap<>();
     }
@@ -27,7 +27,7 @@ public class ComponentSystemAdapter implements RequiresComponents, ProvisionsCom
         return componentRequirements.values().stream().allMatch(Container::isNonEmpty);
     }
 
-    public void consumeEntirely(ComponentSystemAdapter other) {
+    public void consumeEntirely(ComponentCollection other) {
         componentRequirements.putAll(other.componentRequirements);
         componentProvisions.putAll(other.componentProvisions);
     }
@@ -36,7 +36,7 @@ public class ComponentSystemAdapter implements RequiresComponents, ProvisionsCom
         componentProvisions.put(componentType, componentType.createCollection());
     }
 
-    public <R extends Requirement<?, R>> ComponentSystemAdapter provide(FulfilledRequirement<?, R> req) {
+    public <R extends Requirement<?, R>> ComponentCollection provide(FulfilledRequirement<?, R> req) {
         ComponentType componentType = req.componentType();
         if (!componentProvisions.containsKey(componentType)) addComponent(componentType);
 
@@ -45,7 +45,7 @@ public class ComponentSystemAdapter implements RequiresComponents, ProvisionsCom
         return this;
     }
 
-    public <R extends Requirement<?, R>> ComponentSystemAdapter require(Requirement<?, R> r, Container<?> delegator) {
+    public <R extends Requirement<?, R>> ComponentCollection require(Requirement<?, R> r, Container<?> delegator) {
         componentRequirements.put(r.componentType(), r, delegator);
         return this;
     }

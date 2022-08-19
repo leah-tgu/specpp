@@ -2,7 +2,10 @@ package org.processmining.estminer.specpp.composition;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.composition.events.*;
+import org.processmining.estminer.specpp.composition.events.CandidateAcceptanceRevoked;
+import org.processmining.estminer.specpp.composition.events.CandidateAccepted;
+import org.processmining.estminer.specpp.composition.events.CandidateCompositionEvent;
+import org.processmining.estminer.specpp.composition.events.CandidateRejected;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;

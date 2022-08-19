@@ -5,15 +5,16 @@ import org.processmining.estminer.specpp.base.impls.CandidateConstraint;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingObservable;
 import org.processmining.estminer.specpp.datastructures.tree.base.GenerationConstraint;
 import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicComputationEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.TreeEvent;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.supervision.monitoring.KeepLastMonitor;
 import org.processmining.estminer.specpp.supervision.observations.EventCountStatistics;
-import org.processmining.estminer.specpp.datastructures.tree.events.TreeEvent;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.supervision.transformers.Transformers;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 import static org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements.observable;
+import static org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements.regex;
 
 public class EventCountsSupervisor extends MonitoringSupervisor {
 
@@ -23,16 +24,15 @@ public class EventCountsSupervisor extends MonitoringSupervisor {
     protected final DelegatingObservable<HeuristicComputationEvent<DoubleScore>> heuristicsEvents = new DelegatingObservable<>();
 
     public EventCountsSupervisor() {
-        componentSystemAdapter().require(observable("tree.events", TreeEvent.class), treeEvents)
-                                .require(observable("composer.constraints", JavaTypingUtils.castClass(CandidateConstraint.class)), composerConstraints)
-                                .require(observable("proposer.constraints", GenerationConstraint.class), proposerConstraints)
-                                .require(observable("heuristics.events", JavaTypingUtils.castClass(HeuristicComputationEvent.class)), heuristicsEvents);
+        componentSystemAdapter().require(observable(regex("tree.events.*"), TreeEvent.class), treeEvents)
+                                .require(observable(regex("composer.constraints.*"), JavaTypingUtils.castClass(CandidateConstraint.class)), composerConstraints)
+                                .require(observable(regex("proposer.constraints.*"), GenerationConstraint.class), proposerConstraints)
+                                .require(observable(regex("heuristics.events.*"), JavaTypingUtils.castClass(HeuristicComputationEvent.class)), heuristicsEvents);
         createMonitor("tree.events.accumulation", new KeepLastMonitor<>());
         createMonitor("heuristics.count.accumulation", new KeepLastMonitor<>());
         createMonitor("composer.constraints.count.accumulation", new KeepLastMonitor<>());
         createMonitor("composer.constraints.count.accumulation", new KeepLastMonitor<>());
     }
-
 
 
     @Override

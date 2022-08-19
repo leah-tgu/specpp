@@ -102,6 +102,7 @@ public class BitEncodedSet<T> implements EncodedSet<T, Integer>, ProperlyHashabl
 
     /**
      * Computes a bitmask of the unset indices between the {@code k}-th largest and {@code k-1}-th largest set indices.
+     *
      * @param k
      * @return
      * @see #kMaxRange(int)

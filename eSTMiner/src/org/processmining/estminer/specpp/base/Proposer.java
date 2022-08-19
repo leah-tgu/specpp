@@ -1,9 +1,14 @@
 package org.processmining.estminer.specpp.base;
 
-public interface Proposer<C extends Candidate> {
+import java.util.function.Supplier;
+
+@FunctionalInterface
+public interface Proposer<C extends Candidate> extends Supplier<C> {
 
     C proposeCandidate();
 
-    boolean isExhausted();
-
+    @Override
+    default C get() {
+        return proposeCandidate();
+    }
 }

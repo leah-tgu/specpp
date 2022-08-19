@@ -4,9 +4,7 @@ import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
 import java.nio.IntBuffer;
-import java.util.Spliterator;
 import java.util.function.IntUnaryOperator;
-import java.util.stream.IntStream;
 
 public class IndexedSplitty extends AbstractSplitty<IndexedItem<IntBuffer>> {
     private final IntUnaryOperator outsideMapper;

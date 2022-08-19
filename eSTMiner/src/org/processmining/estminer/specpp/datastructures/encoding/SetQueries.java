@@ -3,6 +3,7 @@ package org.processmining.estminer.specpp.datastructures.encoding;
 
 /**
  * Specifies common mathematical queries on sets.
+ *
  * @param <T>
  */
 public interface SetQueries<T extends SetQueries<T>> {

@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.orchestra;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.composition.PlacesComposerWithCIPR;
 import org.processmining.estminer.specpp.config.Configurators;
@@ -23,7 +23,7 @@ import org.processmining.estminer.specpp.supervision.supervisors.TerminalSupervi
 public class LightweightSpecOpsComponentConfig extends BaseSpecOpsComponentConfig {
 
     @Override
-    public SupervisionConfiguration getSupervisionConfiguration(ComponentSystemAdapter csa) {
+    public SupervisionConfiguration getSupervisionConfiguration(ComponentCollection csa) {
         return Configurators.supervisors()
                             .supervisor(BaseSupervisor::new)
                             .supervisor(PerformanceSupervisor::new)
@@ -32,7 +32,7 @@ public class LightweightSpecOpsComponentConfig extends BaseSpecOpsComponentConfi
     }
 
     @Override
-    public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(ComponentSystemAdapter csa) {
+    public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(ComponentCollection csa) {
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(PlaceCollection::new)
@@ -41,7 +41,7 @@ public class LightweightSpecOpsComponentConfig extends BaseSpecOpsComponentConfi
     }
 
     @Override
-    public GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentSystemAdapter csa) {
+    public GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentCollection csa) {
         return Configurators.<PlaceNode, PlaceGenerator>generatingTree()
                             .generator(new MonotonousPlaceGenerator.Builder())
                             .expansionStrategy(VariableExpansion::bfs)

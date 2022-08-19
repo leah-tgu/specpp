@@ -11,7 +11,7 @@ public class ExpansiveSpecOpsConfigBundle extends SpecOpsConfigBundle {
         return getTitle();
     }
 
-    public ExpansiveSpecOpsConfigBundle(){
+    public ExpansiveSpecOpsConfigBundle() {
         super(new BaseSpecOpsDataPreprocessingConfig(), new ExpansiveSpecOpsComponentConfig(), new BaseSpecOpsAlgorithmParameterConfig());
     }
 }

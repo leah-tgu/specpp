@@ -5,8 +5,6 @@ import org.apache.log4j.SimpleLayout;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.processmining.plugins.graphviz.visualisation.DotPanel;
-import org.processmining.plugins.graphviz.visualisation.NavigableSVGPanel;
-import org.processmining.plugins.graphviz.visualisation.export.ExporterPDF;
 
 import java.io.File;
 import java.io.FileWriter;

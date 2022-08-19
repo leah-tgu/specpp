@@ -8,9 +8,13 @@ import java.util.function.Function;
 
 public class BasicCache<K, V> {
 
-    private final Map<K, V> internal;
+    protected final Map<K, V> internal;
     private final Deque<K> keys;
     private final int capacity;
+
+    public BasicCache() {
+        this(Integer.MAX_VALUE);
+    }
 
     public BasicCache(int capacity) {
         this.capacity = capacity;

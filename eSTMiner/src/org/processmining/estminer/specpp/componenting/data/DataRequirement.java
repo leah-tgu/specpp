@@ -3,8 +3,8 @@ package org.processmining.estminer.specpp.componenting.data;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.system.ComponentType;
 import org.processmining.estminer.specpp.componenting.system.Requirement;
-import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
 import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
+import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 

@@ -4,7 +4,7 @@ import org.processmining.estminer.specpp.base.impls.SpecPP;
 import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.parameters.OutputPathParameters;
@@ -50,7 +50,7 @@ public class SpecOps {
 
         String s = collect.stream()
                           .map(SpecPP::getComponentRepository)
-                          .map(ComponentRepository::parameters)
+                          .map(GlobalComponentRepository::parameters)
                           .map(dc -> dc.askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS))
                           .map(opp -> opp.getFolderPath(PathTools.FolderStructure.BASE_OUTPUT_FOLDER))
                           .distinct()
@@ -108,7 +108,7 @@ public class SpecOps {
 
 
     public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> setupSpecOps(SpecOpsConfigBundle configBundle, InputDataBundle dataBundle) {
-        ComponentRepository cr = new ComponentRepository();
+        GlobalComponentRepository cr = new GlobalComponentRepository();
 
         configBundle.instantiate(cr, dataBundle);
 

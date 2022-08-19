@@ -2,26 +2,22 @@ package org.processmining.estminer.specpp.datastructures.tree.heuristic;
 
 import org.processmining.estminer.specpp.base.Evaluable;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
+import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
 import org.processmining.estminer.specpp.datastructures.tree.base.HeuristicStrategy;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
-import org.processmining.estminer.specpp.datastructures.tree.events.DequeueNodeEvent;
-import org.processmining.estminer.specpp.datastructures.tree.events.EnqueueNodeEvent;
-import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicComputationEvent;
-import org.processmining.estminer.specpp.datastructures.tree.events.TreeHeuristicsEvent;
+import org.processmining.estminer.specpp.datastructures.tree.events.*;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
-import org.processmining.estminer.specpp.datastructures.tree.events.HeuristicStatsEvent;
 import org.processmining.estminer.specpp.supervision.piping.AsyncAdHocObservableWrapper;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
-public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends NodeHeuristic<H>> extends HeuristicTreeExpansion<N, H> implements UsesComponentSystem {
+public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends HeuristicValue<H>> extends HeuristicTreeExpansion<N, H> implements UsesGlobalComponentSystem {
 
     private final EventSupervision<TreeHeuristicsEvent> eventSupervision = PipeWorks.eventSupervision();
 
-    private final ComponentSystemAdapter componentSystemAdapter = new ComponentSystemAdapter();
+    private final ComponentCollection componentSystemAdapter = new ComponentCollection();
 
     public EventingHeuristicTreeExpansion(HeuristicStrategy<N, H> heuristicStrategy) {
         super(heuristicStrategy);
@@ -56,7 +52,7 @@ public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & Loc
 
 
     @Override
-    public ComponentSystemAdapter componentSystemAdapter() {
+    public ComponentCollection componentSystemAdapter() {
         return componentSystemAdapter;
     }
 

@@ -4,10 +4,7 @@ import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.base.Candidate;
 import org.processmining.estminer.specpp.base.ConstrainingComposer;
 import org.processmining.estminer.specpp.base.Result;
-import org.processmining.estminer.specpp.base.impls.AbstractConstrainingComposer;
 import org.processmining.estminer.specpp.base.impls.CandidateConstraint;
-import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
-import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.supervision.piping.Observable;
 
 public class InstrumentedConstrainingComposer<C extends Candidate, I extends AdvancedComposition<C>, R extends Result, L extends CandidateConstraint<C>> extends AbstractInstrumentingDelegator<ConstrainingComposer<C, I, R, L>> implements ConstrainingComposer<C, I, R, L> {
@@ -33,6 +30,11 @@ public class InstrumentedConstrainingComposer<C extends Candidate, I extends Adv
 
     public Observable<L> getConstraintPublisher() {
         return delegate.getConstraintPublisher();
+    }
+
+    @Override
+    public Class<L> getPublishedConstraintClass() {
+        return delegate.getPublishedConstraintClass();
     }
 
 }

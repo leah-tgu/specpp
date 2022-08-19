@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.config;
 
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
@@ -11,7 +11,7 @@ public class TreeConfiguration<N extends TreeNode & LocallyExpandable<N>> extend
     protected final InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction;
     protected final SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder;
 
-    public TreeConfiguration(ComponentSystemAdapter csa, InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder) {
+    public TreeConfiguration(ComponentCollection csa, InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder) {
         super(csa);
         this.treeFunction = treeFunction;
         this.expansionStrategyBuilder = expansionStrategyBuilder;
@@ -51,7 +51,7 @@ public class TreeConfiguration<N extends TreeNode & LocallyExpandable<N>> extend
             return this;
         }
 
-        public TreeConfiguration<N> build(ComponentSystemAdapter cs) {
+        public TreeConfiguration<N> build(ComponentCollection cs) {
             return new TreeConfiguration<>(cs, treeFunction, expansionStrategyBuilder);
         }
 

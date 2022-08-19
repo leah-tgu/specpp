@@ -1,40 +1,37 @@
 package org.processmining.estminer.specpp.componenting.system;
 
-import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.componenting.system.FulfilledRequirementsCollection;
+import org.processmining.estminer.specpp.componenting.traits.HasComponentCollection;
 import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
 import org.processmining.estminer.specpp.componenting.traits.ProvisionsComponents;
 import org.processmining.estminer.specpp.componenting.traits.RequiresComponents;
-import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
 
-public class ComponentInitializer extends AbstractComponentSystemUser {
+public class ComponentInitializer extends AbstractGlobalComponentSystemUser {
 
 
-    public ComponentInitializer(ComponentSystemAdapter componentSystemAdapter) {
-        super(componentSystemAdapter);
+    public ComponentInitializer(ComponentCollection componentCollection) {
+        super(componentCollection);
     }
 
     public <T> T checkout(T other) {
         if (other instanceof RequiresComponents || other instanceof FulfilledRequirementsCollection || other instanceof ProvisionsComponents) {
             if (other instanceof RequiresComponents) {
                 RequiresComponents requiresComponents = (RequiresComponents) other;
-                componentSystemAdapter().fulfil(requiresComponents);
+                getComponentCollection().fulfil(requiresComponents);
             }
             if (other instanceof FulfilledRequirementsCollection) {
                 FulfilledRequirementsCollection<?> frp = (FulfilledRequirementsCollection<?>) other;
-                componentSystemAdapter().fulfilFrom(frp);
-                if (frp instanceof IsGlobalProvider) componentSystemAdapter().absorb(frp);
+                getComponentCollection().fulfilFrom(frp);
+                if (frp instanceof IsGlobalProvider) getComponentCollection().absorb(frp);
             }
             if (other instanceof ProvisionsComponents) {
                 ProvisionsComponents provisionsComponents = (ProvisionsComponents) other;
                 for (FulfilledRequirementsCollection<?> frp : provisionsComponents.componentProvisions().values()) {
-                    componentSystemAdapter().fulfilFrom(frp);
-                    if (frp instanceof IsGlobalProvider) componentSystemAdapter().absorb(frp);
+                    getComponentCollection().fulfilFrom(frp);
+                    if (frp instanceof IsGlobalProvider) getComponentCollection().absorb(frp);
                 }
             }
-        } else if (other instanceof UsesComponentSystem) {
-            checkout(((UsesComponentSystem) other).componentSystemAdapter());
+        } else if (other instanceof HasComponentCollection) {
+            checkout(((HasComponentCollection) other).getComponentCollection());
         }
         if (other instanceof IsGlobalProvider) absorb(other);
         return other;
@@ -42,21 +39,21 @@ public class ComponentInitializer extends AbstractComponentSystemUser {
 
     public <T> void absorb(T other) {
         if (other instanceof FulfilledRequirementsCollection) {
-            componentSystemAdapter().absorb((FulfilledRequirementsCollection<?>) other);
+            getComponentCollection().absorb((FulfilledRequirementsCollection<?>) other);
         } else if (other instanceof ProvisionsComponents) {
-            componentSystemAdapter().absorb((ProvisionsComponents) other);
-        } else if (other instanceof UsesComponentSystem) {
-            absorb(((UsesComponentSystem) other).componentSystemAdapter());
+            getComponentCollection().absorb((ProvisionsComponents) other);
+        } else if (other instanceof HasComponentCollection) {
+            absorb(((HasComponentCollection) other).getComponentCollection());
         }
     }
 
     public <T> void overridingAbsorb(T other) {
         if (other instanceof FulfilledRequirementsCollection) {
-            componentSystemAdapter().overridingAbsorb((FulfilledRequirementsCollection<?>) other);
+            getComponentCollection().overridingAbsorb((FulfilledRequirementsCollection<?>) other);
         } else if (other instanceof ProvisionsComponents) {
-            componentSystemAdapter().overridingAbsorb((ProvisionsComponents) other);
-        } else if (other instanceof UsesComponentSystem) {
-            overridingAbsorb(((UsesComponentSystem) other).componentSystemAdapter());
+            getComponentCollection().overridingAbsorb((ProvisionsComponents) other);
+        } else if (other instanceof HasComponentCollection) {
+            overridingAbsorb(((HasComponentCollection) other).getComponentCollection());
         }
     }
 

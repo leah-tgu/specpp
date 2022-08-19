@@ -4,15 +4,14 @@ import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
-import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
+import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 
-public abstract class AbstractFitnessEvaluator extends AbstractComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
+public abstract class AbstractFitnessEvaluator extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators {
 
     private final DelegatingDataSource<MultiEncodedLog> multiEncodedLogSource = new DelegatingDataSource<>();
     private final DelegatingDataSource<BitMask> variantSubsetSource = new DelegatingDataSource<>();
@@ -36,6 +35,7 @@ public abstract class AbstractFitnessEvaluator extends AbstractComponentSystemUs
     }
 
     public BitMask getConsideredVariants() {
+        updateConsideredVariants();
         return consideredVariants;
     }
 

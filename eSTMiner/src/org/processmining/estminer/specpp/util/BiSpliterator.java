@@ -1,9 +1,6 @@
 package org.processmining.estminer.specpp.util;
 
-import org.processmining.estminer.specpp.datastructures.util.Tuple2;
-
 import java.util.Comparator;
-import java.util.Spliterator;
 import java.util.function.BiConsumer;
 
 import static java.util.Spliterator.SIZED;

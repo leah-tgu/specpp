@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.datastructures.tree.nodegen;
 
-import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 
@@ -31,7 +31,8 @@ public class TransitionBlacklister implements PotentialExpansionsFilter {
     public void filterPotentialSetExpansions(BitMask expansions, MonotonousPlaceGenerator.ExpansionType expansionType) {
         if (expansions.isEmpty()) return;
 
-        if (expansionType == MonotonousPlaceGenerator.ExpansionType.Postset) expansions.setminus(postsetBlacklist.getBitMask());
+        if (expansionType == MonotonousPlaceGenerator.ExpansionType.Postset)
+            expansions.setminus(postsetBlacklist.getBitMask());
         else expansions.setminus(presetBlacklist.getBitMask());
     }
 

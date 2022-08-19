@@ -1,12 +1,7 @@
 package org.processmining.estminer.specpp.util;
 
-import org.processmining.estminer.specpp.base.impls.SpecPP;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.FulfilledDataRequirement;
-import org.processmining.estminer.specpp.composition.PlaceCollection;
-import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
-import org.processmining.estminer.specpp.datastructures.petri.Place;
-import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 
 import java.util.stream.Collectors;
 
@@ -18,12 +13,12 @@ public class PrintingUtils {
 
     public static String printParameters(DataSourceCollection parameters) {
         return parameters
-                     .fulfilledRequirements()
-                     .stream()
-                     .map(f -> (FulfilledDataRequirement<?>) f)
-                     .map(f -> "\t" + f.getComparable().toString() + " = " + f.getContent()
-                                                                                        .getData()
-                                                                                        .toString())
-                     .collect(Collectors.joining("\n", "Configured Parameters:\n", ""));
+                .fulfilledRequirements()
+                .stream()
+                .map(f -> (FulfilledDataRequirement<?>) f)
+                .map(f -> "\t" + f.getComparable().toString() + " = " + f.getContent()
+                                                                         .getData()
+                                                                         .toString())
+                .collect(Collectors.joining("\n", "Configured Parameters:\n", ""));
     }
 }

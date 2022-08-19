@@ -123,6 +123,7 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
     }
 
     public IntBuffer vectorBuffer(int index) {
+        // .asReadOnly apparently has worse performance
         return IntBuffer.wrap(storage, startIndices[index], startIndices[index + 1] - startIndices[index]);
     }
 

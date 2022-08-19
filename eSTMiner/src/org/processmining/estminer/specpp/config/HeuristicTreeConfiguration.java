@@ -1,19 +1,19 @@
 package org.processmining.estminer.specpp.config;
 
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.datastructures.tree.base.*;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
-import org.processmining.estminer.specpp.datastructures.tree.heuristic.NodeHeuristic;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicValue;
 
-public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends NodeHeuristic<H>> extends GeneratingTreeConfiguration<N, G> {
+public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends HeuristicValue<H>> extends GeneratingTreeConfiguration<N, G> {
 
     private final SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier;
     private final InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction;
     private final InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction;
 
-    public HeuristicTreeConfiguration(ComponentSystemAdapter cs, SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier, InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction, InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction, SimpleBuilder<? extends G> generatorSupplier) {
+    public HeuristicTreeConfiguration(ComponentCollection cs, SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier, InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction, InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction, SimpleBuilder<? extends G> generatorSupplier) {
         super(cs, null, null, generatorSupplier);
         this.heuristicStrategySupplier = heuristicStrategySupplier;
         this.treeExpansionFunction = treeExpansionFunction;
@@ -38,7 +38,7 @@ public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, 
         return createFrom(enumeratingTreeFunction, createHeuristicTreeExpansion());
     }
 
-    public static class Configurator<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends NodeHeuristic<H>> extends GeneratingTreeConfiguration.Configurator<N, G> {
+    public static class Configurator<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends HeuristicValue<H>> extends GeneratingTreeConfiguration.Configurator<N, G> {
 
         protected SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategyBuilder;
         protected InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionBuilder;
@@ -81,7 +81,7 @@ public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, 
         }
 
         @Override
-        public HeuristicTreeConfiguration<N, G, H> build(ComponentSystemAdapter cs) {
+        public HeuristicTreeConfiguration<N, G, H> build(ComponentCollection cs) {
             return new HeuristicTreeConfiguration<>(cs, heuristicStrategyBuilder, treeExpansionBuilder, enumeratingTreeBuilder, generatorBuilder);
         }
     }

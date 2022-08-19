@@ -19,7 +19,7 @@ public interface Encoding<K, V> extends Immutable {
 
     K decode(V value);
 
-    default Stream<Tuple2<K,V>> pairs() {
+    default Stream<Tuple2<K, V>> pairs() {
         return Streams.zip(domain(), domain().map(this::encode), ImmutableTuple2::new);
     }
 

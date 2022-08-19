@@ -9,4 +9,16 @@ public class SimplestFitnessEvaluation extends EnumFractions<SimplifiedFitnessSt
         super(new double[]{fittingFraction, underfedFraction, overfedFraction, malfedFraction});
     }
 
+    public double getFittingFraction() {
+        return getFraction(SimplifiedFitnessStatus.FITTING);
+    }
+
+    public double getUnderfedFraction() {
+        return getFraction(SimplifiedFitnessStatus.UNDERFED);
+    }
+
+    public double getOverfedFraction() {
+        return getFraction(SimplifiedFitnessStatus.OVERFED);
+    }
+
 }

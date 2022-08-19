@@ -5,12 +5,9 @@ import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.AbstractComponentSystemUser;
-import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
-import org.processmining.estminer.specpp.config.InitializingBuilder;
-import org.processmining.estminer.specpp.config.PostProcessingConfiguration;
-import org.processmining.estminer.specpp.config.ProposerComposerConfiguration;
-import org.processmining.estminer.specpp.config.SupervisionConfiguration;
+import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.supervision.Supervisor;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
@@ -25,14 +22,17 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Result, F extends Result> extends AbstractComponentSystemUser implements Initializable, StartStoppable {
+public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Result, F extends Result> extends AbstractGlobalComponentSystemUser implements Initializable, StartStoppable {
 
-    private final ComponentRepository cr;
+    public static final TaskDescription PEC_CYCLE = new TaskDescription("PEC Cycle");
+    public static final TaskDescription TOTAL_CYCLING = new TaskDescription("Total PEC Cycling");
+    private final GlobalComponentRepository cr;
     private final List<Supervisor> supervisors;
 
     private final Proposer<C> proposer;
     private final Composer<C, I, R> composer;
     private final PostProcessor<R, F> postProcessor;
+    private final Configuration configuration;
 
     private int stepCount = 0;
     private R result;
@@ -41,12 +41,13 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
 
     private final TimeStopper timeStopper = new TimeStopper();
 
-    public SpecPP(ComponentRepository cr, List<Supervisor> supervisors, Proposer<C> proposer, Composer<C, I, R> composer, PostProcessor<R, F> postProcessor) {
+    public SpecPP(GlobalComponentRepository cr, List<Supervisor> supervisors, Proposer<C> proposer, Composer<C, I, R> composer, PostProcessor<R, F> postProcessor) {
         this.cr = cr;
         this.supervisors = supervisors;
         this.proposer = proposer;
         this.composer = composer;
         this.postProcessor = postProcessor;
+        configuration = new Configuration(cr);
 
         linkConstraintsIfPossible(composer, proposer);
 
@@ -64,11 +65,11 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
         }
     }
 
-    public ComponentRepository getComponentRepository() {
+    public GlobalComponentRepository getComponentRepository() {
         return cr;
     }
 
-    public static class Builder<C extends Candidate, I extends Composition<C>, R extends Result, F extends Result> extends AbstractComponentSystemUser implements InitializingBuilder<SpecPP<C, I, R, F>, ComponentRepository> {
+    public static class Builder<C extends Candidate, I extends Composition<C>, R extends Result, F extends Result> extends AbstractGlobalComponentSystemUser implements InitializingBuilder<SpecPP<C, I, R, F>, GlobalComponentRepository> {
 
         private final DelegatingDataSource<ProposerComposerConfiguration<C, I, R>> pcConfigDelegator = DataRequirements.<C, I, R>proposerComposerConfiguration()
                                                                                                                        .emptyDelegator();
@@ -86,7 +87,7 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
         }
 
         @Override
-        public SpecPP<C, I, R, F> build(ComponentRepository cr) {
+        public SpecPP<C, I, R, F> build(GlobalComponentRepository cr) {
             SupervisionConfiguration svConfig = svConfigDelegator.getData();
             List<Supervisor> supervisorList = svConfig.createSupervisors();
             ProposerComposerConfiguration<C, I, R> pcConfig = pcConfigDelegator.getData();
@@ -107,14 +108,14 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
 
     @Override
     public void init() {
-        cr.checkoutAndAbsorb(composer);
-        cr.checkoutAndAbsorb(proposer);
-        cr.checkoutAndAbsorb(postProcessor);
+        configuration.checkoutAndAbsorb(composer);
+        configuration.checkoutAndAbsorb(proposer);
+        configuration.checkoutAndAbsorb(postProcessor);
 
         for (Supervisor supervisor : supervisors) {
-            cr.checkout(supervisor);
+            configuration.checkout(supervisor);
             supervisor.init();
-            cr.absorb(supervisor);
+            configuration.absorb(supervisor);
         }
 
         if (proposer instanceof Initializable) ((Initializable) proposer).init();
@@ -122,7 +123,7 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
         if (postProcessor instanceof Initializable) ((Initializable) postProcessor).init();
 
         for (Supervisor supervisor : supervisors) {
-            cr.absorb(supervisor);
+            configuration.absorb(supervisor);
         }
     }
 
@@ -132,21 +133,31 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
     }
 
 
-    public boolean step() {
-        timeStopper.start(TaskDescription.PEC_CYCLE);
-        boolean notFinished = true;
-        if (!proposer.isExhausted() && !composer.isFinished()) {
-            C c = proposer.proposeCandidate();
-            composer.accept(c);
-        } else notFinished = false;
-        timeStopper.stop(TaskDescription.PEC_CYCLE);
-        return notFinished;
+    public boolean executePECCycle() {
+        if (composer.isFinished()) return true;
+        C c = proposer.proposeCandidate();
+        if (c == null) return true;
+        composer.accept(c);
+        return false;
     }
 
-    protected void stepThrough() {
-        timeStopper.start(TaskDescription.TOTAL_CYCLING);
-        while (step()) ++stepCount;
-        timeStopper.stop(TaskDescription.TOTAL_CYCLING);
+    protected boolean executePECCycleInstrumented() {
+        timeStopper.start(PEC_CYCLE);
+        boolean stop = executePECCycle();
+        timeStopper.stop(PEC_CYCLE);
+        return stop;
+    }
+
+    protected void executeAllPECCycles() {
+        timeStopper.start(TOTAL_CYCLING);
+        while (!executePECCycleInstrumented()) ++stepCount;
+        timeStopper.stop(TOTAL_CYCLING);
+    }
+
+    protected void executeAllPECCyclesInstrumented() {
+        timeStopper.start(TOTAL_CYCLING);
+        executeAllPECCycles();
+        timeStopper.stop(TOTAL_CYCLING);
     }
 
     protected void generateResult() {
@@ -157,12 +168,15 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
         finalResult = postProcessor.postProcess(result);
     }
 
+    public F executeAll() {
+        executeAllPECCyclesInstrumented();
+        generateResult();
+        postProcess();
+        return finalResult;
+    }
 
     public CompletableFuture<F> future(Executor executor) {
-        return CompletableFuture.runAsync(this::stepThrough, executor)
-                                .thenRun(this::generateResult)
-                                .thenRun(this::postProcess)
-                                .thenApply(o -> finalResult);
+        return CompletableFuture.supplyAsync(this::executeAll, executor);
     }
 
     public Proposer<C> getProposer() {

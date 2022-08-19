@@ -6,8 +6,8 @@ import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.system.ComponentType;
 import org.processmining.estminer.specpp.componenting.system.Requirement;
-import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
 import org.processmining.estminer.specpp.datastructures.util.ImmutableTuple2;
+import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 

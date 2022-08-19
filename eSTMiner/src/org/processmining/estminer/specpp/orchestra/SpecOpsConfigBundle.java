@@ -1,6 +1,6 @@
 package org.processmining.estminer.specpp.orchestra;
 
-import org.processmining.estminer.specpp.componenting.system.ComponentRepository;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.preprocessing.InputDataBundle;
 
 public abstract class SpecOpsConfigBundle {
@@ -19,7 +19,7 @@ public abstract class SpecOpsConfigBundle {
         this.algorithmParameterConfig = algorithmParameterConfig;
     }
 
-    public void instantiate(ComponentRepository cr, InputDataBundle bundle) {
+    public void instantiate(GlobalComponentRepository cr, InputDataBundle bundle) {
         dataPreprocessingConfig.registerDataSources(cr, bundle);
         componentConfig.registerConfigurations(cr);
         algorithmParameterConfig.registerAlgorithmParameters(cr);

@@ -6,6 +6,7 @@ import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.util.EvaluationParameterTuple2;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.FullBasicFitnessEvaluation;
@@ -22,6 +23,7 @@ public class EvaluationRequirements {
     public static final EvaluatorRequirement<Place, ImplicitnessRating> PLACE_IMPLICITNESS = evaluator(Place.class, ImplicitnessRating.class);
     public static final EvaluatorRequirement<Place, DenseVariantMarkingHistories> PLACE_MARKING_HISTORY = evaluator(Place.class, DenseVariantMarkingHistories.class);
     public static final EvaluatorRequirement<Place, ? super DenseVariantMarkingHistories> PURE_PLACE_MARKING_HISTORY = evaluator(Place.class, DenseVariantMarkingHistories.class);
+    public static final EvaluatorRequirement<EvaluationParameterTuple2<Place, Integer>, DoubleScore> DELTA_ADAPTATION_FUNCTION = evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), DoubleScore.class);
 
 
     public static <I extends Evaluable, E extends Evaluation> EvaluatorRequirement<I, E> evaluator(Class<I> evaluableClass, Class<E> evaluationClass) {

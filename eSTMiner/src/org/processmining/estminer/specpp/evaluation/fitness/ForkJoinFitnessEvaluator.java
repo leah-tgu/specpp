@@ -26,8 +26,8 @@ public class ForkJoinFitnessEvaluator extends AbstractFitnessEvaluator {
 
 
     public ForkJoinFitnessEvaluator() {
-        componentSystemAdapter().provide(EvaluationRequirements.evaluator(Place.class, SimplestFitnessEvaluation.class, this::eval));
-        componentSystemAdapter().provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), SimplestFitnessEvaluation.class, this::subsetEval));
+        componentSystemAdapter().provide(EvaluationRequirements.evaluator(Place.class, SimplestFitnessEvaluation.class, this::eval))
+                                .provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), SimplestFitnessEvaluation.class, this::subsetEval));
 
     }
 

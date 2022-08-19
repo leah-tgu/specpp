@@ -3,7 +3,6 @@ package org.processmining.estminer.specpp.datastructures.encoding;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
-import com.googlecode.cqengine.query.simple.Has;
 import org.processmining.estminer.specpp.datastructures.util.NoRehashing;
 import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.ProperlyHashable;

@@ -3,7 +3,7 @@ package org.processmining.estminer.specpp.config;
 import org.processmining.estminer.specpp.base.PostProcessor;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.base.impls.PostProcessorPipe;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.supervision.instrumentators.InstrumentedPostProcessor;
 
 import java.util.Deque;
@@ -13,7 +13,7 @@ import java.util.LinkedList;
 public class PostProcessingConfiguration<R extends Result, F extends Result> extends Configuration {
     private final Deque<SimpleBuilder<? extends PostProcessor<?, ?>>> list;
 
-    public PostProcessingConfiguration(ComponentSystemAdapter csa, SimpleBuilder<? extends PostProcessor<R, ?>> first, SimpleBuilder<? extends PostProcessor<?, F>> last, Deque<SimpleBuilder<? extends PostProcessor<?, ?>>> list) {
+    public PostProcessingConfiguration(ComponentCollection csa, SimpleBuilder<? extends PostProcessor<R, ?>> first, SimpleBuilder<? extends PostProcessor<?, F>> last, Deque<SimpleBuilder<? extends PostProcessor<?, ?>>> list) {
         super(csa);
         this.list = list;
         assert !list.isEmpty() && first != null && last != null;
@@ -64,7 +64,7 @@ public class PostProcessingConfiguration<R extends Result, F extends Result> ext
             return new Configurator<>(first, builder, list);
         }
 
-        public PostProcessingConfiguration<R, F> build(ComponentSystemAdapter cs) {
+        public PostProcessingConfiguration<R, F> build(ComponentCollection cs) {
             return new PostProcessingConfiguration<>(cs, first, last, list);
         }
 

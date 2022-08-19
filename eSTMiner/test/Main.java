@@ -1,7 +1,6 @@
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections4.BidiMap;
-import org.apache.commons.collections4.IteratorUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.processmining.estminer.specpp.base.impls.SpecPP;
@@ -112,7 +111,7 @@ public class Main {
         System.out.println(tree);
 
         for (int i = 0; i < 50; i++) {
-            PlaceNode next = tree.expandTree();
+            PlaceNode next = tree.tryExpandingTree();
             System.out.println("created " + i + " : " + next.getProperties());
         }
 
@@ -135,11 +134,11 @@ public class Main {
         int printerval = 5000;
         List<Place> places = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            PlaceNode expansion = tree.expandTree();
+            PlaceNode expansion = tree.tryExpandingTree();
             places.add(expansion.getProperties());
             if (i % printerval == 0) {
                 System.out.println(places.subList(Math.max(0, i - Math.min(i / 10, Math.min(k, 10))), i));
-                System.out.println("current leaves: " + IteratorUtils.size(tree.getLeaves()));
+                System.out.println("current leaves: " + tree.getLeaves().size());
             }
         }
 

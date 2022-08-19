@@ -1,13 +1,15 @@
 package org.processmining.estminer.specpp.base.impls;
 
-import org.processmining.estminer.specpp.base.*;
-import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentSystemAdapter;
-import org.processmining.estminer.specpp.componenting.traits.UsesComponentSystem;
+import org.processmining.estminer.specpp.base.AdvancedComposition;
+import org.processmining.estminer.specpp.base.Candidate;
+import org.processmining.estminer.specpp.base.ConstrainingComposer;
+import org.processmining.estminer.specpp.base.Result;
+import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
-import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 import java.util.function.Function;
 
@@ -24,9 +26,9 @@ import java.util.function.Function;
  * @see ConstrainingComposer
  * @see CandidateConstraint
  */
-public abstract class AbstractConstrainingComposer<C extends Candidate, I extends AdvancedComposition<C>, R extends Result, L extends CandidateConstraint<C>> extends AbstractComposer<C, I, R> implements ConstrainingComposer<C, I, R, L>, UsesComponentSystem {
+public abstract class AbstractConstrainingComposer<C extends Candidate, I extends AdvancedComposition<C>, R extends Result, L extends CandidateConstraint<C>> extends AbstractComposer<C, I, R> implements ConstrainingComposer<C, I, R, L>, UsesGlobalComponentSystem {
 
-    private final ComponentSystemAdapter componentSystemAdapter = new ComponentSystemAdapter();
+    private final GlobalComponentRepository gcr = new GlobalComponentRepository();
     private final EventSupervision<L> constraintOutput = PipeWorks.eventSupervision();
 
     public AbstractConstrainingComposer(I composition, Function<? super I, R> assembleResult) {
@@ -43,8 +45,12 @@ public abstract class AbstractConstrainingComposer<C extends Candidate, I extend
     }
 
     @Override
-    public ComponentSystemAdapter componentSystemAdapter() {
-        return componentSystemAdapter;
+    public ComponentCollection getComponentCollection() {
+        return gcr;
     }
 
+    @Override
+    public ComponentCollection componentSystemAdapter() {
+        return gcr;
+    }
 }
