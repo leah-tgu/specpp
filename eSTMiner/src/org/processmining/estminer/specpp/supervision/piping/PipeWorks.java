@@ -65,11 +65,11 @@ public class PipeWorks {
     }
 
 
-    public static <O extends Observation & Mergeable> MergingSummarizingPipe<O> mergingSummarizingPipe() {
+    public static <O extends Observation & Mergeable<? super O>> MergingSummarizingPipe<O> mergingSummarizingPipe() {
         return new MergingSummarizingPipe<>();
     }
 
-    public static <O extends Observation & Mergeable> TypeIdentTransformingPipe<O> accumulatingPipe(Supplier<O> initial) {
+    public static <O extends Observation & Mergeable<? super O>> TypeIdentTransformingPipe<O> accumulatingPipe(Supplier<O> initial) {
         return new AccumulatingPipe<>(initial);
     }
 

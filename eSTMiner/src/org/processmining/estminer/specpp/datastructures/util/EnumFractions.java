@@ -4,7 +4,8 @@ import java.util.Arrays;
 
 public class EnumFractions<E extends Enum<E>> {
 
-    public final double[] fractions;
+    protected final double[] fractions;
+
 
     public EnumFractions(double[] fractions) {
         this.fractions = fractions;

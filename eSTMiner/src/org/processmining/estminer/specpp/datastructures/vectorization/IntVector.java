@@ -1,6 +1,7 @@
 package org.processmining.estminer.specpp.datastructures.vectorization;
 
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
 import org.processmining.estminer.specpp.traits.Copyable;
 
 import java.util.Arrays;
@@ -8,8 +9,8 @@ import java.util.stream.IntStream;
 
 public class IntVector implements Copyable<IntVector> {
 
-    private final int[] internal;
-    private final int total;
+    protected final int[] internal;
+    protected final int total;
 
 
     protected IntVector(int[] internal, int sum) {
@@ -23,7 +24,7 @@ public class IntVector implements Copyable<IntVector> {
 
     @Override
     public IntVector copy() {
-        return new IntVector(internal, total);
+        return new IntVector(Arrays.copyOf(internal, internal.length), total);
     }
 
     public IntStream view() {
@@ -31,7 +32,7 @@ public class IntVector implements Copyable<IntVector> {
     }
 
     public IntStream view(BitMask mask) {
-        return mask.stream().map(i -> internal[i]);
+        return mask.stream().map(this::get);
     }
 
     public int sum() {
@@ -44,6 +45,10 @@ public class IntVector implements Copyable<IntVector> {
 
     public int get(int index) {
         return internal[index];
+    }
+
+    public double getRelative(int index) {
+        return get(index) / (double) total;
     }
 
     public int length() {
@@ -59,6 +64,16 @@ public class IntVector implements Copyable<IntVector> {
             }
         }
         return currentMaxIndex;
+    }
+
+    public IntSubVector restrictTo(IndexSubset is) {
+        int indexCount = is.getIndexCount();
+        assert indexCount <= length();
+        int[] arr = new int[indexCount];
+        is.streamIndices().forEach(i -> {
+            arr[is.mapIndex(i)] = get(i);
+        });
+        return new IntSubVector(is, arr, Arrays.stream(arr).sum());
     }
 
 }

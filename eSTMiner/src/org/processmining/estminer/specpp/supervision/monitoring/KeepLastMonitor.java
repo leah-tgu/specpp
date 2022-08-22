@@ -3,13 +3,15 @@ package org.processmining.estminer.specpp.supervision.monitoring;
 import org.processmining.estminer.specpp.supervision.observations.Observation;
 import org.processmining.estminer.specpp.traits.PrettyPrintable;
 
+import java.util.Objects;
+
 public class KeepLastMonitor<O extends Observation> implements ComputingMonitor<O, O, String> {
 
     private O last;
 
     @Override
     public String computeResult() {
-        return last instanceof PrettyPrintable ? ((PrettyPrintable) last).toPrettyString() : last.toString();
+        return last instanceof PrettyPrintable ? ((PrettyPrintable) last).toPrettyString() : Objects.toString(last);
     }
 
     @Override

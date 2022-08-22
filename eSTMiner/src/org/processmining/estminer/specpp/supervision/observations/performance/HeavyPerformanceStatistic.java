@@ -1,6 +1,7 @@
 package org.processmining.estminer.specpp.supervision.observations.performance;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.processmining.estminer.specpp.traits.Mergeable;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class HeavyPerformanceStatistic implements PerformanceStatistic {
     }
 
     @Override
-    public void merge(Object other) {
+    public void merge(PerformanceStatistic other) {
         if (other instanceof HeavyPerformanceStatistic) {
             for (PerformanceMeasurement m : ((HeavyPerformanceStatistic) other).measurements) {
                 record(m);

@@ -7,6 +7,7 @@ import org.processmining.estminer.specpp.componenting.data.ParameterRequirements
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
+import org.processmining.estminer.specpp.config.Configuration;
 import org.processmining.estminer.specpp.config.parameters.OutputPathParameters;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.log.Log;
@@ -112,7 +113,8 @@ public class SpecOps {
 
         configBundle.instantiate(cr, dataBundle);
 
-        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specpp = cr.createFrom(new SpecPP.Builder<>(), cr);
+        Configuration configuration = new Configuration(cr);
+        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specpp = configuration.createFrom(new SpecPP.Builder<>(), cr);
 
         specpp.init();
 

@@ -4,11 +4,10 @@ import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
-import org.processmining.estminer.specpp.componenting.system.LocalComponentRepository;
 import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
-import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.implicitness.*;
 
 /**
@@ -22,29 +21,18 @@ import org.processmining.estminer.specpp.evaluation.implicitness.*;
  * @see EvaluationRequirements#PLACE_IMPLICITNESS
  * @see PlaceCollection
  */
-public class PlacesComposerWithCIPR<I extends AdvancedComposition<Place>> extends PlacesComposer<I> implements UsesLocalComponentSystem {
+public class PlacesComposerWithCIPR<I extends AdvancedComposition<Place>> extends PlacesComposer<I> {
 
-    protected final LocalComponentRepository lcr = new LocalComponentRepository();
     protected final DelegatingEvaluator<Place, ImplicitnessRating> implicitnessEvaluator = new DelegatingEvaluator<>(p -> BooleanImplicitness.NOT_IMPLICIT);
 
     public PlacesComposerWithCIPR(I placeComposition) {
         super(placeComposition);
-        lcr.require(EvaluationRequirements.PLACE_IMPLICITNESS, implicitnessEvaluator);
-        if (placeComposition instanceof UsesLocalComponentSystem) {
-            ComponentCollection other = ((UsesLocalComponentSystem) placeComposition).localComponentSystem();
-            lcr.fulfilFrom(other);
-            lcr.fulfil(other);
-        }
-    }
-
-    @Override
-    public ComponentCollection localComponentSystem() {
-        return lcr;
+        localComponentSystem().require(EvaluationRequirements.PLACE_IMPLICITNESS, implicitnessEvaluator);
     }
 
     @Override
     protected boolean deliberateAcceptance(Place candidate) {
-        SimplestFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
+        BasicFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
         if (isSufficientlyUnderfed(fitness)) {
             publishConstraint(new ClinicallyUnderfedPlace(candidate));
             return false;

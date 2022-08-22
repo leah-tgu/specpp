@@ -4,6 +4,7 @@ import org.processmining.estminer.specpp.componenting.data.ParameterRequirements
 import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
+import org.processmining.estminer.specpp.componenting.traits.ProvisionsComponents;
 
 import static org.processmining.estminer.specpp.componenting.data.ParameterRequirements.*;
 

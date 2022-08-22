@@ -15,26 +15,30 @@ import org.processmining.estminer.specpp.componenting.system.LocalComponentRepos
 import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
 import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
+import org.processmining.estminer.specpp.datastructures.encoding.MutatingSetOperations;
+import org.processmining.estminer.specpp.datastructures.encoding.WeightedBitMask;
 import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
-import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.util.ComputingCache;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.evaluation.implicitness.ImplicitnessRating;
 import org.processmining.estminer.specpp.evaluation.implicitness.ReplayBasedImplicitnessCalculator;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
+import org.processmining.estminer.specpp.traits.Initializable;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlaceCollection extends LightweightPlaceCollection implements PlaceCollectionLocalInfo, UsesGlobalComponentSystem, UsesLocalComponentSystem {
+public class PlaceCollection extends LightweightPlaceCollection implements PlaceCollectionLocalInfo, UsesGlobalComponentSystem, UsesLocalComponentSystem, Initializable {
     private final Evaluator<Place, DenseVariantMarkingHistories> historyMaker;
     private final Map<Place, DenseVariantMarkingHistories> histories;
-    private final Map<Place, BitMask> supportedVariantsBeforePlaceAddition;
-    private BitMask currentlySupportedVariants;
-    private final DelegatingDataSource<MultiEncodedLog> multiEncodedLog = new DelegatingDataSource<>();
+    private final Map<Place, BitMask> locallySupportedVariants;
+    private WeightedBitMask currentlySupportedVariants;
+    private final DelegatingDataSource<BitMask> consideredVariants = new DelegatingDataSource<>();
+    private final DelegatingDataSource<IntVector> variantFrequencies = new DelegatingDataSource<>();
 
     private final GlobalComponentRepository gcr = new GlobalComponentRepository();
     private final LocalComponentRepository lcr = new LocalComponentRepository();
@@ -42,16 +46,27 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
 
     public PlaceCollection() {
         histories = new HashMap<>();
-        supportedVariantsBeforePlaceAddition = new HashMap<>();
+        locallySupportedVariants = new HashMap<>();
         DelegatingEvaluator<Place, DenseVariantMarkingHistories> pureEvaluator = new DelegatingEvaluator<>();
-        gcr.require(EvaluationRequirements.PLACE_MARKING_HISTORY, pureEvaluator)
-           .require(DataRequirements.ENC_LOG, multiEncodedLog)
-           .provide(SupervisionRequirements.observable("concurrent_implicitness.performance", PerformanceEvent.class, timeStopper));
+        componentSystemAdapter().require(EvaluationRequirements.PLACE_MARKING_HISTORY, pureEvaluator)
+                                .require(DataRequirements.CONSIDERED_VARIANTS, consideredVariants)
+                                .require(DataRequirements.VARIANT_FREQUENCIES, variantFrequencies)
+                                .provide(SupervisionRequirements.observable("concurrent_implicitness.performance", PerformanceEvent.class, timeStopper));
         ComputingCache<Place, DenseVariantMarkingHistories> cache = new ComputingCache<>(100, pureEvaluator);
         historyMaker = cache::get;
-        lcr.provide(DataRequirements.dataSource("currently_supported_variants", BitMask.class, this::getCurrentSupportedVariants))
-           .provide(EvaluationRequirements.PLACE_IMPLICITNESS.fulfilWith(this::rateImplicitness))
-           .provide(DataRequirements.dataSource("marking_histories_cache", JavaTypingUtils.castClass(Evaluator.class), StaticDataSource.of(cache.readOnlyGet())));
+        localComponentSystem().provide(DataRequirements.dataSource("currently_supported_variants", WeightedBitMask.class, this::getCurrentSupportedVariants))
+                              .provide(EvaluationRequirements.PLACE_IMPLICITNESS.fulfilWith(this::rateImplicitness))
+                              .provide(DataRequirements.dataSource("marking_histories_cache", JavaTypingUtils.castClass(Evaluator.class), StaticDataSource.of(cache.readOnlyGet())));
+    }
+
+    @Override
+    public void init() {
+        resetCurrentlySupportedVariants(consideredVariants.getData());
+    }
+
+    private void resetCurrentlySupportedVariants(BitMask bm) {
+        IntVector frequencies = variantFrequencies.getData();
+        currentlySupportedVariants = new WeightedBitMask(bm, frequencies::getRelative);
     }
 
     @Override
@@ -59,20 +74,13 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
         super.accept(place);
         DenseVariantMarkingHistories h = historyMaker.eval(place);
         histories.put(place, h);
-        if (currentlySupportedVariants == null) {
-            currentlySupportedVariants = getFullVariantBitmask();
-        }
         BitMask supportedVariants = h.computePerfectlyFitting();
-        supportedVariantsBeforePlaceAddition.put(place, currentlySupportedVariants.copy());
+        locallySupportedVariants.put(place, supportedVariants);
         currentlySupportedVariants.and(supportedVariants);
     }
 
-    private BitMask getFullVariantBitmask() {
-        return multiEncodedLog.getData().variantIndices().copy();
-    }
-
     @Override
-    public BitMask getCurrentSupportedVariants() {
+    public WeightedBitMask getCurrentSupportedVariants() {
         return currentlySupportedVariants;
     }
 
@@ -87,9 +95,16 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
     public void remove(Place candidate) {
         super.remove(candidate);
         histories.remove(candidate);
-        // TODO recalculate properly
-        BitMask supportedBeforeCandidate = supportedVariantsBeforePlaceAddition.remove(candidate);
-        currentlySupportedVariants.and(supportedBeforeCandidate);
+        locallySupportedVariants.remove(candidate);
+
+        if (locallySupportedVariants.isEmpty()) {
+            resetCurrentlySupportedVariants(consideredVariants.getData());
+        } else {
+            // TODO hella inefficient. Possibly compose result from per place info in a smarter way
+            BitMask intersection = MutatingSetOperations.intersection(locallySupportedVariants.values()
+                                                                                              .toArray(new BitMask[0]));
+            resetCurrentlySupportedVariants(intersection);
+        }
     }
 
     @Override

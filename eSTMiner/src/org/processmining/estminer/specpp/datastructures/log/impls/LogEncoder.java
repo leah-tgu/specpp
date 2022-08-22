@@ -9,6 +9,8 @@ import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.OnlyCoversIndexSubset;
 import org.processmining.estminer.specpp.datastructures.log.Variant;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntSubVector;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorSubsetStorage;
 
@@ -81,8 +83,11 @@ public class LogEncoder {
         int[] data = dataList.stream().mapToInt(i -> i).toArray();
         int[] startIndices = cumLengthsList.stream().mapToInt(i -> i).toArray();
         if (log instanceof OnlyCoversIndexSubset || discardedVariant) {
-            IntVectorSubsetStorage ivss = new IntVectorSubsetStorage(IndexSubset.of(mask), data, startIndices);
-            return new EncodedSubLogImpl(log.getVariantFrequencies(), ivss, encoding);
+            IndexSubset is = IndexSubset.of(mask);
+            IntVectorSubsetStorage ivss = new IntVectorSubsetStorage(is, data, startIndices);
+            IntVector intVector = log.getVariantFrequencies();
+            IntSubVector isv = intVector.restrictTo(is);
+            return new EncodedSubLogImpl(isv, ivss, encoding);
         } else {
             IntVectorStorage ivs = new IntVectorStorage(data, startIndices);
             return new EncodedLogImpl(log.getVariantFrequencies(), ivs, encoding);

@@ -14,6 +14,6 @@ public class AdaptedSpecOpsAlgorithmParameterConfig implements SpecOpsAlgorithmP
     @Override
     public void registerAlgorithmParameters(GlobalComponentRepository cr) {
         SpecOpsAlgorithmParameterConfig.super.registerAlgorithmParameters(cr);
-        cr.overridingAbsorb(parameters);
+        cr.overridingAbsorb(parameters.parameters());
     }
 }

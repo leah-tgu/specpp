@@ -8,7 +8,7 @@ import org.processmining.estminer.specpp.traits.PrettyPrintable;
 import java.text.DecimalFormat;
 import java.time.Duration;
 
-public interface PerformanceStatistic extends Statistic, Mergeable, Observer<PerformanceMeasurement>, PrettyPrintable {
+public interface PerformanceStatistic extends Statistic, Mergeable<PerformanceStatistic>, Observer<PerformanceMeasurement>, PrettyPrintable {
     DecimalFormat decimalFormat = new DecimalFormat("0.###");
 
     static String durationToString(Duration duration) {
@@ -28,7 +28,7 @@ public interface PerformanceStatistic extends Statistic, Mergeable, Observer<Per
     long N();
 
     @Override
-    void merge(Object other);
+    void merge(PerformanceStatistic other);
 
     @Override
     String toPrettyString();

@@ -5,6 +5,7 @@ import com.google.common.collect.Table;
 import org.processmining.estminer.specpp.componenting.delegators.Container;
 import org.processmining.estminer.specpp.componenting.traits.ProvisionsComponents;
 import org.processmining.estminer.specpp.componenting.traits.RequiresComponents;
+import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
 
 import java.util.HashMap;
 import java.util.List;
@@ -132,6 +133,13 @@ public class ComponentCollection implements RequiresComponents, ProvisionsCompon
         for (FulfilledRequirementsCollection<?> frp : other.componentProvisions().values()) {
             overridingAbsorb(frp);
         }
+    }
+    public void overridingAbsorb(UsesGlobalComponentSystem other) {
+        overridingAbsorb(other.componentSystemAdapter());
+    }
+
+    public void absorb(UsesGlobalComponentSystem other) {
+        absorb(other.componentSystemAdapter());
     }
 
     public void absorb(ProvisionsComponents other) {

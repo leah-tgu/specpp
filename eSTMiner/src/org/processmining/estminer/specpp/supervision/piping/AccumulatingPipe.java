@@ -7,7 +7,7 @@ import org.processmining.estminer.specpp.traits.Mergeable;
 
 import java.util.function.Supplier;
 
-public class AccumulatingPipe<O extends Observation & Mergeable> extends TypeIdentTransformingPipe<O> implements OneToOne<O, O> {
+public class AccumulatingPipe<O extends Observation & Mergeable<? super O>> extends TypeIdentTransformingPipe<O> implements OneToOne<O, O> {
     public AccumulatingPipe(Supplier<O> initial) {
         super(new AccumulatingTransformer<>(initial));
     }

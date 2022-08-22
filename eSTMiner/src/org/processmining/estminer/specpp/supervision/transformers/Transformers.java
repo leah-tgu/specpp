@@ -34,16 +34,16 @@ public class Transformers {
         return observations -> new ObservationCollection<>(Lists.newArrayList(observations));
     }
 
-    public static <O extends Observation & Mergeable> MergingSummarizer<O> mergingSummarizer() {
+    public static <O extends Observation & Mergeable<? super O>> MergingSummarizer<O> mergingSummarizer() {
         return new MergingSummarizer<>();
     }
 
-    public static <O extends Observation & Mergeable> AccumulatingSummarizer<O> accumulatingSummarizer(Supplier<O> initial) {
+    public static <O extends Observation & Mergeable<? super O>> AccumulatingSummarizer<O> accumulatingSummarizer(Supplier<O> initial) {
         return new AccumulatingSummarizer<>(initial);
     }
 
 
-    public static <O extends Observation & Mergeable> AccumulatingTransformer<O> accumulator(Supplier<O> initial) {
+    public static <O extends Observation & Mergeable<? super O>> AccumulatingTransformer<O> accumulator(Supplier<O> initial) {
         return new AccumulatingTransformer<>(initial);
     }
 

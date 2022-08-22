@@ -2,7 +2,7 @@ package org.processmining.estminer.specpp.supervision.observations;
 
 import org.processmining.estminer.specpp.traits.Mergeable;
 
-public class Count implements Statistic, Mergeable {
+public class Count implements Statistic, Mergeable<Count> {
 
     private int count;
 
@@ -43,8 +43,7 @@ public class Count implements Statistic, Mergeable {
     }
 
     @Override
-    public void merge(Object other) {
-        if (other instanceof Count) count += ((Count) other).count;
+    public void merge(Count other) {
+        count += other.count;
     }
-
 }

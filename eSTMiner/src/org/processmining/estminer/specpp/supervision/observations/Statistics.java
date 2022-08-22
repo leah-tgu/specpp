@@ -6,7 +6,7 @@ import org.processmining.estminer.specpp.traits.ProperlyPrintable;
 
 import java.util.*;
 
-public class Statistics<K extends StatisticKey, S extends Statistic> implements Observation, Mergeable, ProperlyPrintable, PrettyPrintable {
+public class Statistics<K extends StatisticKey, S extends Statistic> implements Observation, Mergeable<Statistics<? extends K, ? extends S>>, ProperlyPrintable, PrettyPrintable {
 
     private final Map<K, S> internal;
 
@@ -31,21 +31,6 @@ public class Statistics<K extends StatisticKey, S extends Statistic> implements 
         return internal.toString();
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void merge(Object other) {
-        if (other instanceof Statistics) {
-            for (Map.Entry<StatisticKey, Statistic> entry : ((Statistics<StatisticKey, Statistic>) other).internal.entrySet()) {
-                K key = (K) entry.getKey();
-                S value = (S) entry.getValue();
-                if (!internal.containsKey(key)) record(key, value);
-                else {
-                    Statistic statistic = internal.get(key);
-                    if (statistic instanceof Mergeable) ((Mergeable) statistic).merge(value);
-                }
-            }
-        }
-    }
 
     @Override
     public String toPrettyString() {
@@ -61,4 +46,20 @@ public class Statistics<K extends StatisticKey, S extends Statistic> implements 
         return sb.append("}").toString();
     }
 
+    @Override
+    public void merge(Statistics<? extends K, ? extends S> other) {
+        for (Map.Entry<? extends K, ? extends S> entry : other.internal.entrySet()) {
+            K key = entry.getKey();
+            S value = entry.getValue();
+            if (!internal.containsKey(key)) record(key, value);
+            else {
+                S statistic = internal.get(key);
+                if (statistic.getClass()
+                             .isAssignableFrom(value.getClass()) && statistic instanceof Mergeable && value instanceof Mergeable) {
+                    Mergeable<S> mergeable = (Mergeable<S>) statistic;
+                    mergeable.merge(value);
+                }
+            }
+        }
+    }
 }

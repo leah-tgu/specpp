@@ -7,12 +7,14 @@ import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfig
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
 import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.supervision.Supervisor;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.supervision.piping.LayingPipe;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
+import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.traits.Initializable;
 import org.processmining.estminer.specpp.traits.Joinable;
 import org.processmining.estminer.specpp.traits.StartStoppable;
@@ -48,8 +50,6 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
         this.composer = composer;
         this.postProcessor = postProcessor;
         configuration = new Configuration(cr);
-
-        linkConstraintsIfPossible(composer, proposer);
 
         componentSystemAdapter().provide(SupervisionRequirements.observable("pec.performance", PerformanceEvent.class, timeStopper));
     }
@@ -121,6 +121,11 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
         if (proposer instanceof Initializable) ((Initializable) proposer).init();
         if (composer instanceof Initializable) ((Initializable) composer).init();
         if (postProcessor instanceof Initializable) ((Initializable) postProcessor).init();
+        UsesLocalComponentSystem.bridgeTheGap(proposer, composer, false);
+
+        DebuggingSupervisor.debug("specpp init", ((UsesLocalComponentSystem) proposer).localComponentSystem());
+        DebuggingSupervisor.debug("specpp init", ((UsesLocalComponentSystem) composer).localComponentSystem());
+
 
         for (Supervisor supervisor : supervisors) {
             configuration.absorb(supervisor);
@@ -149,9 +154,7 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
     }
 
     protected void executeAllPECCycles() {
-        timeStopper.start(TOTAL_CYCLING);
         while (!executePECCycleInstrumented()) ++stepCount;
-        timeStopper.stop(TOTAL_CYCLING);
     }
 
     protected void executeAllPECCyclesInstrumented() {

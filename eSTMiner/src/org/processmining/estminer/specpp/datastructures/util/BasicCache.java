@@ -31,6 +31,12 @@ public class BasicCache<K, V> {
         keys.addLast(key);
     }
 
+    public V getOrElse(K key, Function<K, V> computer) {
+        if (!internal.containsKey(key)) return computer.apply(key);
+        else return internal.get(key);
+    }
+
+
     public V getOrCompute(K key, Function<K, V> computer) {
         if (!internal.containsKey(key)) {
             put(key, computer.apply(key));

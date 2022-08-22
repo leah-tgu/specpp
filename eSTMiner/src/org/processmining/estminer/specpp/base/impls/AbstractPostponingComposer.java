@@ -28,6 +28,11 @@ public abstract class AbstractPostponingComposer<C extends Candidate, I extends 
     }
 
     @Override
+    public ComponentCollection getComponentCollection() {
+        return gcr;
+    }
+
+    @Override
     public void accept(C candidate) {
         CandidateDecision candidateDecision = deliberateCandidate(candidate);
         switch (candidateDecision) {
@@ -56,7 +61,13 @@ public abstract class AbstractPostponingComposer<C extends Candidate, I extends 
     protected abstract CandidateDecision reDeliberateCandidate(C candidate);
 
 
-    protected abstract void handlePostponedDecisions();
+    protected abstract boolean handlePostponedDecisions();
+
+    protected void handlePostponedDecisionsUntilNoChange() {
+        int limit = 100;
+        int count = 0;
+        while (count++ < limit && handlePostponedDecisions()) ;
+    }
 
     protected abstract void postponeDecision(C candidate);
 
@@ -70,7 +81,7 @@ public abstract class AbstractPostponingComposer<C extends Candidate, I extends 
 
     @Override
     public final void trigger() {
-        handlePostponedDecisions();
+        handlePostponedDecisionsUntilNoChange();
     }
 
 

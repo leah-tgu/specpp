@@ -8,8 +8,6 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataS
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
-import org.processmining.estminer.specpp.componenting.system.LocalComponentRepository;
 import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
 import org.processmining.estminer.specpp.config.parameters.TauFitnessThresholds;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
@@ -17,8 +15,8 @@ import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.AddWiredPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.RemoveWiredPlace;
-import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluation;
-import org.processmining.estminer.specpp.evaluation.fitness.SimplifiedFitnessStatus;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessStatus;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 /**
@@ -34,42 +32,41 @@ import org.processmining.estminer.specpp.util.JavaTypingUtils;
 public class PlacesComposer<I extends AdvancedComposition<Place>> extends AbstractConstrainingComposer<Place, I, PetriNet, CandidateConstraint<Place>> {
 
 
-    protected final DelegatingEvaluator<Place, SimplestFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
+    protected final DelegatingEvaluator<Place, BasicFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
 
     protected final DelegatingDataSource<TauFitnessThresholds> fitnessThresholds = new DelegatingDataSource<>();
-    protected final LocalComponentRepository lcr = new LocalComponentRepository();
 
     public PlacesComposer(I placeComposition) {
         super(placeComposition, c -> new PetriNet(c.toSet()));
         componentSystemAdapter().require(ParameterRequirements.TAU_FITNESS_THRESHOLDS, fitnessThresholds)
-                                .require(EvaluationRequirements.SIMPLE_FITNESS, fitnessEvaluator)
-                                .provide(SupervisionRequirements.observable("composer.constraints", JavaTypingUtils.castClass(CandidateConstraint.class), getConstraintPublisher()));
+                                .require(EvaluationRequirements.BASIC_FITNESS, fitnessEvaluator)
+                                .provide(SupervisionRequirements.observable("composer.constraints.wiring", getPublishedConstraintClass(), getConstraintPublisher()));
+        localComponentSystem().provide(SupervisionRequirements.observable("composer.constraints.wiring", getPublishedConstraintClass(), getConstraintPublisher()));
+    }
 
-        if (placeComposition instanceof UsesLocalComponentSystem) {
-            ComponentCollection other = ((UsesLocalComponentSystem) placeComposition).localComponentSystem();
-            lcr.fulfilFrom(other);
-            other.fulfil(lcr);
-            lcr.absorb(other);
-        }
+    @Override
+    public void init() {
+        UsesLocalComponentSystem.bridgeTheGap(this, composition);
+        super.init();
     }
 
     @Override
     protected boolean deliberateAcceptance(Place candidate) {
-        SimplestFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
+        BasicFitnessEvaluation fitness = fitnessEvaluator.eval(candidate);
         if (isSufficientlyUnderfed(fitness)) {
             publishConstraint(new ClinicallyUnderfedPlace(candidate));
             return false;
         } else return isSufficientlyFitting(fitness);
     }
 
-    protected boolean isSufficientlyFitting(SimplestFitnessEvaluation fitness) {
-        return fitness.getFraction(SimplifiedFitnessStatus.FITTING) >= fitnessThresholds.getData()
-                                                                                        .getFittingThreshold();
+    protected boolean isSufficientlyFitting(BasicFitnessEvaluation fitness) {
+        return fitness.getFraction(BasicFitnessStatus.FITTING) >= fitnessThresholds.getData()
+                                                                                   .getFittingThreshold();
     }
 
-    protected boolean isSufficientlyUnderfed(SimplestFitnessEvaluation fitness) {
-        return fitness.getFraction(SimplifiedFitnessStatus.UNDERFED) > fitnessThresholds.getData()
-                                                                                        .getUnderfedThreshold();
+    protected boolean isSufficientlyUnderfed(BasicFitnessEvaluation fitness) {
+        return fitness.getFraction(BasicFitnessStatus.UNDERFED) > fitnessThresholds.getData()
+                                                                                   .getUnderfedThreshold();
     }
 
     @Override

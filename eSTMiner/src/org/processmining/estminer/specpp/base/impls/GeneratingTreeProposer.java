@@ -1,6 +1,7 @@
 package org.processmining.estminer.specpp.base.impls;
 
 import org.processmining.estminer.specpp.base.Candidate;
+import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
 import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
@@ -26,6 +27,8 @@ public abstract class GeneratingTreeProposer<C extends Candidate & NodePropertie
 
     @Override
     public void init() {
+        UsesLocalComponentSystem.bridgeTheGap(this, generator);
+        super.init();
         tree.setRootOnce(generator.generateRoot());
     }
 

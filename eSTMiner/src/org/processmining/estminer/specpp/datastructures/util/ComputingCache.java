@@ -2,7 +2,7 @@ package org.processmining.estminer.specpp.datastructures.util;
 
 import java.util.function.Function;
 
-public class ComputingCache<K, V> extends BasicCache<K, V> {
+public class ComputingCache<K, V> extends BasicCache<K, V> implements SelfFillingCache<K, V> {
     private final Function<K, V> computationFunction;
 
     public ComputingCache(int capacity, Function<K, V> computationFunction) {

@@ -29,6 +29,7 @@ public class BaseSpecOpsDataPreprocessingConfig implements SpecOpsDataPreprocess
         MultiEncodedLog multiEncodedLog = LogEncoder.multiEncodeLog(log, transitionEncodings, mapping, lep);
         dc.register(DataRequirements.ENC_LOG, of(multiEncodedLog));
         dc.register(DataRequirements.CONSIDERED_VARIANTS, of(multiEncodedLog.variantIndices()));
+        dc.register(DataRequirements.VARIANT_FREQUENCIES, of(multiEncodedLog.variantFrequencies()));
         dc.register(DataRequirements.ENC_TRANS, of(transitionEncodings));
     }
 

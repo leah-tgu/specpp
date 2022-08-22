@@ -24,10 +24,10 @@ public class EventCountsSupervisor extends MonitoringSupervisor {
     protected final DelegatingObservable<HeuristicComputationEvent<DoubleScore>> heuristicsEvents = new DelegatingObservable<>();
 
     public EventCountsSupervisor() {
-        componentSystemAdapter().require(observable(regex("tree.events.*"), TreeEvent.class), treeEvents)
-                                .require(observable(regex("composer.constraints.*"), JavaTypingUtils.castClass(CandidateConstraint.class)), composerConstraints)
-                                .require(observable(regex("proposer.constraints.*"), GenerationConstraint.class), proposerConstraints)
-                                .require(observable(regex("heuristics.events.*"), JavaTypingUtils.castClass(HeuristicComputationEvent.class)), heuristicsEvents);
+        componentSystemAdapter().require(observable(regex("tree\\.events.*"), TreeEvent.class), treeEvents)
+                                .require(observable(regex("composer\\.constraints.*"), JavaTypingUtils.castClass(CandidateConstraint.class)), composerConstraints)
+                                .require(observable(regex("proposer\\.constraints.*"), GenerationConstraint.class), proposerConstraints)
+                                .require(observable(regex("heuristics\\.events.*"), JavaTypingUtils.castClass(HeuristicComputationEvent.class)), heuristicsEvents);
         createMonitor("tree.events.accumulation", new KeepLastMonitor<>());
         createMonitor("heuristics.count.accumulation", new KeepLastMonitor<>());
         createMonitor("composer.constraints.count.accumulation", new KeepLastMonitor<>());

@@ -24,4 +24,9 @@ public class RegexLabel extends Label {
             return ((RegexLabel) other).predicate.test(text);
         } else return false;
     }
+
+    @Override
+    public String toString() {
+        return "RegEx[" + super.toString() + "]";
+    }
 }

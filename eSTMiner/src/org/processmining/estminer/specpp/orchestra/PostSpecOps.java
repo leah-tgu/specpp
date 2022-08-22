@@ -53,7 +53,6 @@ public class PostSpecOps {
 
     private static void saveFinalResult(OutputPathParameters outputPathParameters, ProMPetrinetWrapper finalResult, PetrinetVisualization petrinetVisualization) {
         String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.GRAPH, "petri");
-
         FileUtils.saveDotPanel(filePath, petrinetVisualization.getComponent());
     }
 
@@ -61,7 +60,7 @@ public class PostSpecOps {
         int edgeCount = finalResult.getNet().getEdges().size();
         int transitionCount = finalResult.getNet().getTransitions().size();
         int placeCount = finalResult.getNet().getPlaces().size();
-        System.out.println("The resulting Petri net contains " + placeCount + " places (incl. artificial start & end), " + transitionCount + " transitions and " + edgeCount + " arcs.");
+        System.out.println("The resulting Petri net contains " + placeCount + " places, " + transitionCount + " transitions (incl. artificial start & end) and " + edgeCount + " arcs.");
         VizUtils.showVisualization(petrinetVisualization);
         return petrinetVisualization;
     }

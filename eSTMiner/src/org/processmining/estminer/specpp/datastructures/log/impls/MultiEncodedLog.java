@@ -6,6 +6,7 @@ import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.util.ImmutablePair;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.EfficientlySpliterable;
 import org.processmining.estminer.specpp.util.CompatiblePairSpliteratorImpl;
 import org.processmining.estminer.specpp.util.StreamUtils;
@@ -58,6 +59,10 @@ public class MultiEncodedLog implements EfficientlySpliterable<Tuple2<IntBuffer,
 
     public IntStream streamIndices() {
         return getPresetEncodedLog().streamIndices();
+    }
+
+    public IntVector variantFrequencies() {
+        return getPresetEncodedLog().getVariantFrequencies();
     }
 
     @Override

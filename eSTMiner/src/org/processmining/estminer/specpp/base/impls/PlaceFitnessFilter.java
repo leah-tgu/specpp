@@ -13,47 +13,50 @@ import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequi
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
-import org.processmining.estminer.specpp.componenting.system.LocalComponentRepository;
 import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
-import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
 import org.processmining.estminer.specpp.config.parameters.TauFitnessThresholds;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyOverfedPlace;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
 import org.processmining.estminer.specpp.datastructures.util.BasicCache;
-import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.DetailedFitnessEvaluation;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
-public class PlaceFitnessFilter<I extends Composition<Place>, R extends Result> extends FilteringComposer<Place, I, R> implements ConstrainingComposer<Place, I, R, CandidateConstraint<Place>>, UsesGlobalComponentSystem, UsesLocalComponentSystem {
+public class PlaceFitnessFilter<I extends Composition<Place>, R extends Result> extends FilteringComposer<Place, I, R> implements ConstrainingComposer<Place, I, R, CandidateConstraint<Place>>, UsesGlobalComponentSystem {
 
     private final GlobalComponentRepository gcr = new GlobalComponentRepository();
-    private final LocalComponentRepository lcr = new LocalComponentRepository();
-    private final DelegatingEvaluator<Place, SimplestFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
+    private final DelegatingEvaluator<Place, DetailedFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
     private final DelegatingDataSource<TauFitnessThresholds> fitnessThresholds = new DelegatingDataSource<>();
     private final EventSupervision<CandidateConstraint<Place>> constraintEvents = PipeWorks.eventSupervision();
-    private final BasicCache<Place, SimplestFitnessEvaluation> fitnessCache;
+    private final BasicCache<Place, DetailedFitnessEvaluation> fitnessCache;
 
     public PlaceFitnessFilter(Composer<Place, I, R> childComposer) {
         super(childComposer);
         fitnessCache = new BasicCache<>();
-        gcr.require(EvaluationRequirements.SIMPLE_FITNESS, fitnessEvaluator)
-           .require(ParameterRequirements.TAU_FITNESS_THRESHOLDS, fitnessThresholds)
-           .provide(SupervisionRequirements.observable("composer.constraints.under_over_fed", getPublishedConstraintClass(), getConstraintPublisher()));
-        lcr.provide(DataRequirements.dataSource("fitness_cache", JavaTypingUtils.castClass(BasicCache.class), StaticDataSource.of(fitnessCache)));
+        componentSystemAdapter().require(EvaluationRequirements.DETAILED_FITNESS, fitnessEvaluator)
+                                .require(ParameterRequirements.TAU_FITNESS_THRESHOLDS, fitnessThresholds)
+                                .provide(SupervisionRequirements.observable("composer.constraints.under_over_fed", getPublishedConstraintClass(), getConstraintPublisher()));
+        localComponentSystem()
+                .provide(SupervisionRequirements.observable("composer.constraints.under_over_fed", getPublishedConstraintClass(), getConstraintPublisher()))
+                .provide(DataRequirements.dataSource("fitness_cache", JavaTypingUtils.castClass(BasicCache.class), StaticDataSource.of(fitnessCache)));
     }
 
     @Override
     public void accept(Place place) {
-        SimplestFitnessEvaluation fitness = fitnessEvaluator.eval(place);
-        double tau = fitnessThresholds.getData().getTau();
-        if (fitness.getUnderfedFraction() > 1 - tau) constraintEvents.observe(new ClinicallyUnderfedPlace(place));
-        else if (fitness.getOverfedFraction() > 1 - tau) constraintEvents.observe(new ClinicallyOverfedPlace(place));
+        DetailedFitnessEvaluation eval = fitnessEvaluator.eval(place);
+        BasicFitnessEvaluation fitness = eval.getFractionalEvaluation();
+        TauFitnessThresholds thresholds = fitnessThresholds.getData();
+        if (fitness.getUnderfedFraction() > thresholds.getUnderfedThreshold())
+            constraintEvents.observe(new ClinicallyUnderfedPlace(place));
+        else if (fitness.getOverfedFraction() > thresholds.getOverfedThreshold())
+            constraintEvents.observe(new ClinicallyOverfedPlace(place));
         else {
-            assert fitness.getFittingFraction() >= tau;
-            fitnessCache.put(place, fitness);
+            assert fitness.getFittingFraction() >= thresholds.getFittingThreshold();
+            fitnessCache.put(place, eval);
             forward(place);
         }
     }
@@ -63,10 +66,6 @@ public class PlaceFitnessFilter<I extends Composition<Place>, R extends Result> 
         return gcr;
     }
 
-    @Override
-    public ComponentCollection localComponentSystem() {
-        return lcr;
-    }
 
     @Override
     public ComponentCollection getComponentCollection() {

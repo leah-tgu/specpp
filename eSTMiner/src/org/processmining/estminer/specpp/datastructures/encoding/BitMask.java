@@ -20,7 +20,7 @@ public class BitMask extends BitSet implements Copyable<BitMask>, SetQueries<Bit
 
     public static BitMask completelySet(int exclusiveUpperLimit) {
         BitMask mask = new BitMask(exclusiveUpperLimit);
-        mask.set(0, exclusiveUpperLimit - 1);
+        mask.set(0, exclusiveUpperLimit);
         return mask;
     }
 

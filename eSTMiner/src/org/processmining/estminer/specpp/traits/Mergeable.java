@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.traits;
 
-public interface Mergeable extends Mutable {
+public interface Mergeable<T> extends Mutable {
 
-    void merge(Object other);
+    void merge(T other);
 
 }

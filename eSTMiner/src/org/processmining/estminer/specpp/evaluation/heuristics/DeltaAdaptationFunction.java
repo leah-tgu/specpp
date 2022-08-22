@@ -3,7 +3,10 @@ package org.processmining.estminer.specpp.evaluation.heuristics;
 import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
+import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
+import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwareBuilder;
+import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.util.EvaluationParameterTuple2;
@@ -24,10 +27,16 @@ public class DeltaAdaptationFunction implements Evaluator<EvaluationParameterTup
         }
     }
 
+    public static class Provider extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators {
+
+        public Provider() {
+            DeltaAdaptationFunction func = new DeltaAdaptationFunction(0.5);
+            componentSystemAdapter().provide(EvaluationRequirements.DELTA_ADAPTATION_FUNCTION.fulfilWith(func));
+        }
+    }
 
     private final double delta;
     private final DoubleScore base;
-
 
     public DeltaAdaptationFunction(double delta) {
         this.delta = delta;

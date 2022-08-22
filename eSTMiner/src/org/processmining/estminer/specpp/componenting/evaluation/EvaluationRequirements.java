@@ -9,15 +9,18 @@ import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.util.EvaluationParameterTuple2;
 import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.DetailedFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.FullBasicFitnessEvaluation;
-import org.processmining.estminer.specpp.evaluation.fitness.SimplestFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.implicitness.ImplicitnessRating;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 public class EvaluationRequirements {
 
-    public static final EvaluatorRequirement<Place, SimplestFitnessEvaluation> SIMPLE_FITNESS = evaluator(Place.class, SimplestFitnessEvaluation.class);
-    public static final EvaluatorRequirement<EvaluationParameterTuple2<Place, BitMask>, SimplestFitnessEvaluation> SUBSET_SIMPLE_FITNESS = evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), SimplestFitnessEvaluation.class);
+    public static final EvaluatorRequirement<Place, BasicFitnessEvaluation> BASIC_FITNESS = evaluator(Place.class, BasicFitnessEvaluation.class);
+    public static final EvaluatorRequirement<Place, DetailedFitnessEvaluation> DETAILED_FITNESS = evaluator(Place.class, DetailedFitnessEvaluation.class);
+
+    public static final EvaluatorRequirement<EvaluationParameterTuple2<Place, BitMask>, BasicFitnessEvaluation> SUBSET_BASIC_FITNESS = evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), BasicFitnessEvaluation.class);
     public static final EvaluatorRequirement<Place, AggregatedBasicFitnessEvaluation> AGG_PLACE_FITNESS = evaluator(Place.class, AggregatedBasicFitnessEvaluation.class);
     public static final EvaluatorRequirement<Place, FullBasicFitnessEvaluation> FULL_PLACE_FITNESS = evaluator(Place.class, FullBasicFitnessEvaluation.class);
     public static final EvaluatorRequirement<Place, ImplicitnessRating> PLACE_IMPLICITNESS = evaluator(Place.class, ImplicitnessRating.class);

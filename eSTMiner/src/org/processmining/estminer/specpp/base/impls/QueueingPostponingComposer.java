@@ -17,14 +17,13 @@ public abstract class QueueingPostponingComposer<C extends Candidate, I extends 
         postponedCandidates = new LinkedList<>();
     }
 
-
     @Override
     protected void postponeDecision(C candidate) {
         postponedCandidates.add(candidate);
     }
 
     @Override
-    protected void handlePostponedDecisions() {
+    protected boolean handlePostponedDecisions() {
         LinkedList<C> postponedAgain = new LinkedList<>();
         for (C postponedCandidate : postponedCandidates) {
             CandidateDecision candidateDecision = reDeliberateCandidate(postponedCandidate);
@@ -43,7 +42,11 @@ public abstract class QueueingPostponingComposer<C extends Candidate, I extends 
                     break;
             }
         }
+        boolean hasChanged = postponedCandidates.size() != postponedAgain.size();
         postponedCandidates = postponedAgain;
+        return hasChanged;
     }
+
+
 
 }

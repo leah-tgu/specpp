@@ -7,12 +7,18 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
     private final SimpleBuilder<? extends Proposer<C>> proposerBuilder;
     private final SimpleBuilder<? extends I> compositionBuilder;
     private final InitializingBuilder<? extends Composer<C, I, R>, ? super I> composerBuilder;
+    private InitializingBuilder<? extends Composer<C, I, R>, Object>[] composerBuilderChain;
 
     public ProposerComposerConfiguration(ComponentCollection cs, SimpleBuilder<? extends Proposer<C>> proposerBuilder, SimpleBuilder<? extends I> compositionBuilder, InitializingBuilder<? extends Composer<C, I, R>, ? super I> composerBuilder) {
         super(cs);
         this.compositionBuilder = compositionBuilder;
         this.composerBuilder = composerBuilder;
         this.proposerBuilder = proposerBuilder;
+    }
+
+    public ProposerComposerConfiguration(ComponentCollection cs, SimpleBuilder<? extends Proposer<C>> proposerBuilder, SimpleBuilder<? extends I> compositionBuilder, InitializingBuilder<? extends Composer<C, I, R>, ? super I> composerBuilder, InitializingBuilder<? extends Composer<C, I, R>, Object>[] composerBuilderChain) {
+        this(cs, proposerBuilder, compositionBuilder, composerBuilder);
+        this.composerBuilderChain = composerBuilderChain;
     }
 
     public static <C extends Candidate, I extends Composition<C>, R extends Result> ProposerComposerConfiguration.Configurator<C, I, R> configure() {
@@ -28,7 +34,16 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
     }
 
     public Composer<C, I, R> createComposer() {
-        return createFrom(composerBuilder, createComposition());
+        I composition = createComposition();
+        if (composerBuilderChain == null || composerBuilderChain.length < 1) {
+            return createFrom(composerBuilder, composition);
+        } else {
+            Composer<C, I, R> prev = createFrom(composerBuilderChain[composerBuilderChain.length - 1], composition);
+            for (int i = composerBuilderChain.length - 2; i >= 0; i--) {
+                prev = createFrom(composerBuilderChain[i], prev);
+            }
+            return prev;
+        }
     }
 
     public static class Configurator<C extends Candidate, I extends Composition<C>, R extends Result> implements ComponentInitializerBuilder<ProposerComposerConfiguration<C, I, R>> {
@@ -36,6 +51,7 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
         private SimpleBuilder<? extends Proposer<C>> proposerBuilder;
         private SimpleBuilder<? extends I> compositionBuilder;
         private InitializingBuilder<? extends Composer<C, I, R>, ? super I> composerBuilder;
+        private InitializingBuilder<? extends Composer<C, I, R>, Object>[] composerBuilderChain;
 
         public Configurator<C, I, R> proposer(SimpleBuilder<? extends Proposer<C>> proposerBuilder) {
             this.proposerBuilder = proposerBuilder;
@@ -51,11 +67,15 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
         public Configurator<C, I, R> composer(InitializingBuilder<? extends Composer<C, I, R>, ? super I> composerBuilder) {
             this.composerBuilder = composerBuilder;
             return this;
+        }
 
+        public Configurator<C, I, R> composerChain(InitializingBuilder... composerBuilderChain) {
+            this.composerBuilderChain = composerBuilderChain;
+            return this;
         }
 
         public ProposerComposerConfiguration<C, I, R> build(ComponentCollection cs) {
-            return new ProposerComposerConfiguration<>(cs, proposerBuilder, compositionBuilder, composerBuilder);
+            return new ProposerComposerConfiguration<>(cs, proposerBuilder, compositionBuilder, composerBuilder, composerBuilderChain);
         }
 
     }

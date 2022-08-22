@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.supervision.piping.ObservationSummarize
 import org.processmining.estminer.specpp.supervision.piping.Observations;
 import org.processmining.estminer.specpp.traits.Mergeable;
 
-public class MergingSummarizer<O extends Observation & Mergeable> implements ObservationSummarizer<O, O> {
+public class MergingSummarizer<O extends Observation & Mergeable<? super O>> implements ObservationSummarizer<O, O> {
 
     @Override
     public O summarize(Observations<? extends O> observations) {

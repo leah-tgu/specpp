@@ -41,10 +41,9 @@ public class LightweightPerformanceStatistic implements PerformanceStatistic {
     }
 
     @Override
-    public void merge(Object other) {
-        if (other instanceof LightweightPerformanceStatistic) {
+    public void merge(PerformanceStatistic other) {
+        if (other instanceof LightweightPerformanceStatistic)
             nanoStats.combine(((LightweightPerformanceStatistic) other).nanoStats);
-        }
     }
 
     @Override

@@ -6,7 +6,7 @@ import org.processmining.estminer.specpp.traits.Mergeable;
 
 import java.util.function.Supplier;
 
-public class AccumulatingTransformer<O extends Observation & Mergeable> implements ObservationTransformer<O, O> {
+public class AccumulatingTransformer<O extends Observation & Mergeable<? super O>> implements ObservationTransformer<O, O> {
 
     private final O accumulator;
 

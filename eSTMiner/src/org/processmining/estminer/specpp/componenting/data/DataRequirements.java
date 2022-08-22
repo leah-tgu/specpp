@@ -15,6 +15,7 @@ import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGener
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
+import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 public class DataRequirements {
@@ -22,6 +23,7 @@ public class DataRequirements {
 
     public static final DataRequirement<BitMask> CONSIDERED_VARIANTS = dataSource("considered_variants", BitMask.class);
 
+    public static final DataRequirement<IntVector> VARIANT_FREQUENCIES = dataSource("variant_frequencies", IntVector.class);
     public static final DataRequirement<Log> RAW_LOG = dataSource("raw_log", Log.class);
 
     public static final DataRequirement<MultiEncodedLog> ENC_LOG = dataSource("multi_enc_log", MultiEncodedLog.class);

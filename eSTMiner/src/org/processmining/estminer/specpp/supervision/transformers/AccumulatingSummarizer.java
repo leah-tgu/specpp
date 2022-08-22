@@ -7,7 +7,7 @@ import org.processmining.estminer.specpp.traits.Mergeable;
 
 import java.util.function.Supplier;
 
-public class AccumulatingSummarizer<O extends Observation & Mergeable> implements ObservationSummarizer<O, O> {
+public class AccumulatingSummarizer<O extends Observation & Mergeable<? super O>> implements ObservationSummarizer<O, O> {
 
     private final O accumulator;
 

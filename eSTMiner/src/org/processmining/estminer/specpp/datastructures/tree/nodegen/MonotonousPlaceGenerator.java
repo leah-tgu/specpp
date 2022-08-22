@@ -4,7 +4,9 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
+import org.processmining.estminer.specpp.componenting.delegators.ContainerUtils;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
+import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwareBuilder;
 import org.processmining.estminer.specpp.config.parameters.PlaceGeneratorParameters;
 import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
@@ -104,6 +106,7 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
         if (parameters.isAcceptDepthConstraints()) {
             constraintHandlers.add(new ImmutableTuple2<>(DepthConstraint.class, c -> handleDepthConstraint(depthLimiter, c)));
         }
+        localComponentSystem().require(SupervisionRequirements.observable(SupervisionRequirements.regex("proposer\\.constraints.*"), getAcceptedConstraintClass()), ContainerUtils.observeResults(this));
     }
 
     /**
@@ -396,9 +399,10 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
 
 
     protected void handleCullChildrenConstraint(GenerationConstraint constraint) {
-        if (constraint instanceof CullPostsetChildren) {
+        if (constraint instanceof CullPostsetChildren)
             cullChildren(((CullPostsetChildren) constraint).getAffectedNode(), ExpansionType.Postset);
-        }
+        else if (constraint instanceof CullPresetChildren)
+            cullChildren(((CullPresetChildren) constraint).getAffectedNode(), ExpansionType.Preset);
     }
 
 
