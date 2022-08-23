@@ -1,9 +1,6 @@
 package org.processmining.estminer.specpp.componenting.system;
 
-import org.processmining.estminer.specpp.componenting.traits.HasComponentCollection;
-import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
-import org.processmining.estminer.specpp.componenting.traits.ProvisionsComponents;
-import org.processmining.estminer.specpp.componenting.traits.RequiresComponents;
+import org.processmining.estminer.specpp.componenting.traits.*;
 
 public class ComponentInitializer extends AbstractGlobalComponentSystemUser {
 
@@ -16,34 +13,34 @@ public class ComponentInitializer extends AbstractGlobalComponentSystemUser {
         if (other instanceof RequiresComponents || other instanceof FulfilledRequirementsCollection || other instanceof ProvisionsComponents) {
             if (other instanceof RequiresComponents) {
                 RequiresComponents requiresComponents = (RequiresComponents) other;
-                getComponentCollection().fulfil(requiresComponents);
+                componentSystemAdapter().fulfil(requiresComponents);
             }
             if (other instanceof FulfilledRequirementsCollection) {
                 FulfilledRequirementsCollection<?> frp = (FulfilledRequirementsCollection<?>) other;
-                getComponentCollection().fulfilFrom(frp);
-                if (frp instanceof IsGlobalProvider) getComponentCollection().absorb(frp);
+                componentSystemAdapter().fulfilFrom(frp);
+                if (frp instanceof IsGlobalProvider) componentSystemAdapter().absorb(frp);
             }
             if (other instanceof ProvisionsComponents) {
                 ProvisionsComponents provisionsComponents = (ProvisionsComponents) other;
                 for (FulfilledRequirementsCollection<?> frp : provisionsComponents.componentProvisions().values()) {
-                    getComponentCollection().fulfilFrom(frp);
-                    if (frp instanceof IsGlobalProvider) getComponentCollection().absorb(frp);
+                    componentSystemAdapter().fulfilFrom(frp);
+                    if (frp instanceof IsGlobalProvider) componentSystemAdapter().absorb(frp);
                 }
             }
-        } else if (other instanceof HasComponentCollection) {
-            checkout(((HasComponentCollection) other).getComponentCollection());
+        } else if (other instanceof UsesGlobalComponentSystem) {
+            checkout(((UsesGlobalComponentSystem) other).componentSystemAdapter());
         }
-        if (other instanceof IsGlobalProvider) absorb(other);
+        if (other instanceof IsGlobalProvider) absorbProvisions(other);
         return other;
     }
 
-    public <T> void absorb(T other) {
+    public <T> void absorbProvisions(T other) {
         if (other instanceof FulfilledRequirementsCollection) {
             getComponentCollection().absorb((FulfilledRequirementsCollection<?>) other);
         } else if (other instanceof ProvisionsComponents) {
             getComponentCollection().absorb((ProvisionsComponents) other);
         } else if (other instanceof HasComponentCollection) {
-            absorb(((HasComponentCollection) other).getComponentCollection());
+            absorbProvisions(((HasComponentCollection) other).getComponentCollection());
         }
     }
 
@@ -59,7 +56,7 @@ public class ComponentInitializer extends AbstractGlobalComponentSystemUser {
 
     public <T> T checkoutAndAbsorb(T other) {
         checkout(other);
-        absorb(other);
+        absorbProvisions(other);
         return other;
     }
 

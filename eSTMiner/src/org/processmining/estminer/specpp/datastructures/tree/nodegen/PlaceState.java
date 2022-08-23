@@ -54,7 +54,7 @@ public class PlaceState implements NodeState, ProperlyPrintable {
     /**
      * @return whether the potential expansions indicate that a future expansion is at all possible
      */
-    public boolean isCertainlyALeaf() {
+    public boolean canNeverExpand() {
         return potentialPresetExpansions.isEmpty() && potentialPostsetExpansions.isEmpty();
     }
 
@@ -85,12 +85,12 @@ public class PlaceState implements NodeState, ProperlyPrintable {
         return actualPresetExpansions.cardinality() + actualPostsetExpansions.cardinality();
     }
 
-    public BitMask getActualExpansions(MonotonousPlaceGenerator.ExpansionType expansionType) {
-        return expansionType == MonotonousPlaceGenerator.ExpansionType.Preset ? actualPresetExpansions : actualPostsetExpansions;
+    public BitMask getActualExpansions(MonotonousPlaceGenerationLogic.ExpansionType expansionType) {
+        return expansionType == MonotonousPlaceGenerationLogic.ExpansionType.Preset ? actualPresetExpansions : actualPostsetExpansions;
     }
 
-    public BitMask getPotentialExpansions(MonotonousPlaceGenerator.ExpansionType expansionType) {
-        return expansionType == MonotonousPlaceGenerator.ExpansionType.Preset ? potentialPresetExpansions : potentialPostsetExpansions;
+    public BitMask getPotentialExpansions(MonotonousPlaceGenerationLogic.ExpansionType expansionType) {
+        return expansionType == MonotonousPlaceGenerationLogic.ExpansionType.Preset ? potentialPresetExpansions : potentialPostsetExpansions;
     }
 
     @Override

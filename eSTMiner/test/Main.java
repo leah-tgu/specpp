@@ -25,7 +25,7 @@ import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrappe
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.tree.base.BiDiTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.*;
-import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.datastructures.util.Label;
 import org.processmining.estminer.specpp.datastructures.util.RegexLabel;
@@ -105,7 +105,7 @@ public class Main {
         FixedOrdering<Transition> presetOrdering = new FixedOrdering<>(start, a, b, c);
         FixedOrdering<Transition> postsetOrdering = new FixedOrdering<>(a, b, c, end);
 
-        MonotonousPlaceGenerator pg = new MonotonousPlaceGenerator(new IntEncodings<>(HashmapEncoding.ofComparableSet(presetTransitions, presetOrdering), HashmapEncoding.ofComparableSet(postsetTransitions, postsetOrdering)));
+        MonotonousPlaceGenerationLogic pg = new MonotonousPlaceGenerationLogic(new IntEncodings<>(HashmapEncoding.ofComparableSet(presetTransitions, presetOrdering), HashmapEncoding.ofComparableSet(postsetTransitions, postsetOrdering)));
         EnumeratingTree<PlaceNode> tree = new EnumeratingTree<>(pg.generateRoot(), new VariableExpansion<>());
 
         System.out.println(tree);
@@ -126,7 +126,7 @@ public class Main {
 
         HashmapEncoding<Transition> encoding = HashmapEncoding.ofComparableSet(transitions, Comparator.comparingInt(o -> Integer.parseInt(o.toString())));
 
-        MonotonousPlaceGenerator pg = new MonotonousPlaceGenerator(new IntEncodings<>(encoding, encoding));
+        MonotonousPlaceGenerationLogic pg = new MonotonousPlaceGenerationLogic(new IntEncodings<>(encoding, encoding));
 
         EnumeratingTree<PlaceNode> tree = new EnumeratingTree<>(pg.generateRoot(), new VariableExpansion<>());
 

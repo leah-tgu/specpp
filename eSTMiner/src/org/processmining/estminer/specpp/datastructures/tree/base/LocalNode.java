@@ -6,7 +6,7 @@ import org.processmining.estminer.specpp.datastructures.tree.base.traits.Locally
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.StateNode;
 
-public interface LocalNode<P extends NodeProperties, S extends NodeState, N extends LocalNode<P, S, N>> extends PropertyNode<P>, StateNode<S>, LocallyExpandable<N>, LocallyContractible<N>, KnowsDepth, Evaluable {
+public interface LocalNode<P extends NodeProperties, S extends NodeState, N extends LocalNode<P, S, N>> extends PropertyNode<P>, StateNode<S>, LocallyExpandable<N>, KnowsDepth, Evaluable {
 
     boolean isRoot();
 }

@@ -14,6 +14,7 @@ import org.processmining.estminer.specpp.util.Reflection;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EvaluatorConfiguration extends Configuration {
 
@@ -24,10 +25,8 @@ public class EvaluatorConfiguration extends Configuration {
         this.evaluatorProviderBuilders = evaluatorProviderBuilders;
     }
 
-    public void createEvaluators() {
-        for (SimpleBuilder<ProvidesEvaluators> evaluatorProviderBuilder : evaluatorProviderBuilders) {
-            createFrom(evaluatorProviderBuilder);
-        }
+    public List<ProvidesEvaluators> createEvaluators() {
+        return evaluatorProviderBuilders.stream().map(this::createFrom).collect(Collectors.toList());
     }
 
     public static class Configurator implements ComponentInitializerBuilder<EvaluatorConfiguration> {

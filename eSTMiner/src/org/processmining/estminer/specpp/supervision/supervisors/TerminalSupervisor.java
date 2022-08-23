@@ -18,7 +18,7 @@ public class TerminalSupervisor extends AbstractSupervisor implements Joinable {
     }
 
     @Override
-    public void init() {
+    public void initSelf() {
 
     }
 

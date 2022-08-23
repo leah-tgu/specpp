@@ -7,14 +7,14 @@ import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
-import org.processmining.estminer.specpp.config.GeneratingTreeConfiguration;
+import org.processmining.estminer.specpp.config.EfficientTreeConfiguration;
 import org.processmining.estminer.specpp.config.PostProcessingConfiguration;
 import org.processmining.estminer.specpp.config.ProposerComposerConfiguration;
 import org.processmining.estminer.specpp.config.SupervisionConfiguration;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
-import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 
 public interface SpecOpsComponentConfig {
@@ -37,6 +37,6 @@ public interface SpecOpsComponentConfig {
 
     PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(ComponentCollection csa);
 
-    GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentCollection csa);
+    EfficientTreeConfiguration<PlaceNode, PlaceGenerationLogic> getGeneratingTreeConfiguration(ComponentCollection csa);
 
 }

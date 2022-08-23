@@ -10,6 +10,7 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataS
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
+import org.processmining.estminer.specpp.componenting.system.link.ComposerComponent;
 import org.processmining.estminer.specpp.config.parameters.TauFitnessThresholds;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.MutatingSetOperations;
@@ -22,6 +23,7 @@ import org.processmining.estminer.specpp.datastructures.util.EvaluationParameter
 import org.processmining.estminer.specpp.datastructures.util.StackedCache;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.evaluation.fitness.DetailedFitnessEvaluation;
+import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 public class QueueingPostponingPlaceComposer<I extends AdvancedComposition<Place>, R extends Result, L extends CandidateConstraint<Place>> extends QueueingPostponingComposer<Place, I, R, CandidateConstraint<Place>> {
@@ -36,7 +38,7 @@ public class QueueingPostponingPlaceComposer<I extends AdvancedComposition<Place
     private final DelegatingDataSource<Integer> treeLevelSource = new DelegatingDataSource<>(() -> currentTreeLevel);
     private Evaluator<Place, DetailedFitnessEvaluation> cachedEvaluator;
 
-    public QueueingPostponingPlaceComposer(Composer<Place, I, R> childComposer) {
+    public QueueingPostponingPlaceComposer(ComposerComponent<Place, I, R> childComposer) {
         super(childComposer);
         componentSystemAdapter().require(ParameterRequirements.TAU_FITNESS_THRESHOLDS, fitnessThresholds)
                                 .require(EvaluationRequirements.DETAILED_FITNESS, fitnessEvaluator)
@@ -51,8 +53,7 @@ public class QueueingPostponingPlaceComposer<I extends AdvancedComposition<Place
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void initSelf() {
         ComputingCache<Place, DetailedFitnessEvaluation> cache = new ComputingCache<>(10_000, fitnessEvaluator);
         if (fitnessCache.isEmpty()) cachedEvaluator = cache::get;
         else cachedEvaluator = new StackedCache<>(fitnessCache.getData(), cache)::get;
@@ -63,7 +64,9 @@ public class QueueingPostponingPlaceComposer<I extends AdvancedComposition<Place
 
         // TODO no
         if (candidate.size() > currentTreeLevel) {
+            DebuggingSupervisor.debug("handlePostponedDecisionsUntilNoChange", "emptying postponed candidates queue as tree level changed: " + currentTreeLevel + " to " + candidate.size());
             currentTreeLevel = candidate.size();
+            DebuggingSupervisor.debug("handlePostponedDecisionsUntilNoChange", "starting with queue of length " + postponedCandidates.size());
             handlePostponedDecisionsUntilNoChange();
         }
 
@@ -93,6 +96,13 @@ public class QueueingPostponingPlaceComposer<I extends AdvancedComposition<Place
     @Override
     protected CandidateDecision reDeliberateCandidate(Place candidate) {
         return meetsCurrentDelta(candidate) ? CandidateDecision.Accept : CandidateDecision.Postpone;
+    }
+
+    @Override
+    protected int handlePostponedDecisionsUntilNoChange() {
+        int i = super.handlePostponedDecisionsUntilNoChange();
+        DebuggingSupervisor.debug("handlePostponedDecisionsUntilNoChange", "ended with queue of length " + postponedCandidates.size() + " within " + i + " iterations");
+        return i;
     }
 
     private boolean meetsCurrentDelta(Place candidate) {

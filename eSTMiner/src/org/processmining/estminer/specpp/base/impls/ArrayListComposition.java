@@ -14,6 +14,11 @@ public class ArrayListComposition<C extends Candidate> extends AbstractCompositi
     }
 
     @Override
+    protected void initSelf() {
+
+    }
+
+    @Override
     public int maxSize() {
         return ABSOLUTE_SIZE_LIMIT;
     }

@@ -50,7 +50,7 @@ public class SpecOps {
                                                                     .substring(2) + " @" + end);
 
         String s = collect.stream()
-                          .map(SpecPP::getComponentRepository)
+                          .map(SpecPP::getGlobalComponentRepository)
                           .map(GlobalComponentRepository::parameters)
                           .map(dc -> dc.askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS))
                           .map(opp -> opp.getFolderPath(PathTools.FolderStructure.BASE_OUTPUT_FOLDER))
@@ -83,7 +83,7 @@ public class SpecOps {
     }
 
     private static void postSetup(SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowPrinting) {
-        DataSourceCollection parameters = specPP.getComponentRepository().parameters();
+        DataSourceCollection parameters = specPP.getGlobalComponentRepository().parameters();
         String x = parameters.toString();
         OutputPathParameters outputPathParameters = parameters.askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS);
         String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.MISC_EXPORT, "parameters", ".txt");

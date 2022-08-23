@@ -46,7 +46,7 @@ public class Playground {
 
         // ========================================= //
 
-        GlobalComponentRepository cr = specPP.getComponentRepository();
+        GlobalComponentRepository cr = specPP.getGlobalComponentRepository();
 
         DataSourceCollection dc = cr.dataSources();
 

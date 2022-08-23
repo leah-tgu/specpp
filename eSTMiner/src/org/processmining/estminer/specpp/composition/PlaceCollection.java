@@ -40,8 +40,6 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
     private final DelegatingDataSource<BitMask> consideredVariants = new DelegatingDataSource<>();
     private final DelegatingDataSource<IntVector> variantFrequencies = new DelegatingDataSource<>();
 
-    private final GlobalComponentRepository gcr = new GlobalComponentRepository();
-    private final LocalComponentRepository lcr = new LocalComponentRepository();
     private final TimeStopper timeStopper = new TimeStopper();
 
     public PlaceCollection() {
@@ -59,8 +57,9 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
                               .provide(DataRequirements.dataSource("marking_histories_cache", JavaTypingUtils.castClass(Evaluator.class), StaticDataSource.of(cache.readOnlyGet())));
     }
 
+
     @Override
-    public void init() {
+    public void initSelf() {
         resetCurrentlySupportedVariants(consideredVariants.getData());
     }
 
@@ -107,18 +106,4 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
         }
     }
 
-    @Override
-    public ComponentCollection componentSystemAdapter() {
-        return gcr;
-    }
-
-    @Override
-    public ComponentCollection localComponentSystem() {
-        return lcr;
-    }
-
-    @Override
-    public ComponentCollection getComponentCollection() {
-        return gcr;
-    }
 }

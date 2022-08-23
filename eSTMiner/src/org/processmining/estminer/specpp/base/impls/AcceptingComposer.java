@@ -32,4 +32,9 @@ public class AcceptingComposer<C extends Candidate, I extends AdvancedCompositio
     protected void candidateRejected(C candidate) {
 
     }
+
+    @Override
+    protected void initSelf() {
+
+    }
 }

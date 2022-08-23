@@ -36,7 +36,7 @@ public class PostSpecOps {
 
         ProMPetrinetWrapper finalResult = specPP.getFinalResult();
 
-        GlobalComponentRepository cr = specPP.getComponentRepository();
+        GlobalComponentRepository cr = specPP.getGlobalComponentRepository();
         OutputPathParameters outputPathParameters = cr.parameters()
                                                       .askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS);
 

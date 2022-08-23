@@ -1,7 +1,5 @@
 package org.processmining.estminer.specpp.base.impls;
 
-import org.processmining.estminer.specpp.base.Composer;
-import org.processmining.estminer.specpp.base.Composition;
 import org.processmining.estminer.specpp.base.ConstrainingComposer;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
@@ -11,9 +9,9 @@ import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataS
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
-import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
+import org.processmining.estminer.specpp.componenting.system.link.ComposerComponent;
+import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.estminer.specpp.config.parameters.TauFitnessThresholds;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.ClinicallyOverfedPlace;
@@ -26,7 +24,7 @@ import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
-public class PlaceFitnessFilter<I extends Composition<Place>, R extends Result> extends FilteringComposer<Place, I, R> implements ConstrainingComposer<Place, I, R, CandidateConstraint<Place>>, UsesGlobalComponentSystem {
+public class PlaceFitnessFilter<I extends CompositionComponent<Place>, R extends Result> extends FilteringComposer<Place, I, R> implements ConstrainingComposer<Place, I, R, CandidateConstraint<Place>> {
 
     private final GlobalComponentRepository gcr = new GlobalComponentRepository();
     private final DelegatingEvaluator<Place, DetailedFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
@@ -34,7 +32,7 @@ public class PlaceFitnessFilter<I extends Composition<Place>, R extends Result> 
     private final EventSupervision<CandidateConstraint<Place>> constraintEvents = PipeWorks.eventSupervision();
     private final BasicCache<Place, DetailedFitnessEvaluation> fitnessCache;
 
-    public PlaceFitnessFilter(Composer<Place, I, R> childComposer) {
+    public PlaceFitnessFilter(ComposerComponent<Place, I, R> childComposer) {
         super(childComposer);
         fitnessCache = new BasicCache<>();
         componentSystemAdapter().require(EvaluationRequirements.DETAILED_FITNESS, fitnessEvaluator)
@@ -43,6 +41,11 @@ public class PlaceFitnessFilter<I extends Composition<Place>, R extends Result> 
         localComponentSystem()
                 .provide(SupervisionRequirements.observable("composer.constraints.under_over_fed", getPublishedConstraintClass(), getConstraintPublisher()))
                 .provide(DataRequirements.dataSource("fitness_cache", JavaTypingUtils.castClass(BasicCache.class), StaticDataSource.of(fitnessCache)));
+    }
+
+    @Override
+    protected void initSelf() {
+
     }
 
     @Override
@@ -60,18 +63,6 @@ public class PlaceFitnessFilter<I extends Composition<Place>, R extends Result> 
             forward(place);
         }
     }
-
-    @Override
-    public ComponentCollection componentSystemAdapter() {
-        return gcr;
-    }
-
-
-    @Override
-    public ComponentCollection getComponentCollection() {
-        return gcr;
-    }
-
     @Override
     public Observable<CandidateConstraint<Place>> getConstraintPublisher() {
         return constraintEvents;
@@ -81,4 +72,5 @@ public class PlaceFitnessFilter<I extends Composition<Place>, R extends Result> 
     public Class<CandidateConstraint<Place>> getPublishedConstraintClass() {
         return JavaTypingUtils.castClass(CandidateConstraint.class);
     }
+
 }

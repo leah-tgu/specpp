@@ -19,8 +19,12 @@ public abstract class AbstractLocalComponentSystemAwareDelegator<T> extends Abst
     }
 
     @Override
-    public void init() {
+    public void bridgeToChildren() {
         UsesLocalComponentSystem.bridgeTheGap(this, delegate);
+    }
+
+    @Override
+    public void init() {
         if (delegate instanceof Initializable) ((Initializable) delegate).init();
     }
 }

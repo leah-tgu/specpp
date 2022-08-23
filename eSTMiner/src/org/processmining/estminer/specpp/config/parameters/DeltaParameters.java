@@ -16,4 +16,13 @@ public class DeltaParameters implements Parameters {
         return new DeltaParameters(1);
     }
 
+    public double getDelta() {
+        return delta;
+    }
+
+    @Override
+    public String toString() {
+        return "DeltaParameters(" + "\uD835\uDEFF=" + delta + ")";
+    }
+
 }

@@ -4,8 +4,6 @@ import org.processmining.estminer.specpp.datastructures.tree.base.LocalNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
 import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 
-import java.util.OptionalInt;
-
 public abstract class AbstractLocalNode<P extends NodeProperties, S extends NodeState, N extends AbstractLocalNode<P, S, N>> implements LocalNode<P, S, N> {
 
     private final boolean isRoot;
@@ -14,14 +12,14 @@ public abstract class AbstractLocalNode<P extends NodeProperties, S extends Node
     private S state;
 
     private final int depth;
-    private OptionalInt computedHash;
+    private final int computedHash;
 
     public AbstractLocalNode(boolean isRoot, P properties, S initialState, int depth) {
         this.isRoot = isRoot;
         this.properties = properties;
         this.state = initialState;
         this.depth = depth;
-        this.computedHash = OptionalInt.empty();
+        this.computedHash = computeHashCode();
     }
 
     public P getProperties() {
@@ -47,11 +45,6 @@ public abstract class AbstractLocalNode<P extends NodeProperties, S extends Node
         return depth;
     }
 
-    @Override
-    public boolean canContract() {
-        return !isRoot();
-    }
-
 
     @Override
     public boolean equals(Object o) {
@@ -65,15 +58,16 @@ public abstract class AbstractLocalNode<P extends NodeProperties, S extends Node
         return properties.equals(that.properties);
     }
 
+    private int computeHashCode() {
+        int result = (isRoot ? 1 : 0);
+        result = 31 * result + properties.hashCode();
+        result = 31 * result + depth;
+        return result;
+    }
+
     @Override
     public int hashCode() {
-        if (!computedHash.isPresent()) {
-            int result = (isRoot ? 1 : 0);
-            result = 31 * result + properties.hashCode();
-            result = 31 * result + depth;
-            computedHash = OptionalInt.of(result);
-        }
-        return computedHash.getAsInt();
+        return computedHash;
     }
 
     @Override

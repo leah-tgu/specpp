@@ -2,7 +2,7 @@ package org.processmining.estminer.specpp.datastructures.tree.base;
 
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.AbstractLocalNode;
 
-public interface ChildGenerator<P extends NodeProperties, S extends NodeState, N extends AbstractLocalNode<P, S, N>> {
+public interface ChildGenerationLogic<P extends NodeProperties, S extends NodeState, N extends AbstractLocalNode<P, S, N>> extends TreeNodeGenerator<N> {
 
     N generateChild(N parent);
 
@@ -10,5 +10,5 @@ public interface ChildGenerator<P extends NodeProperties, S extends NodeState, N
 
     int potentialChildrenCount(N parent);
 
-    Iterable<N> potentialChildren(N parent);
+    Iterable<N> potentialFutureChildren(N parent);
 }

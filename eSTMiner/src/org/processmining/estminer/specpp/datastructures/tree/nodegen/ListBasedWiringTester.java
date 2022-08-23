@@ -9,31 +9,27 @@ import java.util.ArrayList;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class WiringTester implements PotentialExpansionsFilter {
+public class ListBasedWiringTester implements PotentialExpansionsFilter {
 
     private final ArrayList<Place> wiredPlaces;
 
-    public WiringTester() {
+    public ListBasedWiringTester() {
         this.wiredPlaces = new ArrayList<>();
     }
-
     @Override
-    public void filterPotentialSetExpansions(BitEncodedSet<Transition> expansions, MonotonousPlaceGenerator.ExpansionType expansionType) {
-        filterPotentialSetExpansions(expansions.getBitMask(), expansionType);
-    }
-
-    @Override
-    public void filterPotentialSetExpansions(BitMask expansions, MonotonousPlaceGenerator.ExpansionType expansionType) {
+    public BitMask filterPotentialSetExpansions(Place place, BitMask expansions, MonotonousPlaceGenerationLogic.ExpansionType expansionType) {
         if (expansions.isEmpty()) return;
 
-        Function<Place, BitEncodedSet<Transition>> getTransitions = expansionType == MonotonousPlaceGenerator.ExpansionType.Postset ? Place::postset : Place::preset;
-        Function<Place, BitEncodedSet<Transition>> getOtherTransitions = expansionType == MonotonousPlaceGenerator.ExpansionType.Postset ? Place::preset : Place::postset;
+        Function<Place, BitEncodedSet<Transition>> getTransitions = expansionType == MonotonousPlaceGenerationLogic.ExpansionType.Postset ? Place::postset : Place::preset;
+        Function<Place, BitEncodedSet<Transition>> getOtherTransitions = expansionType == MonotonousPlaceGenerationLogic.ExpansionType.Postset ? Place::preset : Place::postset;
 
         for (Place wiredPlace : wiredPlaces) {
             if (getOtherTransitions.apply(wiredPlace).getBitMask().intersects(expansions)) {
                 expansions.setminus(getTransitions.apply(wiredPlace).getBitMask());
             }
         }
+
+        return expansions;
     }
 
     private Predicate<Place> overlappingWiringPredicate(Place testPlace) {

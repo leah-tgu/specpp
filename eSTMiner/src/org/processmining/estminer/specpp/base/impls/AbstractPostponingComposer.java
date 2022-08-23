@@ -3,18 +3,21 @@ package org.processmining.estminer.specpp.base.impls;
 import org.processmining.estminer.specpp.base.*;
 import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.estminer.specpp.componenting.system.link.ComposerComponent;
+import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
+import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.traits.Triggerable;
 
-public abstract class AbstractPostponingComposer<C extends Candidate, I extends Composition<C>, R extends Result, L extends CandidateConstraint<C>> extends RecursiveComposer<C, I, R> implements ConstrainingComposer<C, I, R, L>, Triggerable, UsesGlobalComponentSystem {
+public abstract class AbstractPostponingComposer<C extends Candidate, I extends CompositionComponent<C>, R extends Result, L extends CandidateConstraint<C>> extends RecursiveComposer<C, I, R> implements ConstrainingComposer<C, I, R, L>, Triggerable, UsesGlobalComponentSystem {
 
     private final GlobalComponentRepository gcr = new GlobalComponentRepository();
     private final EventSupervision<L> constraintOutput = PipeWorks.eventSupervision();
 
-    public AbstractPostponingComposer(Composer<C, I, R> childComposer) {
+    public AbstractPostponingComposer(ComposerComponent<C, I, R> childComposer) {
         super(childComposer);
     }
 
@@ -63,10 +66,11 @@ public abstract class AbstractPostponingComposer<C extends Candidate, I extends 
 
     protected abstract boolean handlePostponedDecisions();
 
-    protected void handlePostponedDecisionsUntilNoChange() {
+    protected int handlePostponedDecisionsUntilNoChange() {
         int limit = 100;
         int count = 0;
         while (count++ < limit && handlePostponedDecisions()) ;
+        return count;
     }
 
     protected abstract void postponeDecision(C candidate);

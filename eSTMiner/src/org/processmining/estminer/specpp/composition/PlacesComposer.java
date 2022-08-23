@@ -45,9 +45,8 @@ public class PlacesComposer<I extends AdvancedComposition<Place>> extends Abstra
     }
 
     @Override
-    public void init() {
-        UsesLocalComponentSystem.bridgeTheGap(this, composition);
-        super.init();
+    protected void initSelf() {
+
     }
 
     @Override

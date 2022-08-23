@@ -7,15 +7,17 @@ import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfig
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
-import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
+import org.processmining.estminer.specpp.componenting.system.LocalComponentRepository;
+import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
+import org.processmining.estminer.specpp.componenting.system.link.ComposerComponent;
+import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
+import org.processmining.estminer.specpp.componenting.system.link.ProposerComponent;
 import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.supervision.Supervisor;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
-import org.processmining.estminer.specpp.supervision.piping.LayingPipe;
 import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
-import org.processmining.estminer.specpp.traits.Initializable;
 import org.processmining.estminer.specpp.traits.Joinable;
 import org.processmining.estminer.specpp.traits.StartStoppable;
 
@@ -24,52 +26,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Result, F extends Result> extends AbstractGlobalComponentSystemUser implements Initializable, StartStoppable {
+public class SpecPP<C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> extends AbstractBaseClass implements StartStoppable {
 
-    public static final TaskDescription PEC_CYCLE = new TaskDescription("PEC Cycle");
-    public static final TaskDescription TOTAL_CYCLING = new TaskDescription("Total PEC Cycling");
-    private final GlobalComponentRepository cr;
-    private final List<Supervisor> supervisors;
-
-    private final Proposer<C> proposer;
-    private final Composer<C, I, R> composer;
-    private final PostProcessor<R, F> postProcessor;
-    private final Configuration configuration;
-
-    private int stepCount = 0;
-    private R result;
-    private F finalResult;
-
-
-    private final TimeStopper timeStopper = new TimeStopper();
-
-    public SpecPP(GlobalComponentRepository cr, List<Supervisor> supervisors, Proposer<C> proposer, Composer<C, I, R> composer, PostProcessor<R, F> postProcessor) {
-        this.cr = cr;
-        this.supervisors = supervisors;
-        this.proposer = proposer;
-        this.composer = composer;
-        this.postProcessor = postProcessor;
-        configuration = new Configuration(cr);
-
-        componentSystemAdapter().provide(SupervisionRequirements.observable("pec.performance", PerformanceEvent.class, timeStopper));
-    }
-
-    protected static void linkConstraintsIfPossible(Composer<?, ?, ?> composer, Proposer<?> proposer) {
-        if (composer instanceof Constrainer && proposer instanceof Constrainable) {
-            Constrainable<?> constrainable = (Constrainable<?>) proposer;
-            Class<?> acceptedConstraintClass = constrainable.getAcceptedConstraintClass();
-            Constrainer<?> constrainer = (Constrainer<?>) composer;
-            Class<?> constraintClass = constrainer.getPublishedConstraintClass();
-            if (acceptedConstraintClass.isAssignableFrom(constraintClass))
-                LayingPipe.link(constrainer.getConstraintPublisher(), constrainable);
-        }
-    }
-
-    public GlobalComponentRepository getComponentRepository() {
-        return cr;
-    }
-
-    public static class Builder<C extends Candidate, I extends Composition<C>, R extends Result, F extends Result> extends AbstractGlobalComponentSystemUser implements InitializingBuilder<SpecPP<C, I, R, F>, GlobalComponentRepository> {
+    public static class Builder<C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> extends AbstractGlobalComponentSystemUser implements InitializingBuilder<SpecPP<C, I, R, F>, GlobalComponentRepository> {
 
         private final DelegatingDataSource<ProposerComposerConfiguration<C, I, R>> pcConfigDelegator = DataRequirements.<C, I, R>proposerComposerConfiguration()
                                                                                                                        .emptyDelegator();
@@ -87,15 +46,54 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
         }
 
         @Override
-        public SpecPP<C, I, R, F> build(GlobalComponentRepository cr) {
+        public SpecPP<C, I, R, F> build(GlobalComponentRepository gcr) {
             SupervisionConfiguration svConfig = svConfigDelegator.getData();
             List<Supervisor> supervisorList = svConfig.createSupervisors();
+            for (Supervisor supervisor : supervisorList) {
+                gcr.consumeEntirely(supervisor.componentSystemAdapter());
+            }
             ProposerComposerConfiguration<C, I, R> pcConfig = pcConfigDelegator.getData();
             PostProcessingConfiguration<R, F> ppConfig = ppConfigDelegator.getData();
             EvaluatorConfiguration evConfig = evConfigDelegator.getData();
             evConfig.createEvaluators();
-            return new SpecPP<>(cr, supervisorList, pcConfig.createProposer(), pcConfig.createComposer(), ppConfig.createPostProcessorPipeline());
+            return new SpecPP<>(gcr, supervisorList, pcConfig.createProposer(), pcConfig.createComposer(), ppConfig.createPostProcessorPipeline());
         }
+    }
+
+    public static final TaskDescription PEC_CYCLE = new TaskDescription("PEC Cycle");
+    public static final TaskDescription TOTAL_CYCLING = new TaskDescription("Total PEC Cycling");
+    private final GlobalComponentRepository cr;
+
+    private final List<Supervisor> supervisors;
+    private final ProposerComponent<C> proposer;
+    private final ComposerComponent<C, I, R> composer;
+    private final PostProcessor<R, F> postProcessor;
+
+    private final Configuration configuration;
+    private int stepCount = 0;
+    private R result;
+
+    private F finalResult;
+
+
+    private final TimeStopper timeStopper = new TimeStopper();
+
+    public SpecPP(GlobalComponentRepository cr, List<Supervisor> supervisors, ProposerComponent<C> proposer, ComposerComponent<C, I, R> composer, PostProcessor<R, F> postProcessor) {
+        this.cr = cr;
+        this.supervisors = supervisors;
+        this.proposer = proposer;
+        this.composer = composer;
+        this.postProcessor = postProcessor;
+        configuration = new Configuration(cr);
+
+        componentSystemAdapter().provide(SupervisionRequirements.observable("pec.performance", PerformanceEvent.class, timeStopper));
+
+        registerSubComponent(proposer);
+        registerSubComponent(composer);
+    }
+
+    public GlobalComponentRepository getGlobalComponentRepository() {
+        return cr;
     }
 
     public R getResult() {
@@ -106,30 +104,27 @@ public class SpecPP<C extends Candidate, I extends Composition<C>, R extends Res
         return finalResult;
     }
 
-    @Override
-    public void init() {
-        configuration.checkoutAndAbsorb(composer);
-        configuration.checkoutAndAbsorb(proposer);
-        configuration.checkoutAndAbsorb(postProcessor);
 
+    @Override
+    protected void preSubComponentInit() {
         for (Supervisor supervisor : supervisors) {
             configuration.checkout(supervisor);
             supervisor.init();
-            configuration.absorb(supervisor);
+            configuration.absorbProvisions(supervisor);
         }
+        LocalComponentRepository proposerLcr = new LocalComponentRepository();
+        LocalComponentRepository composerLcr = new LocalComponentRepository();
+        proposer.connectLocalComponentSystem(proposerLcr);
+        composer.connectLocalComponentSystem(composerLcr);
+        proposerLcr.fulfil(composerLcr);
+        composerLcr.fulfil(proposerLcr);
+        DebuggingSupervisor.debug("specpp init", proposerLcr);
+        DebuggingSupervisor.debug("specpp init", composerLcr);
+    }
 
-        if (proposer instanceof Initializable) ((Initializable) proposer).init();
-        if (composer instanceof Initializable) ((Initializable) composer).init();
-        if (postProcessor instanceof Initializable) ((Initializable) postProcessor).init();
-        UsesLocalComponentSystem.bridgeTheGap(proposer, composer, false);
+    @Override
+    public void initSelf() {
 
-        DebuggingSupervisor.debug("specpp init", ((UsesLocalComponentSystem) proposer).localComponentSystem());
-        DebuggingSupervisor.debug("specpp init", ((UsesLocalComponentSystem) composer).localComponentSystem());
-
-
-        for (Supervisor supervisor : supervisors) {
-            configuration.absorb(supervisor);
-        }
     }
 
     @Override

@@ -1,47 +1,45 @@
 package org.processmining.estminer.specpp.datastructures.tree.nodegen;
 
 import org.processmining.estminer.specpp.datastructures.petri.Place;
-import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.ChildGenerationLogic;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.LocalNodeWithExternalizedLogic;
 
 import java.util.Optional;
 
 /**
- * This class represents a tree node containing a {@code Place} together with a {@code PlaceState} that indicates already generated children nodes.
+ * This class represents a tree node containing a {@code Place} (as {@code NodeProperties}) together with a {@code PlaceState} (as {@code NodeState}) that indicates already generated children nodes.
  * It is an implementation of a {@code GeneratingLocalNode}, that is, it does not hold references to any other nodes and instead employs only its local state and a {@code PlaceGenerator} to compute unseen children.
  *
  * @see Place
+ * @see org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties
  * @see PlaceState
- * @see GeneratingLocalNode
- * @see MonotonousPlaceGenerator
+ * @see org.processmining.estminer.specpp.datastructures.tree.base.NodeState
+ * @see LocalNodeWithExternalizedLogic
+ * @see MonotonousPlaceGenerationLogic
  */
-public class PlaceNode extends GeneratingLocalNode<Place, PlaceState, PlaceNode> {
+public class PlaceNode extends LocalNodeWithExternalizedLogic<Place, PlaceState, PlaceNode> {
 
-    protected PlaceNode(Place place, PlaceState state, LocalNodeGenerator<Place, PlaceState, PlaceNode> generator, boolean isRoot, int depth) {
-        super(isRoot, place, state, generator, depth);
+    protected PlaceNode(Place place, PlaceState state, ChildGenerationLogic<Place, PlaceState, PlaceNode> generationLogic, boolean isRoot, int depth) {
+        super(isRoot, place, state, generationLogic, depth);
     }
 
-    protected static PlaceNode root(Place place, PlaceState state, LocalNodeGenerator<Place, PlaceState, PlaceNode> generator) {
-        return new PlaceNode(place, state, generator, true, 0);
+    protected static PlaceNode root(Place place, PlaceState state, ChildGenerationLogic<Place, PlaceState, PlaceNode> generationLogic) {
+        return new PlaceNode(place, state, generationLogic, true, 0);
     }
 
 
     public PlaceNode makeChild(Place childPlace, PlaceState childState) {
-        return new PlaceNode(childPlace, childState, getGenerator(), false, getDepth() + 1);
+        return new PlaceNode(childPlace, childState, getGenerationLogic(), false, getDepth() + 1);
     }
 
     public Place getPlace() {
         return getProperties();
     }
 
-    @Override
-    public PlaceNode generateParent() {
-        return getGenerator().generateParent(this);
-    }
 
     @Override
     public Iterable<PlaceNode> generatePotentialChildren() {
-        return getGenerator().potentialChildren(this);
+        return getGenerationLogic().potentialFutureChildren(this);
     }
 
     @Override
@@ -51,17 +49,16 @@ public class PlaceNode extends GeneratingLocalNode<Place, PlaceState, PlaceNode>
 
     @Override
     protected boolean canExpandBasedOnGenerator() {
-        return getGenerator().hasChildrenLeft(this);
+        return getGenerationLogic().hasChildrenLeft(this);
     }
 
     @Override
     protected Optional<Boolean> canExpandBasedOnState() {
-        PlaceState state = getState();
-        return state.isCertainlyALeaf() ? Optional.of(Boolean.FALSE) : Optional.empty();
+        return getState().canNeverExpand() ? Optional.of(Boolean.FALSE) : Optional.empty();
     }
 
     @Override
     public PlaceNode generateChild() {
-        return getGenerator().generateChild(this);
+        return getGenerationLogic().generateChild(this);
     }
 }

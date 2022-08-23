@@ -5,15 +5,15 @@ import org.processmining.estminer.specpp.componenting.system.ComponentCollection
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.composition.PlacesComposerWithCIPR;
 import org.processmining.estminer.specpp.config.Configurators;
-import org.processmining.estminer.specpp.config.GeneratingTreeConfiguration;
+import org.processmining.estminer.specpp.config.EfficientTreeConfiguration;
 import org.processmining.estminer.specpp.config.ProposerComposerConfiguration;
 import org.processmining.estminer.specpp.config.SupervisionConfiguration;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
-import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.VariableExpansion;
-import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.proposal.ConstrainablePlaceProposer;
 import org.processmining.estminer.specpp.supervision.supervisors.BaseSupervisor;
@@ -41,9 +41,9 @@ public class LightweightSpecOpsComponentConfig extends BaseSpecOpsComponentConfi
     }
 
     @Override
-    public GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentCollection csa) {
-        return Configurators.<PlaceNode, PlaceGenerator>generatingTree()
-                            .generator(new MonotonousPlaceGenerator.Builder())
+    public EfficientTreeConfiguration<PlaceNode, PlaceGenerationLogic> getGeneratingTreeConfiguration(ComponentCollection csa) {
+        return Configurators.<PlaceNode, PlaceGenerationLogic>generatingTree()
+                            .childGenerationLogic(new MonotonousPlaceGenerationLogic.Builder())
                             .expansionStrategy(VariableExpansion::bfs)
                             .tree(EnumeratingTree::new)
                             .build(csa);

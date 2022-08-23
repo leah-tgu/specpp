@@ -1,18 +1,19 @@
 package org.processmining.estminer.specpp.config;
 
 import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.base.Composition;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
+import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
+import org.processmining.estminer.specpp.datastructures.tree.base.ChildGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.LocalNodeWithExternalizedLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicValue;
 
 public class Configurators {
 
-    public static <C extends Candidate, I extends Composition<C>, R extends Result> ProposerComposerConfiguration.Configurator<C, I, R> proposerComposer() {
+    public static <C extends Candidate, I extends CompositionComponent<C>, R extends Result> ProposerComposerConfiguration.Configurator<C, I, R> proposerComposer() {
         return new ProposerComposerConfiguration.Configurator<>();
     }
 
@@ -24,11 +25,11 @@ public class Configurators {
         return new TreeConfiguration.Configurator<>();
     }
 
-    public static <N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>> GeneratingTreeConfiguration.Configurator<N, G> generatingTree() {
-        return new GeneratingTreeConfiguration.Configurator<>();
+    public static <N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>> EfficientTreeConfiguration.Configurator<N, G> generatingTree() {
+        return new EfficientTreeConfiguration.Configurator<>();
     }
 
-    public static <N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends HeuristicValue<H>> HeuristicTreeConfiguration.Configurator<N, G, H> heuristicTree() {
+    public static <N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>, H extends HeuristicValue<H>> HeuristicTreeConfiguration.Configurator<N, G, H> heuristicTree() {
         return new HeuristicTreeConfiguration.Configurator<>();
     }
 

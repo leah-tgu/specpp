@@ -4,15 +4,17 @@ import org.processmining.estminer.specpp.base.Candidate;
 import org.processmining.estminer.specpp.base.Composer;
 import org.processmining.estminer.specpp.base.Composition;
 import org.processmining.estminer.specpp.base.Result;
+import org.processmining.estminer.specpp.componenting.system.link.ComposerComponent;
+import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public abstract class QueueingPostponingComposer<C extends Candidate, I extends Composition<C>, R extends Result, L extends CandidateConstraint<C>> extends AbstractPostponingComposer<C, I, R, L> {
+public abstract class QueueingPostponingComposer<C extends Candidate, I extends CompositionComponent<C>, R extends Result, L extends CandidateConstraint<C>> extends AbstractPostponingComposer<C, I, R, L> {
 
-    private List<C> postponedCandidates;
+    protected List<C> postponedCandidates;
 
-    public QueueingPostponingComposer(Composer<C, I, R> childComposer) {
+    public QueueingPostponingComposer(ComposerComponent<C, I, R> childComposer) {
         super(childComposer);
         postponedCandidates = new LinkedList<>();
     }

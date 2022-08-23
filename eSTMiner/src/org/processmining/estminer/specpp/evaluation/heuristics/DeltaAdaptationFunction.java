@@ -7,30 +7,31 @@ import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequi
 import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwareBuilder;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
+import org.processmining.estminer.specpp.config.parameters.DeltaParameters;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.util.EvaluationParameterTuple2;
 
 public class DeltaAdaptationFunction implements Evaluator<EvaluationParameterTuple2<Place, Integer>, DoubleScore> {
 
-    public static class Builder extends ComponentSystemAwareBuilder<DeltaAdaptationFunction> {
+    public static class Builder extends ComponentSystemAwareBuilder<DeltaAdaptationFunction.Provider> {
 
-        private final DelegatingDataSource<Double> delta = new DelegatingDataSource<>();
+        private final DelegatingDataSource<DeltaParameters> delta = new DelegatingDataSource<>();
 
         public Builder() {
             componentSystemAdapter().require(ParameterRequirements.DELTA_PARAMETERS, delta);
         }
 
         @Override
-        protected DeltaAdaptationFunction buildIfFullySatisfied() {
-            return new DeltaAdaptationFunction(delta.getData());
+        protected DeltaAdaptationFunction.Provider buildIfFullySatisfied() {
+            return new DeltaAdaptationFunction.Provider(delta.getData());
         }
     }
 
     public static class Provider extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators {
 
-        public Provider() {
-            DeltaAdaptationFunction func = new DeltaAdaptationFunction(0.5);
+        public Provider(DeltaParameters deltaParameters) {
+            DeltaAdaptationFunction func = new DeltaAdaptationFunction(deltaParameters.getDelta());
             componentSystemAdapter().provide(EvaluationRequirements.DELTA_ADAPTATION_FUNCTION.fulfilWith(func));
         }
     }

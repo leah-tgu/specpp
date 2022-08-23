@@ -1,11 +1,11 @@
 package org.processmining.estminer.specpp.proposal;
 
 import org.processmining.estminer.specpp.base.Proposer;
-import org.processmining.estminer.specpp.base.impls.GeneratingTreeProposer;
+import org.processmining.estminer.specpp.base.impls.EfficientTreeWithExternalizedLogicBasedProposer;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
-import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableLocalNodeGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableChildGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
-import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 
@@ -17,10 +17,9 @@ import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
  * @see Proposer
  * @see Place
  * @see EnumeratingTree
- * @see ConstrainableLocalNodeGenerator
+ * @see ConstrainableChildGenerationLogic
  */
-public class PlaceProposer<G extends PlaceGenerator> extends GeneratingTreeProposer<Place, PlaceNode, G> {
-
+public class PlaceProposer<G extends PlaceGenerationLogic> extends EfficientTreeWithExternalizedLogicBasedProposer<Place, PlaceNode, G> {
 
     public PlaceProposer(G generator, EfficientTree<PlaceNode> tree) {
         super(generator, tree);
@@ -28,8 +27,17 @@ public class PlaceProposer<G extends PlaceGenerator> extends GeneratingTreePropo
 
     @Override
     protected boolean describesValidCandidate(PlaceNode node) {
-        return node.getProperties().size() >= 2;
+        return node.getPlace().size() >= 2;
     }
 
+    @Override
+    protected Place extractCandidate(PlaceNode node) {
+        return node.getPlace();
+    }
+
+    @Override
+    protected void initSelf() {
+        tree.setRootOnce(generationLogic.generateRoot());
+    }
 
 }

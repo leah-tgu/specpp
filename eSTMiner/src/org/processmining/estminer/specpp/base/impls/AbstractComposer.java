@@ -2,13 +2,13 @@ package org.processmining.estminer.specpp.base.impls;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.base.Composer;
 import org.processmining.estminer.specpp.base.Result;
-import org.processmining.estminer.specpp.traits.Initializable;
+import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
+import org.processmining.estminer.specpp.componenting.system.link.ComposerComponent;
 
 import java.util.function.Function;
 
-public abstract class AbstractComposer<C extends Candidate, I extends AdvancedComposition<C>, R extends Result> implements Composer<C, I, R>, Initializable {
+public abstract class AbstractComposer<C extends Candidate, I extends AdvancedComposition<C>, R extends Result> extends AbstractBaseClass implements ComposerComponent<C, I, R> {
 
     protected final Function<? super I, R> assembleResult;
     protected final I composition;
@@ -16,11 +16,7 @@ public abstract class AbstractComposer<C extends Candidate, I extends AdvancedCo
     public AbstractComposer(I composition, Function<? super I, R> assembleResult) {
         this.composition = composition;
         this.assembleResult = assembleResult;
-    }
-
-    @Override
-    public void init() {
-        if (composition instanceof Initializable) ((Initializable) composition).init();
+        registerSubComponent(composition);
     }
 
     @Override

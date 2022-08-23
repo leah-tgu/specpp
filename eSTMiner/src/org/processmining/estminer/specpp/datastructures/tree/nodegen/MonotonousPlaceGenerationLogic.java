@@ -1,7 +1,6 @@
 package org.processmining.estminer.specpp.datastructures.tree.nodegen;
 
 import org.apache.commons.collections4.IteratorUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.delegators.ContainerUtils;
@@ -15,7 +14,7 @@ import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.tree.base.GenerationConstraint;
-import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.constraints.*;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.SubtreeCutoffConstraint;
 import org.processmining.estminer.specpp.datastructures.util.ImmutablePair;
@@ -34,20 +33,20 @@ import java.util.stream.Stream;
  * Guarantees to generate all possible nodes that satisfy the incoming constraints, provided that the constraints monotonically shrink the set of future nodes.
  * That is, if constraints loosen the requirements and allow previously excluded nodes to be generated, these may not be correctly returned.
  */
-public class MonotonousPlaceGenerator extends PlaceGenerator {
-
+public class MonotonousPlaceGenerationLogic extends PlaceGenerationLogic {
 
     protected final List<Tuple2<Class<? extends GenerationConstraint>, Consumer<GenerationConstraint>>> constraintHandlers;
 
     public enum ExpansionType {
         Postset, Preset;
+
     }
 
     protected final IntEncodings<Transition> transitionEncodings;
     protected final List<PotentialExpansionsFilter> potentialExpansionFilters;
     protected final List<ExpansionStopper> expansionStoppers;
 
-    public static class Builder extends ComponentSystemAwareBuilder<PlaceGenerator> {
+    public static class Builder extends ComponentSystemAwareBuilder<PlaceGenerationLogic> {
 
         protected final DelegatingDataSource<IntEncodings<Transition>> transitionEncodings = DataRequirements.ENC_TRANS.emptyDelegator();
         protected final DelegatingDataSource<PlaceGeneratorParameters> parameters = new DelegatingDataSource<>();
@@ -59,13 +58,13 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
         }
 
         @Override
-        public MonotonousPlaceGenerator buildIfFullySatisfied() {
-            return new MonotonousPlaceGenerator(transitionEncodings.getData(), parameters.getData());
+        public MonotonousPlaceGenerationLogic buildIfFullySatisfied() {
+            return new MonotonousPlaceGenerationLogic(transitionEncodings.getData(), parameters.getData());
         }
 
     }
 
-    public MonotonousPlaceGenerator(IntEncodings<Transition> transitionEncodings) {
+    public MonotonousPlaceGenerationLogic(IntEncodings<Transition> transitionEncodings) {
         this(transitionEncodings, PlaceGeneratorParameters.getDefault());
     }
 
@@ -83,18 +82,19 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
      * @param transitionEncodings
      * @param parameters
      */
-    public MonotonousPlaceGenerator(IntEncodings<Transition> transitionEncodings, PlaceGeneratorParameters parameters) {
+    public MonotonousPlaceGenerationLogic(IntEncodings<Transition> transitionEncodings, PlaceGeneratorParameters parameters) {
         this.transitionEncodings = transitionEncodings;
         this.constraintHandlers = new LinkedList<>();
         this.potentialExpansionFilters = new LinkedList<>();
         this.expansionStoppers = new LinkedList<>();
+
         DepthLimiter depthLimiter = new DepthLimiter(parameters.getMaxTreeDepth());
         expansionStoppers.add(depthLimiter);
         if (parameters.isAcceptSubtreeCutoffConstraints()) {
             constraintHandlers.add(new ImmutableTuple2<>(SubtreeCutoffConstraint.class, this::handleCullChildrenConstraint));
         }
         if (parameters.isAcceptWiringConstraints()) {
-            WiringTester wiringTester = new WiringTester();
+            ListBasedWiringTester wiringTester = new ListBasedWiringTester();
             potentialExpansionFilters.add(wiringTester);
             constraintHandlers.add(new ImmutableTuple2<>(WiringConstraint.class, c -> handleWiringConstraint(wiringTester, c)));
         }
@@ -106,7 +106,13 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
         if (parameters.isAcceptDepthConstraints()) {
             constraintHandlers.add(new ImmutableTuple2<>(DepthConstraint.class, c -> handleDepthConstraint(depthLimiter, c)));
         }
+
         localComponentSystem().require(SupervisionRequirements.observable(SupervisionRequirements.regex("proposer\\.constraints.*"), getAcceptedConstraintClass()), ContainerUtils.observeResults(this));
+    }
+
+    @Override
+    protected void initSelf() {
+
     }
 
     /**
@@ -121,58 +127,6 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
         BitMask postMask = canHavePostsetChildren(place) ? getStaticPotentialExpansions(postset) : new BitMask();
         return PlaceNode.root(place, PlaceState.withPotentialExpansions(preMask, postMask), this);
     }
-
-
-    @Override
-    public PlaceNode generateParent(PlaceNode child) {
-        /*
-        Place place = child.getProperties();
-        BitEncodedSet<Transition> pre = place.preset(), post = place.postset();
-
-        BitMask presetChildrenMask;
-        BitMask postsetChildrenMask;
-
-        if (isPostsetExpansion(place)) {
-            // child is postset-expansion/blue edge to parent
-            BitEncodedSet<Transition> newPost = place.postset().copy();
-            newPost.removeIndex(newPost.maximalIndex());
-            post = newPost;
-            presetChildrenMask = new BitMask(pre.maxSize());
-            postsetChildrenMask = sameTypeYoungerSiblings(post);
-        } else {
-            // child is preset-expansion/red edge to parent; all the parent's postset expansions were already visited
-            BitEncodedSet<Transition> newPre = place.preset().copy();
-            newPre.removeIndex(newPre.maximalIndex());
-            pre = newPre;
-            presetChildrenMask = sameTypeYoungerSiblings(pre);
-            postsetChildrenMask = allYoungerSiblings(post);
-        }
-
-        Place parent = new Place(pre, post);
-
-        return child.parent(parent, PlaceState.inst(presetChildrenMask, postsetChildrenMask), parent.isEmpty());
-        */
-        throw new NotImplementedException("the current implementation does not support constraints");
-    }
-
-    /*
-    private static BitMask allYoungerSiblings(BitEncodedSet<Transition> set) {
-        return set.kMaxRangeMask(1);
-    }
-
-    private static BitMask sameTypeYoungerSiblings(BitEncodedSet<Transition> set) {
-        return set.kMaxRangeMask(2);
-    }
-
-    private boolean isPostsetExpansion(Place place) {
-        BitEncodedSet<Transition> pre = place.preset();
-        BitEncodedSet<Transition> post = place.postset();
-        boolean isParentRoot = pre.cardinality() + post.cardinality() == 1;
-        return !isParentRoot && post.cardinality() == 1;
-    }
-
-    */
-
 
     @Override
     public PlaceNode generateChild(PlaceNode parent) {
@@ -246,9 +200,9 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
             Place place = parent.getPlace();
             BitMask possiblePresetExpansions = new BitMask(), possiblePostsetExpansions = new BitMask();
             if (canHavePostsetChildren(place))
-                possiblePostsetExpansions = computeFilteredPotentialExpansions(state, ExpansionType.Postset);
+                possiblePostsetExpansions = computeFilteredPotentialExpansions(place, state, ExpansionType.Postset);
             if (canHavePresetChildren(place))
-                possiblePresetExpansions = computeFilteredPotentialExpansions(state, ExpansionType.Preset);
+                possiblePresetExpansions = computeFilteredPotentialExpansions(place, state, ExpansionType.Preset);
 
             return new ImmutablePair<>(possiblePresetExpansions, possiblePostsetExpansions);
         }
@@ -259,15 +213,16 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
      * Computes potential expansions for the specified expansion type.
      * Mutates the state it is querying.
      *
+     * @param place
      * @param state         NodeState which is queried and updated
      * @param expansionType the expansion type
      * @return potential expansions represented by a bitmask
      */
-    protected BitMask computeFilteredPotentialExpansions(PlaceState state, ExpansionType expansionType) {
+    protected BitMask computeFilteredPotentialExpansions(Place place, PlaceState state, ExpansionType expansionType) {
         BitMask potentialExpansions = expansionType == ExpansionType.Postset ? state.getPotentialPostsetExpansions() : state.getPotentialPresetExpansions();
 
         for (PotentialExpansionsFilter filter : potentialExpansionFilters) {
-            filter.filterPotentialSetExpansions(potentialExpansions, expansionType);
+            potentialExpansions = filter.filterPotentialSetExpansions(place, potentialExpansions, expansionType);
         }
 
         return potentialExpansions.copy();
@@ -308,8 +263,6 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
      */
     public void cullChildren(PlaceNode node, ExpansionType expansionType) {
         BitMask potentialExpansions = node.getState().getPotentialExpansions(expansionType);
-        int cardinality = potentialExpansions.cardinality();
-
         potentialExpansions.clear();
     }
 
@@ -318,7 +271,7 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
      *
      * @param parent
      * @return
-     * @see #potentialChildren(PlaceNode)
+     * @see #potentialFutureChildren(PlaceNode)
      */
     @Override
     public int potentialChildrenCount(PlaceNode parent) {
@@ -334,7 +287,7 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
      * @return
      */
     @Override
-    public Iterable<PlaceNode> potentialChildren(PlaceNode parent) {
+    public Iterable<PlaceNode> potentialFutureChildren(PlaceNode parent) {
         Place place = parent.getPlace();
         PlaceState state = parent.getState();
 
@@ -389,7 +342,7 @@ public class MonotonousPlaceGenerator extends PlaceGenerator {
         transitionBlacklister.blacklist(((BlacklistTransition) constraint).getTransition());
     }
 
-    protected void handleWiringConstraint(WiringTester wiringTester, GenerationConstraint constraint) {
+    protected void handleWiringConstraint(ListBasedWiringTester wiringTester, GenerationConstraint constraint) {
         if (constraint instanceof AddWiredPlace) wiringTester.wire(((AddWiredPlace) constraint).getAffectedCandidate());
     }
 

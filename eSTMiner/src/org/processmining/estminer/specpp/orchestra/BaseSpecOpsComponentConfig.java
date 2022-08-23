@@ -5,20 +5,18 @@ import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfig
 import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.composition.EventingPlacesComposerWithCIPR;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
-import org.processmining.estminer.specpp.composition.PlacesComposerWithCIPR;
 import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
-import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EventingEnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.EventingHeuristicTreeExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicUtils;
-import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
-import org.processmining.estminer.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
 import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.estminer.specpp.postprocessing.PlaceExporter;
 import org.processmining.estminer.specpp.postprocessing.ProMConverter;
@@ -58,12 +56,12 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
     }
 
     @Override
-    public GeneratingTreeConfiguration<PlaceNode, PlaceGenerator> getGeneratingTreeConfiguration(ComponentCollection csa) {
-        return Configurators.<PlaceNode, PlaceGenerator, DoubleScore>heuristicTree()
+    public EfficientTreeConfiguration<PlaceNode, PlaceGenerationLogic> getGeneratingTreeConfiguration(ComponentCollection csa) {
+        return Configurators.<PlaceNode, PlaceGenerationLogic, DoubleScore>heuristicTree()
                             .heuristic(HeuristicUtils::bfs)
                             .heuristicExpansion(EventingHeuristicTreeExpansion::new)
                             .enumeratingTree(EventingEnumeratingTree::new)
-                            .constrainableGenerator(new MonotonousPlaceGenerator.Builder())
+                            .constrainableGenerator(new MonotonousPlaceGenerationLogic.Builder())
                             .build(csa);
     }
 

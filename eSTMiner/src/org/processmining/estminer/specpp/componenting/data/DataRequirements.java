@@ -1,19 +1,19 @@
 package org.processmining.estminer.specpp.componenting.data;
 
 import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.base.Composition;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.ComponentInitializer;
+import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
-import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableChildGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.LocalNodeWithExternalizedLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
@@ -31,7 +31,7 @@ public class DataRequirements {
     public static final ConfigurationRequirement<SupervisionConfiguration> SUPERVISOR_CONFIG = configuration("supervisor_config", SupervisionConfiguration.class);
     public static final ConfigurationRequirement<EvaluatorConfiguration> EVALUATOR_CONFIG = configuration("evaluator_config", EvaluatorConfiguration.class);
 
-    public static <C extends Candidate, I extends Composition<C>, R extends Result> ConfigurationRequirement<ProposerComposerConfiguration<C, I, R>> proposerComposerConfiguration() {
+    public static <C extends Candidate, I extends CompositionComponent<C>, R extends Result> ConfigurationRequirement<ProposerComposerConfiguration<C, I, R>> proposerComposerConfiguration() {
         return configuration("proposer_composer_config", JavaTypingUtils.castClass(ProposerComposerConfiguration.class));
     }
 
@@ -39,8 +39,8 @@ public class DataRequirements {
         return configuration("postprocessing_config", JavaTypingUtils.castClass(PostProcessingConfiguration.class));
     }
 
-    public static <N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>> ConfigurationRequirement<GeneratingTreeConfiguration<N, G>> generatingTreeConfiguration() {
-        return configuration("generating_tree_config", JavaTypingUtils.castClass(GeneratingTreeConfiguration.class));
+    public static <N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ConstrainableChildGenerationLogic<?, ?, N, ?>> ConfigurationRequirement<EfficientTreeConfiguration<N, G>> generatingTreeConfiguration() {
+        return configuration("generating_tree_config", JavaTypingUtils.castClass(EfficientTreeConfiguration.class));
     }
 
     public static <N extends TreeNode & LocallyExpandable<N>> ConfigurationRequirement<TreeConfiguration<N>> treeConfiguration() {

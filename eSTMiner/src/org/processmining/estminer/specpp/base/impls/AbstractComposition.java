@@ -2,7 +2,8 @@ package org.processmining.estminer.specpp.base.impls;
 
 import com.google.common.collect.ImmutableSet;
 import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.base.Composition;
+import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
+import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.estminer.specpp.traits.ProperlyPrintable;
 
 import java.util.Collection;
@@ -10,7 +11,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public abstract class AbstractComposition<C extends Candidate, K extends Collection<C>> implements Composition<C>, ProperlyPrintable {
+public abstract class AbstractComposition<C extends Candidate, K extends Collection<C>> extends AbstractBaseClass implements CompositionComponent<C>, ProperlyPrintable {
 
     protected final K candidates;
     private C lastAcceptedCandidate;

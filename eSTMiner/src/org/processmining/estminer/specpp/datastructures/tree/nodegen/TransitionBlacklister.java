@@ -3,6 +3,7 @@ package org.processmining.estminer.specpp.datastructures.tree.nodegen;
 import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
+import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 
 public class TransitionBlacklister implements PotentialExpansionsFilter {
@@ -18,22 +19,15 @@ public class TransitionBlacklister implements PotentialExpansionsFilter {
         presetBlacklist.add(transition);
         postsetBlacklist.add(transition);
     }
-
     @Override
-    public void filterPotentialSetExpansions(BitEncodedSet<Transition> expansions, MonotonousPlaceGenerator.ExpansionType expansionType) {
-        if (expansions.isEmpty()) return;
+    public BitMask filterPotentialSetExpansions(Place place, BitMask expansions, MonotonousPlaceGenerationLogic.ExpansionType expansionType) {
+        if (expansions.isEmpty()) return expansions;
 
-        if (expansionType == MonotonousPlaceGenerator.ExpansionType.Postset) expansions.setminus(postsetBlacklist);
-        else expansions.setminus(presetBlacklist);
-    }
-
-    @Override
-    public void filterPotentialSetExpansions(BitMask expansions, MonotonousPlaceGenerator.ExpansionType expansionType) {
-        if (expansions.isEmpty()) return;
-
-        if (expansionType == MonotonousPlaceGenerator.ExpansionType.Postset)
+        if (expansionType == MonotonousPlaceGenerationLogic.ExpansionType.Postset)
             expansions.setminus(postsetBlacklist.getBitMask());
         else expansions.setminus(presetBlacklist.getBitMask());
+
+        return expansions;
     }
 
 }

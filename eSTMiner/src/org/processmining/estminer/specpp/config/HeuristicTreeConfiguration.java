@@ -3,11 +3,11 @@ package org.processmining.estminer.specpp.config;
 import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.datastructures.tree.base.*;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.GeneratingLocalNode;
+import org.processmining.estminer.specpp.datastructures.tree.base.impls.LocalNodeWithExternalizedLogic;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicValue;
 
-public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends HeuristicValue<H>> extends GeneratingTreeConfiguration<N, G> {
+public class HeuristicTreeConfiguration<N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>, H extends HeuristicValue<H>> extends EfficientTreeConfiguration<N, G> {
 
     private final SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier;
     private final InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction;
@@ -38,7 +38,7 @@ public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, 
         return createFrom(enumeratingTreeFunction, createHeuristicTreeExpansion());
     }
 
-    public static class Configurator<N extends GeneratingLocalNode<?, ?, N>, G extends LocalNodeGenerator<?, ?, N>, H extends HeuristicValue<H>> extends GeneratingTreeConfiguration.Configurator<N, G> {
+    public static class Configurator<N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>, H extends HeuristicValue<H>> extends EfficientTreeConfiguration.Configurator<N, G> {
 
         protected SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategyBuilder;
         protected InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionBuilder;
@@ -70,12 +70,12 @@ public class HeuristicTreeConfiguration<N extends GeneratingLocalNode<?, ?, N>, 
         }
 
         @Override
-        public GeneratingTreeConfiguration.Configurator<N, G> generator(SimpleBuilder<? extends G> generatorBuilder) {
-            return super.generator(generatorBuilder);
+        public EfficientTreeConfiguration.Configurator<N, G> childGenerationLogic(SimpleBuilder<? extends G> generatorBuilder) {
+            return super.childGenerationLogic(generatorBuilder);
         }
 
         @Override
-        public <GP extends ConstrainableLocalNodeGenerator<?, ?, N, GenerationConstraint>> Configurator<N, GP, H> constrainableGenerator(SimpleBuilder<? extends GP> generatorBuilder) {
+        public <GP extends ConstrainableChildGenerationLogic<?, ?, N, GenerationConstraint>> Configurator<N, GP, H> constrainableGenerator(SimpleBuilder<? extends GP> generatorBuilder) {
             super.constrainableGenerator(generatorBuilder);
             return new Configurator<>(heuristicStrategyBuilder, treeExpansionBuilder, enumeratingTreeBuilder, generatorBuilder);
         }

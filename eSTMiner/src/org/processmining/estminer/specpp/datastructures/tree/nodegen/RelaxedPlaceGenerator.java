@@ -19,11 +19,11 @@ import org.processmining.estminer.specpp.datastructures.util.Pair;
  * It operates along the relaxed premise that widening constraints, e.g. removing constraints like {@code RemoveWiredPlace}, will at least be correctly considered in the following node expansions.
  * As a difference to the aforementioned base version, the potential expansion bitmasks stored in the node state are not shrunk to keep up with <it>currently</it> active constraints.
  *
- * @see MonotonousPlaceGenerator
+ * @see MonotonousPlaceGenerationLogic
  * @deprecated Not functioning as expected. Quite the opposite in fact.
  */
 @Deprecated
-public class RelaxedPlaceGenerator extends MonotonousPlaceGenerator {
+public class RelaxedPlaceGenerator extends MonotonousPlaceGenerationLogic {
     public RelaxedPlaceGenerator(IntEncodings<Transition> transitionEncodings) {
         super(transitionEncodings);
     }
@@ -32,7 +32,7 @@ public class RelaxedPlaceGenerator extends MonotonousPlaceGenerator {
         super(transitionEncodings, parameters);
     }
 
-    public static class Builder extends MonotonousPlaceGenerator.Builder {
+    public static class Builder extends MonotonousPlaceGenerationLogic.Builder {
         @Override
         public RelaxedPlaceGenerator buildIfFullySatisfied() {
             return new RelaxedPlaceGenerator(transitionEncodings.getData(), parameters.getData());
@@ -41,7 +41,7 @@ public class RelaxedPlaceGenerator extends MonotonousPlaceGenerator {
 
 
     @Override
-    protected void handleWiringConstraint(WiringTester wiringTester, GenerationConstraint constraint) {
+    protected void handleWiringConstraint(ListBasedWiringTester wiringTester, GenerationConstraint constraint) {
         if (constraint instanceof AddWiredPlace)
             wiringTester.wire(((WiringConstraint) constraint).getAffectedCandidate());
         else if (constraint instanceof RemoveWiredPlace)
@@ -55,13 +55,13 @@ public class RelaxedPlaceGenerator extends MonotonousPlaceGenerator {
 
 
     @Override
-    protected BitMask computeFilteredPotentialExpansions(PlaceState state, ExpansionType expansionType) {
+    protected BitMask computeFilteredPotentialExpansions(Place place, PlaceState state, ExpansionType expansionType) {
         BitMask potentialExpansions = expansionType == ExpansionType.Postset ? state.getPotentialPostsetExpansions() : state.getPotentialPresetExpansions();
 
         potentialExpansions = potentialExpansions.copy();
 
         for (PotentialExpansionsFilter filter : potentialExpansionFilters) {
-            filter.filterPotentialSetExpansions(potentialExpansions, expansionType);
+            filter.filterPotentialSetExpansions(place, potentialExpansions, expansionType);
         }
 
         return potentialExpansions;
@@ -81,9 +81,9 @@ public class RelaxedPlaceGenerator extends MonotonousPlaceGenerator {
             // the filtering potential expansion computations cannot be used to update the state and have to be discarded,
             // so it is more efficient to only compute preset expansions, if no postset expansions are possible
             if (canHavePostsetChildren(place))
-                possiblePostsetExpansions = computeFilteredPotentialExpansions(state, ExpansionType.Postset);
+                possiblePostsetExpansions = computeFilteredPotentialExpansions(place, state, ExpansionType.Postset);
             else if (possiblePostsetExpansions.isEmpty() && canHavePresetChildren(place))
-                possiblePresetExpansions = computeFilteredPotentialExpansions(state, ExpansionType.Preset);
+                possiblePresetExpansions = computeFilteredPotentialExpansions(place, state, ExpansionType.Preset);
 
             return new ImmutablePair<>(possiblePresetExpansions, possiblePostsetExpansions);
         }
