@@ -1,8 +1,8 @@
 package org.processmining.estminer.specpp.base.impls;
 
 import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.componenting.system.FullComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
+import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
 import org.processmining.estminer.specpp.componenting.system.link.ProposerComponent;
 import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
@@ -17,9 +17,9 @@ public abstract class AbstractEfficientTreeBasedProposer<C extends Candidate, N 
         return currentNode;
     }
 
-    protected AbstractEfficientTreeBasedProposer(EfficientTree<N> tree) {
+    protected AbstractEfficientTreeBasedProposer(EfficientTreeComponent<N> tree) {
         this.tree = tree;
-        if (tree instanceof FullComponentSystemUser) registerSubComponent(((FullComponentSystemUser) tree));
+        registerSubComponent(tree);
     }
 
     protected abstract C extractCandidate(N node);

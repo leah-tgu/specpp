@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.config;
 
 import com.google.common.collect.ImmutableList;
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.supervision.Supervisor;
 
 import java.util.LinkedList;
@@ -12,8 +12,8 @@ public class SupervisionConfiguration extends Configuration {
 
     private final List<SimpleBuilder<Supervisor>> supervisorBuilders;
 
-    public SupervisionConfiguration(ComponentCollection csa, List<SimpleBuilder<Supervisor>> supervisorBuilders) {
-        super(csa);
+    public SupervisionConfiguration(GlobalComponentRepository gcr, List<SimpleBuilder<Supervisor>> supervisorBuilders) {
+        super(gcr);
         this.supervisorBuilders = supervisorBuilders;
     }
 
@@ -36,8 +36,8 @@ public class SupervisionConfiguration extends Configuration {
         }
 
         @Override
-        public SupervisionConfiguration build(ComponentCollection csa) {
-            return new SupervisionConfiguration(csa, ImmutableList.copyOf(supervisorBuilders));
+        public SupervisionConfiguration build(GlobalComponentRepository gcr) {
+            return new SupervisionConfiguration(gcr, ImmutableList.copyOf(supervisorBuilders));
         }
     }
 

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class ArrayListComposition<C extends Candidate> extends AbstractComposition<C, ArrayList<C>> implements AdvancedComposition<C> {
 
-    public static final int ABSOLUTE_SIZE_LIMIT = 1_000_000;
+    public static final int ABSOLUTE_SIZE_LIMIT = Integer.MAX_VALUE;
 
     public ArrayListComposition() {
         super(ArrayList::new);

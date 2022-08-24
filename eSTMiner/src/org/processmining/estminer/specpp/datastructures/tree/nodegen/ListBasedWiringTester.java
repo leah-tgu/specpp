@@ -16,9 +16,10 @@ public class ListBasedWiringTester implements PotentialExpansionsFilter {
     public ListBasedWiringTester() {
         this.wiredPlaces = new ArrayList<>();
     }
+
     @Override
     public BitMask filterPotentialSetExpansions(Place place, BitMask expansions, MonotonousPlaceGenerationLogic.ExpansionType expansionType) {
-        if (expansions.isEmpty()) return;
+        if (expansions.isEmpty()) return expansions;
 
         Function<Place, BitEncodedSet<Transition>> getTransitions = expansionType == MonotonousPlaceGenerationLogic.ExpansionType.Postset ? Place::postset : Place::preset;
         Function<Place, BitEncodedSet<Transition>> getOtherTransitions = expansionType == MonotonousPlaceGenerationLogic.ExpansionType.Postset ? Place::preset : Place::postset;

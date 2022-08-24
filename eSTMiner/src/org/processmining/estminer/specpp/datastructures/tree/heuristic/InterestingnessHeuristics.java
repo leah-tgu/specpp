@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 
 public class InterestingnessHeuristics implements HeuristicStrategy<PlaceNode, DoubleScore> {
     @Override
-    public PlaceNodeHeuristic computeHeuristic(PlaceNode node) {
-        return new PlaceNodeHeuristic(-node.getDepth());
+    public DoubleScore computeHeuristic(PlaceNode node) {
+        return new DoubleScore(-node.getDepth());
     }
 }

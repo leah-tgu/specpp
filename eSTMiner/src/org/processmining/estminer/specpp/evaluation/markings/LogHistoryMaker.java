@@ -13,15 +13,15 @@ import org.processmining.estminer.specpp.datastructures.petri.Place;
 
 public class LogHistoryMaker extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
 
-    private final DelegatingDataSource<MultiEncodedLog> encodedLogSource = DataRequirements.ENC_LOG.emptyDelegator();
-    private final DelegatingDataSource<BitMask> consideredVariantsSource = DataRequirements.CONSIDERED_VARIANTS.emptyDelegator();
+    private final DelegatingDataSource<MultiEncodedLog> encodedLogSource = new DelegatingDataSource<>();
+    private final DelegatingDataSource<BitMask> consideredVariantsSource = new DelegatingDataSource<>();
 
     private BitMask consideredVariants;
 
     public LogHistoryMaker() {
         componentSystemAdapter().require(DataRequirements.ENC_LOG, encodedLogSource)
                                 .require(DataRequirements.CONSIDERED_VARIANTS, consideredVariantsSource)
-                                .provide(EvaluationRequirements.evaluator(EvaluationRequirements.PLACE_MARKING_HISTORY, this::computeVariantMarkingHistories));
+                                .provide(EvaluationRequirements.PLACE_MARKING_HISTORY.fulfilWith(this::computeVariantMarkingHistories));
     }
 
     protected void updateConsideredVariants() {

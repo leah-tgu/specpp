@@ -5,8 +5,8 @@ import org.processmining.estminer.specpp.componenting.traits.*;
 public class ComponentInitializer extends AbstractGlobalComponentSystemUser {
 
 
-    public ComponentInitializer(ComponentCollection componentCollection) {
-        super(componentCollection);
+    public ComponentInitializer(GlobalComponentRepository gcr) {
+        super(gcr);
     }
 
     public <T> T checkout(T other) {

@@ -1,58 +1,67 @@
 package org.processmining.estminer.specpp.config;
 
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
-import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
+import org.processmining.estminer.specpp.componenting.system.link.ExpansionStrategyComponent;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
+import org.processmining.estminer.specpp.supervision.instrumentators.InstrumentedEfficientTree;
+import org.processmining.estminer.specpp.supervision.instrumentators.InstrumentedExpansionStrategy;
 
 public class TreeConfiguration<N extends TreeNode & LocallyExpandable<N>> extends Configuration {
 
-    protected final InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction;
-    protected final SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder;
+    protected final InitializingBuilder<? extends EfficientTreeComponent<N>, ExpansionStrategyComponent<N>> treeFunction;
+    protected final SimpleBuilder<? extends ExpansionStrategyComponent<N>> expansionStrategyBuilder;
 
-    public TreeConfiguration(ComponentCollection csa, InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder) {
-        super(csa);
+    public TreeConfiguration(GlobalComponentRepository gcr, InitializingBuilder<? extends EfficientTreeComponent<N>, ExpansionStrategyComponent<N>> treeFunction, SimpleBuilder<? extends ExpansionStrategyComponent<N>> expansionStrategyBuilder) {
+        super(gcr);
         this.treeFunction = treeFunction;
         this.expansionStrategyBuilder = expansionStrategyBuilder;
     }
 
-    public static <N extends TreeNode & LocallyExpandable<N>> TreeConfiguration.Configurator<N> configure() {
-        return new Configurator<>();
-    }
 
-    public ExpansionStrategy<N> createExpansionStrategy() {
+    public ExpansionStrategyComponent<N> createExpansionStrategy() {
         return createFrom(expansionStrategyBuilder);
     }
 
-    public EnumeratingTree<N> createTree() {
+    public ExpansionStrategyComponent<N> createPossiblyInstrumentedExpansionStrategy() {
+        ExpansionStrategyComponent<N> strategy = createExpansionStrategy();
+        return shouldBeInstrumented(strategy) ? checkout(new InstrumentedExpansionStrategy<>(strategy)) : strategy;
+    }
+
+    public EfficientTreeComponent<N> createTree() {
         return createFrom(treeFunction, createExpansionStrategy());
     }
 
+    public EfficientTreeComponent<N> createPossiblyInstrumentedTree() {
+        EfficientTreeComponent<N> tree = createFrom(treeFunction, createPossiblyInstrumentedExpansionStrategy());
+        return shouldBeInstrumented(tree) ? checkout(new InstrumentedEfficientTree<>(tree)) : tree;
+    }
+
     public static class Configurator<N extends TreeNode & LocallyExpandable<N>> implements ComponentInitializerBuilder<TreeConfiguration<N>> {
-        protected InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction;
-        protected SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder;
+        protected InitializingBuilder<? extends EfficientTreeComponent<N>, ExpansionStrategyComponent<N>> treeFunction;
+        protected SimpleBuilder<? extends ExpansionStrategyComponent<N>> expansionStrategyBuilder;
 
         public Configurator() {
         }
 
-        public Configurator(InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder) {
+        public Configurator(InitializingBuilder<? extends EfficientTreeComponent<N>, ExpansionStrategyComponent<N>> treeFunction, SimpleBuilder<? extends ExpansionStrategyComponent<N>> expansionStrategyBuilder) {
             this.treeFunction = treeFunction;
             this.expansionStrategyBuilder = expansionStrategyBuilder;
         }
 
-        public Configurator<N> expansionStrategy(SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder) {
+        public Configurator<N> expansionStrategy(SimpleBuilder<? extends ExpansionStrategyComponent<N>> expansionStrategyBuilder) {
             this.expansionStrategyBuilder = expansionStrategyBuilder;
             return this;
         }
 
-        public Configurator<N> tree(InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction) {
+        public Configurator<N> tree(InitializingBuilder<? extends EfficientTreeComponent<N>, ExpansionStrategyComponent<N>> treeFunction) {
             this.treeFunction = treeFunction;
             return this;
         }
 
-        public TreeConfiguration<N> build(ComponentCollection cs) {
-            return new TreeConfiguration<>(cs, treeFunction, expansionStrategyBuilder);
+        public TreeConfiguration<N> build(GlobalComponentRepository gcr) {
+            return new TreeConfiguration<>(gcr, treeFunction, expansionStrategyBuilder);
         }
 
     }

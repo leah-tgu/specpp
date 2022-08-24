@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.headless;
 
 import org.processmining.estminer.specpp.base.Evaluator;
-import org.processmining.estminer.specpp.base.impls.SpecPP;
+import org.processmining.estminer.specpp.base.impls.SPECpp;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
@@ -39,7 +39,7 @@ public class Playground {
 
 
     public static void play(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource) {
-        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = SpecOps.specOps(configBundleSource, inputDataBundleSource, true);
+        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = SpecOps.specOps(configBundleSource, inputDataBundleSource, true);
 
         System.out.println("// ========================================= //");
         System.out.println("POST EXECUTION");
@@ -54,10 +54,6 @@ public class Playground {
 
         EvaluatorCollection ec = cr.evaluators();
         Evaluator<Place, DenseVariantMarkingHistories> historiesEvaluator = ec.askForEvaluator(EvaluationRequirements.PLACE_MARKING_HISTORY);
-
-        Evaluator<Place, AggregatedBasicFitnessEvaluation> aggregatedBasicFitnessEvaluator = ec.askForEvaluator(EvaluationRequirements.AGG_PLACE_FITNESS);
-
-        Evaluator<Place, FullBasicFitnessEvaluation> fullBasicFitnessEvaluator = ec.askForEvaluator(EvaluationRequirements.FULL_PLACE_FITNESS);
 
         //playAround(cr, new NaivePlacemaker(transitionEncodings), historiesEvaluator, aggregatedBasicFitnessEvaluator, fullBasicFitnessEvaluator);
     }

@@ -29,10 +29,22 @@ public class AltEventCountsSupervisor extends EventCountsSupervisor {
                          .pipe(PipeWorks.concurrencyBridge())
                          .giveBackgroundThread()
                          .pipe(PipeWorks.selfEmptyingSummarizingBuffer(Transformers.eventCounter(), CAPACITY))
-                         .sink(PipeWorks.loggingSink("heuristic.count", fileLogger))
+                         .sink(PipeWorks.loggingSink("heuristic.events.count", fileLogger))
                          .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
-                         .sinks(PipeWorks.loggingSinks("heuristics.count.accumulation", EventCountStatistics::toPrettyString, consoleLogger, fileLogger))
-                         .sink(getMonitor("heuristics.count.accumulation"))
+                         .sinks(PipeWorks.loggingSinks("heuristics.events.accumulation", EventCountStatistics::toPrettyString, consoleLogger, fileLogger))
+                         .sink(getMonitor("heuristics.events.accumulation"))
+                         .apply();
+        }
+
+        if (compositionEvents.isSet()) {
+            beginLaying().source(compositionEvents)
+                         .pipe(PipeWorks.concurrencyBridge())
+                         .giveBackgroundThread()
+                         .pipe(PipeWorks.selfEmptyingSummarizingBuffer(Transformers.eventCounter(), CAPACITY))
+                         .sinks(PipeWorks.loggingSinks("composition.events.count", fileLogger))
+                         .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
+                         .sinks(PipeWorks.loggingSinks("composition.events.accumulation", EventCountStatistics::toPrettyString, consoleLogger, fileLogger))
+                         .sink(getMonitor("composition.events.accumulation"))
                          .apply();
         }
 
@@ -43,8 +55,20 @@ public class AltEventCountsSupervisor extends EventCountsSupervisor {
                          .pipe(PipeWorks.selfEmptyingSummarizingBuffer(Transformers.eventCounter(), CAPACITY))
                          .sinks(PipeWorks.loggingSinks("composer.constraints.count", fileLogger))
                          .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
-                         .sinks(PipeWorks.loggingSinks("composer.constraints.count.accumulation", EventCountStatistics::toPrettyString, consoleLogger, fileLogger))
-                         .sink(getMonitor("composer.constraints.count.accumulation"))
+                         .sinks(PipeWorks.loggingSinks("composer.constraints.accumulation", EventCountStatistics::toPrettyString, consoleLogger, fileLogger))
+                         .sink(getMonitor("composer.constraints.accumulation"))
+                         .apply();
+        }
+
+        if (compositionConstraints.isSet()) {
+            beginLaying().source(compositionConstraints)
+                         .pipe(PipeWorks.concurrencyBridge())
+                         .giveBackgroundThread()
+                         .pipe(PipeWorks.selfEmptyingSummarizingBuffer(Transformers.eventCounter(), CAPACITY))
+                         .sinks(PipeWorks.loggingSinks("composition.constraints.count", fileLogger))
+                         .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
+                         .sinks(PipeWorks.loggingSinks("composition.constraints.accumulation", EventCountStatistics::toPrettyString, consoleLogger, fileLogger))
+                         .sink(getMonitor("composition.constraints.accumulation"))
                          .apply();
         }
 
@@ -55,8 +79,8 @@ public class AltEventCountsSupervisor extends EventCountsSupervisor {
                          .pipe(PipeWorks.selfEmptyingSummarizingBuffer(Transformers.eventCounter(), CAPACITY))
                          .sinks(PipeWorks.loggingSinks("proposer.constraints.count", fileLogger))
                          .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
-                         .sinks(PipeWorks.loggingSinks("proposer.constraints.count.accumulation", EventCountStatistics::toPrettyString, consoleLogger, fileLogger))
-                         .sink(getMonitor("composer.constraints.count.accumulation"))
+                         .sinks(PipeWorks.loggingSinks("proposer.constraints.accumulation", EventCountStatistics::toPrettyString, consoleLogger, fileLogger))
+                         .sink(getMonitor("proposer.constraints.accumulation"))
                          .apply();
         }
 

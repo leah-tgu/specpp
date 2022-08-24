@@ -2,8 +2,6 @@ package org.processmining.estminer.specpp.datastructures.tree.heuristic;
 
 import org.processmining.estminer.specpp.base.Evaluable;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
-import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
 import org.processmining.estminer.specpp.datastructures.tree.base.HeuristicStrategy;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
@@ -13,16 +11,15 @@ import org.processmining.estminer.specpp.supervision.piping.AsyncAdHocObservable
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
-public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends HeuristicValue<H>> extends HeuristicTreeExpansion<N, H> implements UsesGlobalComponentSystem {
+public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends HeuristicValue<H>> extends HeuristicTreeExpansion<N, H> {
 
     private final EventSupervision<TreeHeuristicsEvent> eventSupervision = PipeWorks.eventSupervision();
 
-    private final ComponentCollection componentSystemAdapter = new ComponentCollection();
 
     public EventingHeuristicTreeExpansion(HeuristicStrategy<N, H> heuristicStrategy) {
         super(heuristicStrategy);
-        componentSystemAdapter.provide(SupervisionRequirements.observable("heuristics.events", JavaTypingUtils.castClass(HeuristicComputationEvent.class), eventSupervision))
-                              .provide(SupervisionRequirements.adHocObservable("heuristics.stats", HeuristicStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new HeuristicStatsEvent(priorityQueue.size()))));
+        componentSystemAdapter().provide(SupervisionRequirements.observable("heuristics.events", JavaTypingUtils.castClass(HeuristicComputationEvent.class), eventSupervision))
+                                .provide(SupervisionRequirements.adHocObservable("heuristics.stats", HeuristicStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new HeuristicStatsEvent(priorityQueue.size()))));
     }
 
     @Override
@@ -50,10 +47,5 @@ public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & Loc
         return n;
     }
 
-
-    @Override
-    public ComponentCollection componentSystemAdapter() {
-        return componentSystemAdapter;
-    }
 
 }

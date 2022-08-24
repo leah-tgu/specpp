@@ -4,18 +4,18 @@ import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponent
 
 public abstract class AbstractGlobalComponentSystemUser implements UsesGlobalComponentSystem {
 
-    private final ComponentCollection componentSystemAdapter;
+    private final GlobalComponentRepository componentSystemAdapter;
 
     public AbstractGlobalComponentSystemUser() {
         componentSystemAdapter = new GlobalComponentRepository();
     }
 
-    protected AbstractGlobalComponentSystemUser(ComponentCollection componentSystemAdapter) {
+    protected AbstractGlobalComponentSystemUser(GlobalComponentRepository componentSystemAdapter) {
         this.componentSystemAdapter = componentSystemAdapter;
     }
 
     @Override
-    public ComponentCollection componentSystemAdapter() {
+    public GlobalComponentRepository componentSystemAdapter() {
         return componentSystemAdapter;
     }
 

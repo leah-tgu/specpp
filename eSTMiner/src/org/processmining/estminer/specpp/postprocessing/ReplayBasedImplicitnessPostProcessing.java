@@ -25,9 +25,10 @@ public class ReplayBasedImplicitnessPostProcessing implements PostProcessor<Petr
         this.markingHistoriesEvaluator = markingHistoriesEvaluator;
     }
 
+
     public static class Builder extends ComponentSystemAwareBuilder<PostProcessor<PetriNet, PetriNet>> {
 
-        private final DelegatingEvaluator<Place, DenseVariantMarkingHistories> evaluatorDelegator = EvaluationRequirements.PLACE_MARKING_HISTORY.emptyDelegator();
+        private final DelegatingEvaluator<Place, DenseVariantMarkingHistories> evaluatorDelegator = new DelegatingEvaluator<>();
 
         public Builder() {
             componentSystemAdapter().require(EvaluationRequirements.PLACE_MARKING_HISTORY, evaluatorDelegator);

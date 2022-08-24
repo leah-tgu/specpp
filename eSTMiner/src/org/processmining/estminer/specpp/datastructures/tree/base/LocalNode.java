@@ -2,7 +2,6 @@ package org.processmining.estminer.specpp.datastructures.tree.base;
 
 import org.processmining.estminer.specpp.base.Evaluable;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.KnowsDepth;
-import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyContractible;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.StateNode;
 

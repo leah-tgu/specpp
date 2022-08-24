@@ -4,6 +4,7 @@ import org.processmining.estminer.specpp.base.PostProcessor;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
+import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwareBuilder;
 import org.processmining.estminer.specpp.config.parameters.OutputPathParameters;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
@@ -15,17 +16,30 @@ import java.io.IOException;
 
 public class PlaceExporter extends AbstractGlobalComponentSystemUser implements PostProcessor<PetriNet, PetriNet> {
 
-    private final DelegatingDataSource<OutputPathParameters> outputPathParameters = new DelegatingDataSource<>();
-
-    public PlaceExporter() {
-        componentSystemAdapter().require(ParameterRequirements.OUTPUT_PATH_PARAMETERS, outputPathParameters);
+    public PlaceExporter(OutputPathParameters outputPathParameters) {
+        this.outputPathParameters = outputPathParameters;
     }
+
+    public static class Builder extends ComponentSystemAwareBuilder<PostProcessor<PetriNet, PetriNet>> {
+
+        private final DelegatingDataSource<OutputPathParameters> outputPathParameters = new DelegatingDataSource<>();
+
+        public Builder() {
+            componentSystemAdapter().require(ParameterRequirements.OUTPUT_PATH_PARAMETERS, outputPathParameters);
+        }
+
+        @Override
+        protected PostProcessor<PetriNet, PetriNet> buildIfFullySatisfied() {
+            return new PlaceExporter(outputPathParameters.getData());
+        }
+    }
+
+    private final OutputPathParameters outputPathParameters;
+
 
     @Override
     public PetriNet postProcess(PetriNet result) {
-
-        String filePath = outputPathParameters.getData()
-                                              .getFilePath(PathTools.OutputFileType.MISC_EXPORT, "places", ".txt");
+        String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.MISC_EXPORT, "places", ".txt");
 
         try (FileWriter fileWriter = FileUtils.createOutputFileWriter(filePath)) {
             fileWriter.write("" + result.getPlaces().size());

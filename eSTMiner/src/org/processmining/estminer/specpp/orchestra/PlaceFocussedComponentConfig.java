@@ -2,8 +2,9 @@ package org.processmining.estminer.specpp.orchestra;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.base.impls.LightweightPlaceCollection;
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
-import org.processmining.estminer.specpp.composition.PlacesComposer;
+import org.processmining.estminer.specpp.base.impls.PlaceAccepter;
+import org.processmining.estminer.specpp.base.impls.PlaceFitnessFilter;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.config.Configurators;
 import org.processmining.estminer.specpp.config.PostProcessingConfiguration;
 import org.processmining.estminer.specpp.config.ProposerComposerConfiguration;
@@ -14,22 +15,23 @@ import org.processmining.estminer.specpp.postprocessing.PlaceExporter;
 import org.processmining.estminer.specpp.postprocessing.ProMConverter;
 import org.processmining.estminer.specpp.proposal.ConstrainablePlaceProposer;
 
-public class PlaceFocussedSpecOpsComponentConfig extends LightweightSpecOpsComponentConfig {
+public class PlaceFocussedComponentConfig extends LightweightComponentConfig {
     @Override
-    public PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(ComponentCollection csa) {
+    public PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(GlobalComponentRepository gcr) {
         return Configurators.<PetriNet>postProcessing()
-                            .processor(PlaceExporter::new)
+                            .processor(new PlaceExporter.Builder())
                             .processor(ProMConverter::new)
-                            .build(csa);
+                            .build(gcr);
     }
 
     @Override
-    public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(ComponentCollection csa) {
+    public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(GlobalComponentRepository gcr) {
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(LightweightPlaceCollection::new)
-                            .composer(PlacesComposer::new)
-                            .build(csa);
+                            .composer(PlaceAccepter::new)
+                            .composerChain(PlaceFitnessFilter::new)
+                            .build(gcr);
     }
 
 }

@@ -1,21 +1,22 @@
 package org.processmining.estminer.specpp.orchestra;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
+import org.processmining.estminer.specpp.base.impls.EventingPlaceComposerWithCIPR;
+import org.processmining.estminer.specpp.base.impls.EventingPlaceFitnessFilter;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
-import org.processmining.estminer.specpp.composition.EventingPlacesComposerWithCIPR;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.*;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
-import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EventingEnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.EventingHeuristicTreeExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicUtils;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.estminer.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
 import org.processmining.estminer.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.estminer.specpp.postprocessing.PlaceExporter;
@@ -28,50 +29,51 @@ import org.processmining.estminer.specpp.supervision.supervisors.*;
 public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
 
     @Override
-    public SupervisionConfiguration getSupervisionConfiguration(ComponentCollection csa) {
+    public SupervisionConfiguration getSupervisionConfiguration(GlobalComponentRepository gcr) {
         return Configurators.supervisors()
                             .supervisor(BaseSupervisor::new)
                             .supervisor(PerformanceSupervisor::new)
                             .supervisor(AltEventCountsSupervisor::new)
-                            .supervisor(DetailedCompositionSupervisor::new)
+                            .supervisor(DetailedComposerSupervisor::new)
                             .supervisor(TerminalSupervisor::new)
-                            .build(csa);
+                            .build(gcr);
     }
 
     @Override
-    public EvaluatorConfiguration getEvaluatorConfiguration(ComponentCollection csa) {
+    public EvaluatorConfiguration getEvaluatorConfiguration(GlobalComponentRepository gcr) {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
                             .evaluatorProvider(AbsolutelyNoFrillsFitnessEvaluator::new)
-                            .build(csa);
+                            .build(gcr);
     }
 
     @Override
-    public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(ComponentCollection csa) {
+    public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(GlobalComponentRepository gcr) {
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(PlaceCollection::new)
-                            .composer(EventingPlacesComposerWithCIPR::new)
-                            .build(csa);
+                            .terminalComposer(EventingPlaceComposerWithCIPR::new)
+                            .composerChain(EventingPlaceFitnessFilter::new)
+                            .build(gcr);
     }
 
     @Override
-    public EfficientTreeConfiguration<PlaceNode, PlaceGenerationLogic> getGeneratingTreeConfiguration(ComponentCollection csa) {
-        return Configurators.<PlaceNode, PlaceGenerationLogic, DoubleScore>heuristicTree()
+    public EfficientTreeConfiguration<Place, PlaceState, PlaceNode> getEfficientTreeConfiguration(GlobalComponentRepository gcr) {
+        return Configurators.<Place, PlaceState, PlaceNode, DoubleScore>heuristicTree()
                             .heuristic(HeuristicUtils::bfs)
                             .heuristicExpansion(EventingHeuristicTreeExpansion::new)
-                            .enumeratingTree(EventingEnumeratingTree::new)
-                            .constrainableGenerator(new MonotonousPlaceGenerationLogic.Builder())
-                            .build(csa);
+                            .tree(EventingEnumeratingTree::new)
+                            .childGenerationLogic(new MonotonousPlaceGenerationLogic.Builder())
+                            .build(gcr);
     }
 
     @Override
-    public PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(ComponentCollection csa) {
+    public PostProcessingConfiguration<PetriNet, ProMPetrinetWrapper> getPostProcessingConfiguration(GlobalComponentRepository gcr) {
         return Configurators.<PetriNet>postProcessing()
-                            .instrumentedProcessor("ReplayBasedImplicitness", new ReplayBasedImplicitnessPostProcessing.Builder())
-                            .instrumentedProcessor("SelfLoopPlaceMerger", SelfLoopPlaceMerger::new)
-                            .processor(PlaceExporter::new)
+                            .processor(new ReplayBasedImplicitnessPostProcessing.Builder())
+                            .processor(SelfLoopPlaceMerger::new)
+                            .processor(new PlaceExporter.Builder())
                             .processor(ProMConverter::new)
-                            .build(csa);
+                            .build(gcr);
     }
 }

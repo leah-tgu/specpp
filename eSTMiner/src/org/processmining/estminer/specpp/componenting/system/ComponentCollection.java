@@ -29,8 +29,22 @@ public class ComponentCollection implements RequiresComponents, ProvisionsCompon
     }
 
     public void consumeEntirely(ComponentCollection other) {
-        componentRequirements.putAll(other.componentRequirements);
-        componentProvisions.putAll(other.componentProvisions);
+        for (ComponentType componentType : other.componentRequirements.rowKeySet()) {
+            for (Map.Entry<Requirement<?, ?>, Container<?>> entry : other.componentRequirements.row(componentType)
+                                                                                               .entrySet()) {
+                componentRequirements.row(componentType).put(entry.getKey(), entry.getValue());
+            }
+        }
+        for (Map.Entry<ComponentType, FulfilledRequirementsCollection<?>> entry : other.componentProvisions.entrySet()) {
+            ComponentType componentType = entry.getKey();
+            if (!componentProvisions.containsKey(componentType)) addComponent(componentType);
+            FulfilledRequirementsCollection<?> collection = componentProvisions.get(componentType);
+            for (FulfilledRequirement<?, ?> f : entry.getValue().fulfilledRequirements()) {
+                collection.add((FulfilledRequirement) f);
+            }
+        }
+        //componentRequirements.putAll(other.componentRequirements);
+        //componentProvisions.putAll(other.componentProvisions);
     }
 
     public void addComponent(ComponentType componentType) {
@@ -134,6 +148,7 @@ public class ComponentCollection implements RequiresComponents, ProvisionsCompon
             overridingAbsorb(frp);
         }
     }
+
     public void overridingAbsorb(UsesGlobalComponentSystem other) {
         overridingAbsorb(other.componentSystemAdapter());
     }

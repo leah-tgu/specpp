@@ -1,6 +1,8 @@
 package org.processmining.estminer.specpp.base.impls;
 
-import org.processmining.estminer.specpp.base.*;
+import org.processmining.estminer.specpp.base.Candidate;
+import org.processmining.estminer.specpp.base.ConstrainingComposer;
+import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.componenting.system.link.ComposerComponent;
@@ -9,7 +11,6 @@ import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponent
 import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
-import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.traits.Triggerable;
 
 public abstract class AbstractPostponingComposer<C extends Candidate, I extends CompositionComponent<C>, R extends Result, L extends CandidateConstraint<C>> extends RecursiveComposer<C, I, R> implements ConstrainingComposer<C, I, R, L>, Triggerable, UsesGlobalComponentSystem {

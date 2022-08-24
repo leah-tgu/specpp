@@ -1,6 +1,5 @@
 package org.processmining.estminer.specpp.supervision;
 
-import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
 import org.processmining.estminer.specpp.supervision.piping.LayingPipe;
 

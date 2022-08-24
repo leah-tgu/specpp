@@ -1,11 +1,13 @@
 package org.processmining.estminer.specpp.config;
 
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
+import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentInitializer;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.estminer.specpp.config.parameters.SupervisionParameters;
 
 public class Configuration extends ComponentInitializer {
-    public Configuration(ComponentCollection componentSystemAdapter) {
-        super(componentSystemAdapter);
+    public Configuration(GlobalComponentRepository gcr) {
+        super(gcr);
     }
 
     public <T> T createFrom(SimpleBuilder<T> builder) {
@@ -16,4 +18,9 @@ public class Configuration extends ComponentInitializer {
         return checkout(checkout(builder).build(argument));
     }
 
+    protected boolean shouldBeInstrumented(Object o) {
+        SupervisionParameters ask = componentSystemAdapter().parameters()
+                                                            .askForData(ParameterRequirements.SUPERVISION_PARAMETERS);
+        return ask != null && ask.shouldBeInstrumented(o);
+    }
 }

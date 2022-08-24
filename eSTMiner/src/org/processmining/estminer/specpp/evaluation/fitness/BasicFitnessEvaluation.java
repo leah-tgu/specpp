@@ -3,7 +3,6 @@ package org.processmining.estminer.specpp.evaluation.fitness;
 import org.processmining.estminer.specpp.base.CandidateEvaluation;
 import org.processmining.estminer.specpp.datastructures.util.DisjointMergeable;
 import org.processmining.estminer.specpp.datastructures.util.EnumFractions;
-import org.processmining.estminer.specpp.traits.Mergeable;
 
 public class BasicFitnessEvaluation extends EnumFractions<BasicFitnessStatus> implements CandidateEvaluation, DisjointMergeable<BasicFitnessEvaluation> {
 

@@ -1,7 +1,6 @@
 package org.processmining.estminer.specpp.supervision.observations.performance;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.processmining.estminer.specpp.traits.Mergeable;
 
 import java.time.Duration;
 import java.util.ArrayList;

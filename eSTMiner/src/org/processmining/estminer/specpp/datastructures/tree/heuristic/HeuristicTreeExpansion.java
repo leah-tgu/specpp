@@ -1,7 +1,8 @@
 package org.processmining.estminer.specpp.datastructures.tree.heuristic;
 
 import org.processmining.estminer.specpp.base.Evaluable;
-import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
+import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
+import org.processmining.estminer.specpp.componenting.system.link.ExpansionStrategyComponent;
 import org.processmining.estminer.specpp.datastructures.tree.base.HeuristicStrategy;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
@@ -11,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-public class HeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends HeuristicValue<H>> implements ExpansionStrategy<N> {
+public class HeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends HeuristicValue<H>> extends AbstractBaseClass implements ExpansionStrategyComponent<N> {
 
     protected final PriorityQueue<N> priorityQueue;
     protected final Map<N, H> nodeHeuristics;
@@ -103,4 +104,8 @@ public class HeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpa
     }
 
 
+    @Override
+    protected void initSelf() {
+
+    }
 }

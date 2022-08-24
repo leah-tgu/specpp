@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.supervision.instrumentators;
 
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
+import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
@@ -9,11 +9,11 @@ import org.processmining.estminer.specpp.supervision.observations.performance.Ta
 
 import java.util.Collection;
 
-public class InstrumentedEfficientTree<N extends TreeNode & LocallyExpandable<N>> extends AbstractInstrumentingDelegator<EfficientTree<N>> implements EfficientTree<N> {
+public class InstrumentedEfficientTree<N extends TreeNode & LocallyExpandable<N>> extends AbstractInstrumentingDelegator<EfficientTreeComponent<N>> implements EfficientTreeComponent<N> {
 
     public static final TaskDescription TREE_EXPANSION = new TaskDescription("Tree Expansion");
 
-    public InstrumentedEfficientTree(EfficientTree<N> delegate) {
+    public InstrumentedEfficientTree(EfficientTreeComponent<N> delegate) {
         super(delegate);
         componentSystemAdapter().provide(SupervisionRequirements.observable("tree.performance", PerformanceEvent.class, timeStopper));
     }

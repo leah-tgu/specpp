@@ -4,17 +4,18 @@ import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponent
 import org.processmining.estminer.specpp.componenting.traits.UsesLocalComponentSystem;
 import org.processmining.estminer.specpp.traits.Initializable;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 public interface FullComponentSystemUser extends UsesLocalComponentSystem, UsesGlobalComponentSystem, Initializable {
 
     void registerSubComponent(FullComponentSystemUser subComponent);
 
-    Stream<FullComponentSystemUser> collectTransitiveSubcomponents();
+    List<FullComponentSystemUser> collectTransitiveSubcomponents();
 
     default void connectLocalComponentSystem(LocalComponentRepository lcr) {
-        collectTransitiveSubcomponents().forEachOrdered(csu -> lcr.consumeEntirely(csu.localComponentSystem()));
+        collectTransitiveSubcomponents().forEach(csu -> lcr.consumeEntirely(csu.localComponentSystem()));
         lcr.fulfil(lcr);
+        // TODO decide whether this is a good idea collectTransitiveSubcomponents().forEachOrdered(csu -> csu.localComponentSystem().consumeEntirely(lcr));
     }
 
     @Override

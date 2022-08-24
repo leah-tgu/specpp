@@ -1,7 +1,6 @@
 package org.processmining.estminer.specpp.base.impls;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
-import org.processmining.estminer.specpp.base.Composer;
 import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;

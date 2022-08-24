@@ -22,7 +22,7 @@ public abstract class SubSupervisor extends SchedulingSupervisor {
 
 
     @Override
-    public void init() {
+    public void initSelf() {
         if (componentSystemAdapter().areAllRequirementsMet()) instantiateObservationHandlingFullySatisfied();
         else instantiateObservationHandlingPartiallySatisfied();
     }

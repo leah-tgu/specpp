@@ -1,6 +1,5 @@
 package org.processmining.estminer.specpp.componenting.system.link;
 
-import com.google.common.collect.Streams;
 import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
 import org.processmining.estminer.specpp.componenting.system.FullComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
@@ -8,8 +7,7 @@ import org.processmining.estminer.specpp.componenting.system.LocalComponentRepos
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public abstract class AbstractBaseClass implements FullComponentSystemUser {
 
@@ -25,11 +23,14 @@ public abstract class AbstractBaseClass implements FullComponentSystemUser {
     }
 
     @Override
-    public Stream<FullComponentSystemUser> collectTransitiveSubcomponents() {
-        return Streams.concat(subcomponents.stream()
-                                           .flatMap(FullComponentSystemUser::collectTransitiveSubcomponents), Streams.stream(Optional.of(this)));
+    public List<FullComponentSystemUser> collectTransitiveSubcomponents() {
+        List<FullComponentSystemUser> collect = subcomponents.stream()
+                                                             .flatMap(fcsu -> fcsu.collectTransitiveSubcomponents()
+                                                                                  .stream())
+                                                             .collect(Collectors.toList());
+        collect.add(this);
+        return collect;
     }
-
 
 
     @Override
@@ -45,7 +46,8 @@ public abstract class AbstractBaseClass implements FullComponentSystemUser {
         initSelf();
     }
 
-    protected void preSubComponentInit() {}
+    protected void preSubComponentInit() {
+    }
 
     protected abstract void initSelf();
 

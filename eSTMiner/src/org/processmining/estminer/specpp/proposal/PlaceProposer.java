@@ -2,12 +2,13 @@ package org.processmining.estminer.specpp.proposal;
 
 import org.processmining.estminer.specpp.base.Proposer;
 import org.processmining.estminer.specpp.base.impls.EfficientTreeWithExternalizedLogicBasedProposer;
+import org.processmining.estminer.specpp.componenting.system.link.ChildGenerationLogicComponent;
+import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableChildGenerationLogic;
-import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
-import org.processmining.estminer.specpp.datastructures.tree.base.PlaceGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
+import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceState;
 
 /**
  * The base implementation of a {@code Proposer} for candidates of type {@code Place}.
@@ -19,10 +20,10 @@ import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
  * @see EnumeratingTree
  * @see ConstrainableChildGenerationLogic
  */
-public class PlaceProposer<G extends PlaceGenerationLogic> extends EfficientTreeWithExternalizedLogicBasedProposer<Place, PlaceNode, G> {
+public class PlaceProposer extends EfficientTreeWithExternalizedLogicBasedProposer<Place, PlaceNode> {
 
-    public PlaceProposer(G generator, EfficientTree<PlaceNode> tree) {
-        super(generator, tree);
+    public PlaceProposer(ChildGenerationLogicComponent<Place, PlaceState, PlaceNode> generationLogic, EfficientTreeComponent<PlaceNode> tree) {
+        super(generationLogic, tree);
     }
 
     @Override

@@ -112,7 +112,8 @@ public class LayingPipe {
     }
 
     private static void ensureFittingDimensionality(Object producer, Object consumer) {
-        if (producer == null || consumer == null) return;
+        if (producer == null || consumer == null)
+            throw new PipeLayingException("Trying to lay a connection " + (producer == null ? "from" : "into") + " null");
         if ((producer instanceof ToOne && consumer instanceof FromMany && !(consumer instanceof FromOne)))
             throw new IncompatiblePipeLaying(IncompatiblePipeLaying.WrongRelationship.ToOneIntoFromMany, producer, consumer);
         else if (producer instanceof ToMany && consumer instanceof FromOne && !(consumer instanceof FromMany))
@@ -174,7 +175,16 @@ public class LayingPipe {
         return this;
     }
 
-    public static class IncompletePipeLaying extends RuntimeException {
+    public static class PipeLayingException extends RuntimeException {
+        public PipeLayingException() {
+        }
+
+        public PipeLayingException(String message) {
+            super(message);
+        }
+    }
+
+    public static class IncompletePipeLaying extends PipeLayingException {
 
         public IncompletePipeLaying() {
         }
@@ -185,10 +195,10 @@ public class LayingPipe {
     }
 
 
-    public static class DisorderedPipeLaying extends RuntimeException {
+    public static class DisorderedPipeLaying extends PipeLayingException {
     }
 
-    public static class IncompatiblePipeLaying extends RuntimeException {
+    public static class IncompatiblePipeLaying extends PipeLayingException {
 
         public enum WrongRelationship {
             ToOneIntoFromMany, ToManyIntoFromOne

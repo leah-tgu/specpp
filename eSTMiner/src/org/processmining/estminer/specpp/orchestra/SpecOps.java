@@ -1,6 +1,7 @@
 package org.processmining.estminer.specpp.orchestra;
 
-import org.processmining.estminer.specpp.base.impls.SpecPP;
+import org.processmining.estminer.specpp.base.impls.SPECpp;
+import org.processmining.estminer.specpp.base.impls.SPECppBuilder;
 import org.processmining.estminer.specpp.componenting.data.DataSource;
 import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
@@ -34,14 +35,14 @@ import java.util.stream.Stream;
 
 public class SpecOps {
 
-    public static List<SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper>> multiOps(DataSource<InputDataBundle> inputDataBundleSource, List<ProvidesParameters> parametersList, boolean doInParallel) {
+    public static List<SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper>> multiOps(DataSource<InputDataBundle> inputDataBundleSource, List<ProvidesParameters> parametersList, boolean doInParallel) {
         Stream<ProvidesParameters> stream = parametersList.stream();
         if (doInParallel) stream = stream.parallel();
         LocalDateTime start = LocalDateTime.now();
         System.out.println("# Commencing " + parametersList.size() + " Multi SpecOps" + (doInParallel ? " in parallel" : "") + " @" + start);
         System.out.println("// ========================================= //");
 
-        List<SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper>> collect = stream.map(pp -> SpecOps.specOps(() -> new CustomSpecOpsConfigBundle(pp), inputDataBundleSource, false, true))
+        List<SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper>> collect = stream.map(pp -> SpecOps.specOps(() -> new CustomSpecOpsConfigBundle(pp), inputDataBundleSource, false, true))
                                                                                             .collect(Collectors.toList());
         System.out.println("// ========================================= //");
         LocalDateTime end = LocalDateTime.now();
@@ -50,7 +51,7 @@ public class SpecOps {
                                                                     .substring(2) + " @" + end);
 
         String s = collect.stream()
-                          .map(SpecPP::getGlobalComponentRepository)
+                          .map(SPECpp::getGlobalComponentRepository)
                           .map(GlobalComponentRepository::parameters)
                           .map(dc -> dc.askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS))
                           .map(opp -> opp.getFolderPath(PathTools.FolderStructure.BASE_OUTPUT_FOLDER))
@@ -63,16 +64,16 @@ public class SpecOps {
     }
 
 
-    public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean suppressAnyOutput) {
+    public static SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean suppressAnyOutput) {
         return specOps(configBundleSource, inputDataBundleSource, !suppressAnyOutput, !suppressAnyOutput);
     }
 
-    public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean allowPrinting, boolean allowFinalResultOutput) {
+    public static SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specOps(DataSource<SpecOpsConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean allowPrinting, boolean allowFinalResultOutput) {
         SpecOpsConfigBundle configBundle = configBundleSource.getData();
         InputDataBundle inputDataBundle = inputDataBundleSource.getData();
 
         preSetup(configBundle, inputDataBundle, allowPrinting);
-        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setupSpecOps(configBundle, inputDataBundle);
+        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setupSpecOps(configBundle, inputDataBundle);
         postSetup(specPP, allowPrinting);
 
         executeSpecOps(specPP, allowPrinting);
@@ -82,7 +83,7 @@ public class SpecOps {
         return specPP;
     }
 
-    private static void postSetup(SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowPrinting) {
+    private static void postSetup(SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowPrinting) {
         DataSourceCollection parameters = specPP.getGlobalComponentRepository().parameters();
         String x = parameters.toString();
         OutputPathParameters outputPathParameters = parameters.askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS);
@@ -108,20 +109,20 @@ public class SpecOps {
     }
 
 
-    public static SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> setupSpecOps(SpecOpsConfigBundle configBundle, InputDataBundle dataBundle) {
+    public static SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> setupSpecOps(SpecOpsConfigBundle configBundle, InputDataBundle dataBundle) {
         GlobalComponentRepository cr = new GlobalComponentRepository();
 
         configBundle.instantiate(cr, dataBundle);
 
         Configuration configuration = new Configuration(cr);
-        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specpp = configuration.createFrom(new SpecPP.Builder<>(), cr);
+        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specpp = configuration.createFrom(new SPECppBuilder<>(), cr);
 
         specpp.init();
 
         return specpp;
     }
 
-    public static void executeSpecOps(SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specpp, boolean allowPrinting) {
+    public static void executeSpecOps(SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specpp, boolean allowPrinting) {
         if (allowPrinting) {
             System.out.println("# Commencing SpecOps @" + LocalDateTime.now());
             System.out.println("// ========================================= //");
@@ -151,7 +152,7 @@ public class SpecOps {
         if (allowPrinting) System.out.println("# Shutdown SpecOps @" + LocalDateTime.now());
     }
 
-    private static List<ProvidesOngoingVisualization<?>> getOngoingVisualizations(SpecPP<?, ?, ?, ?> specpp) {
+    private static List<ProvidesOngoingVisualization<?>> getOngoingVisualizations(SPECpp<?, ?, ?, ?> specpp) {
         return PostSpecOps.getMonitorStream(specpp)
                           .filter(m -> m instanceof ProvidesOngoingVisualization)
                           .map(m -> (ProvidesOngoingVisualization<?>) m)

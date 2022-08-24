@@ -1,59 +1,59 @@
 package org.processmining.estminer.specpp.config;
 
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
-import org.processmining.estminer.specpp.datastructures.tree.base.*;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.estminer.specpp.componenting.system.link.ChildGenerationLogicComponent;
+import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
+import org.processmining.estminer.specpp.componenting.system.link.ExpansionStrategyComponent;
+import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
+import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.LocalNodeWithExternalizedLogic;
+import org.processmining.estminer.specpp.supervision.instrumentators.InstrumentedChildGenerationLogic;
 
-public class EfficientTreeConfiguration<N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>> extends TreeConfiguration<N> {
+public class EfficientTreeConfiguration<P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>> extends TreeConfiguration<N> {
 
-    protected final SimpleBuilder<? extends G> generatorBuilder;
+    protected final SimpleBuilder<? extends ChildGenerationLogicComponent<P, S, N>> generatorBuilder;
 
-    public EfficientTreeConfiguration(ComponentCollection csa, InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder, SimpleBuilder<? extends G> generatorBuilder) {
-        super(csa, treeFunction, expansionStrategyBuilder);
+    public EfficientTreeConfiguration(GlobalComponentRepository gcr, InitializingBuilder<? extends EfficientTreeComponent<N>, ExpansionStrategyComponent<N>> treeFunction, SimpleBuilder<? extends ExpansionStrategyComponent<N>> expansionStrategyBuilder, SimpleBuilder<? extends ChildGenerationLogicComponent<P, S, N>> generatorBuilder) {
+        super(gcr, treeFunction, expansionStrategyBuilder);
         this.generatorBuilder = generatorBuilder;
     }
 
-    public G createChildGenerationLogic() {
+    public ChildGenerationLogicComponent<P, S, N> createPossiblyInstrumentedChildGenerationLogic() {
+        ChildGenerationLogicComponent<P, S, N> logic = createChildGenerationLogic();
+        return shouldBeInstrumented(logic) ? checkout(new InstrumentedChildGenerationLogic<>(logic)) : logic;
+    }
+
+    public ChildGenerationLogicComponent<P, S, N> createChildGenerationLogic() {
         return createFrom(generatorBuilder);
     }
 
-    public static class Configurator<N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>> extends TreeConfiguration.Configurator<N> {
+    public static class Configurator<P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>> extends TreeConfiguration.Configurator<N> {
 
-        protected SimpleBuilder<? extends G> generatorBuilder;
+        protected SimpleBuilder<? extends ChildGenerationLogicComponent<P, S, N>> generatorBuilder;
 
         public Configurator() {
         }
 
-        public Configurator(InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction, SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder, SimpleBuilder<? extends G> generatorBuilder) {
-            super(treeFunction, expansionStrategyBuilder);
-            this.generatorBuilder = generatorBuilder;
-        }
-
         @Override
-        public Configurator<N, G> tree(InitializingBuilder<EnumeratingTree<N>, ExpansionStrategy<N>> treeFunction) {
+        public Configurator<P, S, N> tree(InitializingBuilder<? extends EfficientTreeComponent<N>, ExpansionStrategyComponent<N>> treeFunction) {
             super.tree(treeFunction);
             return this;
         }
 
         @Override
-        public Configurator<N, G> expansionStrategy(SimpleBuilder<ExpansionStrategy<N>> expansionStrategyBuilder) {
+        public Configurator<P, S, N> expansionStrategy(SimpleBuilder<? extends ExpansionStrategyComponent<N>> expansionStrategyBuilder) {
             super.expansionStrategy(expansionStrategyBuilder);
             return this;
         }
 
-        public Configurator<N, G> childGenerationLogic(SimpleBuilder<? extends G> generatorBuilder) {
+        public Configurator<P, S, N> childGenerationLogic(SimpleBuilder<? extends ChildGenerationLogicComponent<P, S, N>> generatorBuilder) {
             this.generatorBuilder = generatorBuilder;
             return this;
         }
 
-        public <GP extends ConstrainableChildGenerationLogic<?, ?, N, GenerationConstraint>> Configurator<N, GP> constrainableGenerator(SimpleBuilder<? extends GP> generatorBuilder) {
-            return new Configurator<>(treeFunction, expansionStrategyBuilder, generatorBuilder);
-        }
-
         @Override
-        public EfficientTreeConfiguration<N, G> build(ComponentCollection cs) {
-            return new EfficientTreeConfiguration<>(cs, treeFunction, expansionStrategyBuilder, generatorBuilder);
+        public EfficientTreeConfiguration<P, S, N> build(GlobalComponentRepository gcr) {
+            return new EfficientTreeConfiguration<>(gcr, treeFunction, expansionStrategyBuilder, generatorBuilder);
         }
 
     }

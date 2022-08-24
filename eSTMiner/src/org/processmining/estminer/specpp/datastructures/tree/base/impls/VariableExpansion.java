@@ -1,6 +1,7 @@
 package org.processmining.estminer.specpp.datastructures.tree.base.impls;
 
-import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
+import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
+import org.processmining.estminer.specpp.componenting.system.link.ExpansionStrategyComponent;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 
@@ -8,7 +9,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.function.Supplier;
 
-public class VariableExpansion<N extends TreeNode & LocallyExpandable<N>> implements ExpansionStrategy<N> {
+public class VariableExpansion<N extends TreeNode & LocallyExpandable<N>> extends AbstractBaseClass implements ExpansionStrategyComponent<N> {
 
     private final Deque<N> buffer;
     private final Supplier<N> peek, dequeue;
@@ -61,4 +62,8 @@ public class VariableExpansion<N extends TreeNode & LocallyExpandable<N>> implem
         buffer.removeIf(n -> n.equals(node));
     }
 
+    @Override
+    protected void initSelf() {
+
+    }
 }

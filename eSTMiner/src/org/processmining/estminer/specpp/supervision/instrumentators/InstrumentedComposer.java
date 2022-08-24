@@ -1,19 +1,19 @@
 package org.processmining.estminer.specpp.supervision.instrumentators;
 
 import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.base.Composer;
-import org.processmining.estminer.specpp.base.Composition;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
+import org.processmining.estminer.specpp.componenting.system.link.ComposerComponent;
+import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.estminer.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 
-public class InstrumentedComposer<C extends Candidate, I extends Composition<C>, R extends Result> extends AbstractInstrumentingDelegator<Composer<C, I, R>> implements Composer<C, I, R> {
+public class InstrumentedComposer<C extends Candidate, I extends CompositionComponent<C>, R extends Result> extends AbstractInstrumentingDelegator<ComposerComponent<C, I, R>> implements ComposerComponent<C, I, R> {
 
     public static final TaskDescription CANDIDATE_COMPOSITION = new TaskDescription("Candidate Composition");
     public static final TaskDescription RESULT_GENERATION = new TaskDescription("Result Generation");
 
-    public InstrumentedComposer(Composer<C, I, R> delegate) {
+    public InstrumentedComposer(ComposerComponent<C, I, R> delegate) {
         super(delegate);
         componentSystemAdapter().provide(SupervisionRequirements.observable("composer.performance", PerformanceEvent.class, timeStopper));
     }

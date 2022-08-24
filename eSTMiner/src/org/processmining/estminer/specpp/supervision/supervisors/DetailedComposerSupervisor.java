@@ -1,23 +1,24 @@
 package org.processmining.estminer.specpp.supervision.supervisors;
 
-import org.processmining.estminer.specpp.componenting.delegators.DelegatingObservable;
+import org.processmining.estminer.specpp.componenting.delegators.ContainerUtils;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.composition.events.CandidateCompositionEvent;
 import org.processmining.estminer.specpp.supervision.monitoring.EventCounterMonitor;
+import org.processmining.estminer.specpp.supervision.piping.IdentityPipe;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 
-public class DetailedCompositionSupervisor extends MonitoringSupervisor {
+public class DetailedComposerSupervisor extends MonitoringSupervisor {
 
-    private DelegatingObservable<CandidateCompositionEvent<?>> compositionEvents = new DelegatingObservable<>();
+    private final IdentityPipe<CandidateCompositionEvent<?>> collector = PipeWorks.identityPipe();
 
-    public DetailedCompositionSupervisor() {
-        componentSystemAdapter().require(SupervisionRequirements.observable("composer.events", CandidateCompositionEvent.class), compositionEvents);
+    public DetailedComposerSupervisor() {
+        componentSystemAdapter().require(SupervisionRequirements.observable(SupervisionRequirements.regex("^composer.*\\.events$"), CandidateCompositionEvent.class), ContainerUtils.observeResults(collector));
         createMonitor("composer.events", new EventCounterMonitor());
     }
 
     @Override
     protected void instantiateObservationHandlingFullySatisfied() {
-        beginLaying().source(compositionEvents)
+        beginLaying().source(collector)
                      .pipe(PipeWorks.concurrencyBridge())
                      .giveBackgroundThread()
                      .sink(getMonitor("composer.events"))

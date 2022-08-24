@@ -1,6 +1,7 @@
 package org.processmining.estminer.specpp.datastructures.tree.base.impls;
 
-import org.processmining.estminer.specpp.datastructures.tree.base.EfficientTree;
+import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
+import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
 import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.DelayedRooting;
@@ -10,7 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> implements EfficientTree<N> {
+public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends AbstractBaseClass implements EfficientTreeComponent<N> {
 
     protected N root;
 
@@ -113,4 +114,8 @@ public class EnumeratingTree<N extends TreeNode & LocallyExpandable<N>> implemen
         return "EnumeratingTree(root=" + root + ", lastExpansion=" + lastExpansion + ")";
     }
 
+    @Override
+    protected void initSelf() {
+
+    }
 }

@@ -4,8 +4,8 @@ import org.processmining.estminer.specpp.base.Candidate;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
-import org.processmining.estminer.specpp.datastructures.tree.base.ChildGenerationLogic;
-import org.processmining.estminer.specpp.datastructures.tree.base.LocalNodeGenerator;
+import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
+import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.LocalNodeWithExternalizedLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
@@ -25,11 +25,11 @@ public class Configurators {
         return new TreeConfiguration.Configurator<>();
     }
 
-    public static <N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>> EfficientTreeConfiguration.Configurator<N, G> generatingTree() {
+    public static <P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>> EfficientTreeConfiguration.Configurator<P, S, N> generatingTree() {
         return new EfficientTreeConfiguration.Configurator<>();
     }
 
-    public static <N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>, H extends HeuristicValue<H>> HeuristicTreeConfiguration.Configurator<N, G, H> heuristicTree() {
+    public static <P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>, H extends HeuristicValue<H>> HeuristicTreeConfiguration.Configurator<P, S, N, H> heuristicTree() {
         return new HeuristicTreeConfiguration.Configurator<>();
     }
 

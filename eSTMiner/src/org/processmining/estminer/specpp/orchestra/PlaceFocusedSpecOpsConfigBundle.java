@@ -14,6 +14,6 @@ public class PlaceFocusedSpecOpsConfigBundle extends SpecOpsConfigBundle {
     }
 
     public PlaceFocusedSpecOpsConfigBundle() {
-        super(new BaseSpecOpsDataPreprocessingConfig(), new PlaceFocussedSpecOpsComponentConfig(), new AdaptedSpecOpsAlgorithmParameterConfig(new PlaceFocusParameters()));
+        super(new BaseSpecOpsDataPreprocessingConfig(), new PlaceFocussedComponentConfig(), new AdaptedSpecOpsAlgorithmParameterConfig(new PlaceFocusParameters()));
     }
 }

@@ -1,7 +1,7 @@
 package org.processmining.estminer.specpp.orchestra;
 
 import org.jfree.chart.ChartPanel;
-import org.processmining.estminer.specpp.base.impls.SpecPP;
+import org.processmining.estminer.specpp.base.impls.SPECpp;
 import org.processmining.estminer.specpp.componenting.data.ParameterRequirements;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 public class PostSpecOps {
 
 
-    static void postExecution(SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowPrinting, boolean allowFinalResultOutput) {
+    static void postExecution(SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowPrinting, boolean allowFinalResultOutput) {
         if (allowPrinting) {
             System.out.println("// ========================================= //");
             System.out.println("Executed " + specPP.stepCount() + " ProposalEvaluationComposition cycles.");
@@ -90,7 +90,7 @@ public class PostSpecOps {
         FileUtils.saveStrings(filePath, getResultingStrings(monitors.stream()));
     }
 
-    static Stream<Monitor<?, ?>> getMonitorStream(SpecPP<?, ?, ?, ?> specpp) {
+    static Stream<Monitor<?, ?>> getMonitorStream(SPECpp<?, ?, ?, ?> specpp) {
         return specpp.getSupervisors()
                      .stream()
                      .filter(s -> s instanceof Monitoring)
@@ -98,7 +98,7 @@ public class PostSpecOps {
                      .flatMap(m -> m.getMonitors().stream());
     }
 
-    private static List<Monitor<?, ?>> getMonitors(SpecPP<?, ?, ?, ?> specpp) {
+    private static List<Monitor<?, ?>> getMonitors(SPECpp<?, ?, ?, ?> specpp) {
         return getMonitorStream(specpp).collect(Collectors.toList());
     }
 

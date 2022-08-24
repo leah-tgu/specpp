@@ -24,7 +24,7 @@ public class BaseSupervisor extends AbstractSupervisor {
 
     public BaseSupervisor() {
         componentSystemAdapter().require(ParameterRequirements.OUTPUT_PATH_PARAMETERS, outputPathParameters)
-                                .require(ParameterRequirements.parameters("supervision.parameters", SupervisionParameters.class), supervisionParameters);
+                                .require(ParameterRequirements.SUPERVISION_PARAMETERS, supervisionParameters);
     }
 
 

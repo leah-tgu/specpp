@@ -1,4 +1,4 @@
-package org.processmining.estminer.specpp.composition;
+package org.processmining.estminer.specpp.base.impls;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
@@ -11,14 +11,14 @@ import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
-public class EventingPlacesComposer<I extends AdvancedComposition<Place>> extends PlacesComposer<I> {
-
+public class EventingPlaceComposerWithCIPR<I extends AdvancedComposition<Place>> extends PlaceComposerWithCIPR<I> {
     private final EventSupervision<CandidateCompositionEvent<Place>> compositionEventSupervision = PipeWorks.eventSupervision();
 
-    public EventingPlacesComposer(I placeComposition) {
-        super(placeComposition);
+    public EventingPlaceComposerWithCIPR(I composition) {
+        super(composition);
         componentSystemAdapter().provide(SupervisionRequirements.observable("composer.events", JavaTypingUtils.castClass(CandidateCompositionEvent.class), compositionEventSupervision));
     }
+
 
     @Override
     protected void candidateAccepted(Place candidate) {
@@ -30,6 +30,7 @@ public class EventingPlacesComposer<I extends AdvancedComposition<Place>> extend
     protected void candidateRejected(Place candidate) {
         super.candidateRejected(candidate);
         compositionEventSupervision.observe(new CandidateRejected<>(candidate));
+
     }
 
     @Override

@@ -1,8 +1,6 @@
 package org.processmining.estminer.specpp.base.impls;
 
 import org.processmining.estminer.specpp.base.Candidate;
-import org.processmining.estminer.specpp.base.Composer;
-import org.processmining.estminer.specpp.base.Composition;
 import org.processmining.estminer.specpp.base.Result;
 import org.processmining.estminer.specpp.componenting.system.link.ComposerComponent;
 import org.processmining.estminer.specpp.componenting.system.link.CompositionComponent;
@@ -48,7 +46,6 @@ public abstract class QueueingPostponingComposer<C extends Candidate, I extends 
         postponedCandidates = postponedAgain;
         return hasChanged;
     }
-
 
 
 }

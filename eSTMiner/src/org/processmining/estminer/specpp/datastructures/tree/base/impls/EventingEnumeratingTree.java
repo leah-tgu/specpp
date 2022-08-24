@@ -1,39 +1,33 @@
 package org.processmining.estminer.specpp.datastructures.tree.base.impls;
 
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
-import org.processmining.estminer.specpp.componenting.traits.UsesGlobalComponentSystem;
-import org.processmining.estminer.specpp.datastructures.tree.base.ExpansionStrategy;
+import org.processmining.estminer.specpp.componenting.system.link.ExpansionStrategyComponent;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
 import org.processmining.estminer.specpp.datastructures.tree.events.*;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.AsyncAdHocObservableWrapper;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
-import org.processmining.estminer.specpp.supervision.piping.TimeStopper;
 
-public class EventingEnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends EnumeratingTree<N> implements UsesGlobalComponentSystem {
+public class EventingEnumeratingTree<N extends TreeNode & LocallyExpandable<N>> extends EnumeratingTree<N> {
 
-
-    private final ComponentCollection componentSystemAdapter = new ComponentCollection();
 
     private final EventSupervision<TreeEvent> eventSupervision = PipeWorks.eventSupervision();
 
-    protected final TimeStopper timeStopper = new TimeStopper();
 
-    public EventingEnumeratingTree(N root, ExpansionStrategy<N> expansionStrategy) {
+    public EventingEnumeratingTree(N root, ExpansionStrategyComponent<N> expansionStrategy) {
         super(root, expansionStrategy);
         makeProvisions();
     }
 
-    public EventingEnumeratingTree(ExpansionStrategy<N> expansionStrategy) {
+    public EventingEnumeratingTree(ExpansionStrategyComponent<N> expansionStrategy) {
         super(expansionStrategy);
         makeProvisions();
     }
 
     protected void makeProvisions() {
-        componentSystemAdapter.provide(SupervisionRequirements.observable("tree.events", TreeEvent.class, eventSupervision))
-                              .provide(SupervisionRequirements.adHocObservable("tree.stats", EnumeratingTreeStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new EnumeratingTreeStatsEvent(leaves.size()))));
+        componentSystemAdapter().provide(SupervisionRequirements.observable("tree.events", TreeEvent.class, eventSupervision))
+                                .provide(SupervisionRequirements.adHocObservable("tree.stats", EnumeratingTreeStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new EnumeratingTreeStatsEvent(leaves.size()))));
     }
 
     @Override
@@ -67,8 +61,4 @@ public class EventingEnumeratingTree<N extends TreeNode & LocallyExpandable<N>> 
         return actuallyRemoved;
     }
 
-    @Override
-    public ComponentCollection componentSystemAdapter() {
-        return componentSystemAdapter;
-    }
 }

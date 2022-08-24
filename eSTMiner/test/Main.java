@@ -3,7 +3,7 @@ import com.google.common.collect.Sets;
 import org.apache.commons.collections4.BidiMap;
 import org.junit.Assert;
 import org.junit.Test;
-import org.processmining.estminer.specpp.base.impls.SpecPP;
+import org.processmining.estminer.specpp.base.impls.SPECpp;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorCollection;
@@ -271,7 +271,7 @@ public class Main {
         System.out.println(bundle.getTransitionEncodings());
         System.out.println(bundle.getMapping());
 
-        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setupSpecOps(new BaseSpecOpsConfigBundle(), bundle);
+        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setupSpecOps(new BaseSpecOpsConfigBundle(), bundle);
 
         executeSpecOps(specPP, true);
 
@@ -284,7 +284,7 @@ public class Main {
         System.out.println(bundle.getTransitionEncodings());
         System.out.println(bundle.getMapping());
 
-        SpecPP<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setupSpecOps(new BaseSpecOpsConfigBundle(), bundle);
+        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setupSpecOps(new BaseSpecOpsConfigBundle(), bundle);
 
         executeSpecOps(specPP, true);
     }

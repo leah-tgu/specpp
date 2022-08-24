@@ -1,23 +1,25 @@
 package org.processmining.estminer.specpp.config;
 
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
-import org.processmining.estminer.specpp.datastructures.tree.base.*;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.EnumeratingTree;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.estminer.specpp.componenting.system.link.ChildGenerationLogicComponent;
+import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
+import org.processmining.estminer.specpp.componenting.system.link.ExpansionStrategyComponent;
+import org.processmining.estminer.specpp.datastructures.tree.base.HeuristicStrategy;
+import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
+import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.LocalNodeWithExternalizedLogic;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicValue;
 
-public class HeuristicTreeConfiguration<N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>, H extends HeuristicValue<H>> extends EfficientTreeConfiguration<N, G> {
+public class HeuristicTreeConfiguration<P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>, H extends HeuristicValue<H>> extends EfficientTreeConfiguration<P, S, N> {
 
-    private final SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier;
-    private final InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction;
-    private final InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction;
+    private final SimpleBuilder<? extends HeuristicStrategy<N, H>> heuristicStrategySupplier;
+    private final InitializingBuilder<? extends HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction;
 
-    public HeuristicTreeConfiguration(ComponentCollection cs, SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier, InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction, InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction, SimpleBuilder<? extends G> generatorSupplier) {
-        super(cs, null, null, generatorSupplier);
+    public HeuristicTreeConfiguration(GlobalComponentRepository gcr, SimpleBuilder<? extends HeuristicStrategy<N, H>> heuristicStrategySupplier, InitializingBuilder<? extends HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction, InitializingBuilder<? extends EfficientTreeComponent<N>, ExpansionStrategyComponent<N>> enumeratingTreeFunction, SimpleBuilder<? extends ChildGenerationLogicComponent<P, S, N>> generatorSupplier) {
+        super(gcr, enumeratingTreeFunction, null, generatorSupplier);
         this.heuristicStrategySupplier = heuristicStrategySupplier;
         this.treeExpansionFunction = treeExpansionFunction;
-        this.enumeratingTreeFunction = enumeratingTreeFunction;
     }
 
     public HeuristicStrategy<N, H> createHeuristicStrategy() {
@@ -29,60 +31,44 @@ public class HeuristicTreeConfiguration<N extends LocalNodeWithExternalizedLogic
     }
 
     @Override
-    public ExpansionStrategy<N> createExpansionStrategy() {
+    public ExpansionStrategyComponent<N> createExpansionStrategy() {
         return createHeuristicTreeExpansion();
     }
 
-    @Override
-    public EnumeratingTree<N> createTree() {
-        return createFrom(enumeratingTreeFunction, createHeuristicTreeExpansion());
-    }
-
-    public static class Configurator<N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ChildGenerationLogic<?, ?, N>, H extends HeuristicValue<H>> extends EfficientTreeConfiguration.Configurator<N, G> {
+    public static class Configurator<P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>, H extends HeuristicValue<H>> extends EfficientTreeConfiguration.Configurator<P, S, N> {
 
         protected SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategyBuilder;
-        protected InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionBuilder;
-        protected InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeBuilder;
+        protected InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> heuristicExpansionBuilder;
 
         public Configurator() {
         }
 
-        public Configurator(SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategyBuilder, InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionBuilder, InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction, SimpleBuilder<? extends G> generatorSupplier) {
-            super(null, null, generatorSupplier);
-            this.heuristicStrategyBuilder = heuristicStrategyBuilder;
-            this.treeExpansionBuilder = treeExpansionBuilder;
-            this.enumeratingTreeBuilder = enumeratingTreeFunction;
-        }
-
-        public Configurator<N, G, H> heuristic(SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier) {
+        public Configurator<P, S, N, H> heuristic(SimpleBuilder<HeuristicStrategy<N, H>> heuristicStrategySupplier) {
             this.heuristicStrategyBuilder = heuristicStrategySupplier;
             return this;
         }
 
-        public Configurator<N, G, H> heuristicExpansion(InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> treeExpansionFunction) {
-            this.treeExpansionBuilder = treeExpansionFunction;
-            return this;
-        }
-
-        public Configurator<N, G, H> enumeratingTree(InitializingBuilder<EnumeratingTree<N>, HeuristicTreeExpansion<N, H>> enumeratingTreeFunction) {
-            this.enumeratingTreeBuilder = enumeratingTreeFunction;
+        public Configurator<P, S, N, H> heuristicExpansion(InitializingBuilder<HeuristicTreeExpansion<N, H>, HeuristicStrategy<N, H>> heuristicExpansionBuilder) {
+            this.heuristicExpansionBuilder = heuristicExpansionBuilder;
             return this;
         }
 
         @Override
-        public EfficientTreeConfiguration.Configurator<N, G> childGenerationLogic(SimpleBuilder<? extends G> generatorBuilder) {
-            return super.childGenerationLogic(generatorBuilder);
+        public Configurator<P, S, N, H> tree(InitializingBuilder<? extends EfficientTreeComponent<N>, ExpansionStrategyComponent<N>> enumeratingTreeFunction) {
+            super.tree(enumeratingTreeFunction);
+            return this;
         }
 
         @Override
-        public <GP extends ConstrainableChildGenerationLogic<?, ?, N, GenerationConstraint>> Configurator<N, GP, H> constrainableGenerator(SimpleBuilder<? extends GP> generatorBuilder) {
-            super.constrainableGenerator(generatorBuilder);
-            return new Configurator<>(heuristicStrategyBuilder, treeExpansionBuilder, enumeratingTreeBuilder, generatorBuilder);
+        public Configurator<P, S, N, H> childGenerationLogic(SimpleBuilder<? extends ChildGenerationLogicComponent<P, S, N>> generatorBuilder) {
+            super.childGenerationLogic(generatorBuilder);
+            return this;
         }
 
+
         @Override
-        public HeuristicTreeConfiguration<N, G, H> build(ComponentCollection cs) {
-            return new HeuristicTreeConfiguration<>(cs, heuristicStrategyBuilder, treeExpansionBuilder, enumeratingTreeBuilder, generatorBuilder);
+        public HeuristicTreeConfiguration<P, S, N, H> build(GlobalComponentRepository gcr) {
+            return new HeuristicTreeConfiguration<>(gcr, heuristicStrategyBuilder, heuristicExpansionBuilder, treeFunction, generatorBuilder);
         }
     }
 }

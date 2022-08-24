@@ -19,6 +19,7 @@ public class TransitionBlacklister implements PotentialExpansionsFilter {
         presetBlacklist.add(transition);
         postsetBlacklist.add(transition);
     }
+
     @Override
     public BitMask filterPotentialSetExpansions(Place place, BitMask expansions, MonotonousPlaceGenerationLogic.ExpansionType expansionType) {
         if (expansions.isEmpty()) return expansions;

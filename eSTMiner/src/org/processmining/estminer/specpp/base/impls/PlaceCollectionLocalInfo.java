@@ -8,6 +8,6 @@ public interface PlaceCollectionLocalInfo {
 
     ImplicitnessRating rateImplicitness(Place place);
 
-    BitMask getCurrentSupportedVariants();
+    BitMask getCurrentlySupportedVariants();
 
 }

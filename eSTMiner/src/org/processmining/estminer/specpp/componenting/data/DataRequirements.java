@@ -11,7 +11,8 @@ import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
-import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableChildGenerationLogic;
+import org.processmining.estminer.specpp.datastructures.tree.base.NodeProperties;
+import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 import org.processmining.estminer.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.LocalNodeWithExternalizedLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.traits.LocallyExpandable;
@@ -39,7 +40,7 @@ public class DataRequirements {
         return configuration("postprocessing_config", JavaTypingUtils.castClass(PostProcessingConfiguration.class));
     }
 
-    public static <N extends LocalNodeWithExternalizedLogic<?, ?, N>, G extends ConstrainableChildGenerationLogic<?, ?, N, ?>> ConfigurationRequirement<EfficientTreeConfiguration<N, G>> generatingTreeConfiguration() {
+    public static <P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>> ConfigurationRequirement<EfficientTreeConfiguration<P, S, N>> efficientTreeConfiguration() {
         return configuration("generating_tree_config", JavaTypingUtils.castClass(EfficientTreeConfiguration.class));
     }
 

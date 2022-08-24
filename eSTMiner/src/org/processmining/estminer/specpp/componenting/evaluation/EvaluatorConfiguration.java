@@ -5,7 +5,7 @@ import org.processmining.estminer.specpp.base.Evaluable;
 import org.processmining.estminer.specpp.base.Evaluation;
 import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
-import org.processmining.estminer.specpp.componenting.system.ComponentCollection;
+import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.config.ComponentInitializerBuilder;
 import org.processmining.estminer.specpp.config.Configuration;
@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 
 public class EvaluatorConfiguration extends Configuration {
 
-    private final ImmutableList<SimpleBuilder<ProvidesEvaluators>> evaluatorProviderBuilders;
+    private final ImmutableList<SimpleBuilder<? extends ProvidesEvaluators>> evaluatorProviderBuilders;
 
-    public EvaluatorConfiguration(ComponentCollection cc, ImmutableList<SimpleBuilder<ProvidesEvaluators>> evaluatorProviderBuilders) {
-        super(cc);
+    public EvaluatorConfiguration(GlobalComponentRepository gcr, ImmutableList<SimpleBuilder<? extends ProvidesEvaluators>> evaluatorProviderBuilders) {
+        super(gcr);
         this.evaluatorProviderBuilders = evaluatorProviderBuilders;
     }
 
@@ -30,7 +30,7 @@ public class EvaluatorConfiguration extends Configuration {
     }
 
     public static class Configurator implements ComponentInitializerBuilder<EvaluatorConfiguration> {
-        private final List<SimpleBuilder<ProvidesEvaluators>> evaluatorProviderBuilders;
+        private final List<SimpleBuilder<? extends ProvidesEvaluators>> evaluatorProviderBuilders;
 
         public Configurator() {
             evaluatorProviderBuilders = new LinkedList<>();
@@ -50,13 +50,13 @@ public class EvaluatorConfiguration extends Configuration {
             return this;
         }
 
-        public Configurator evaluatorProvider(SimpleBuilder<ProvidesEvaluators> builder) {
+        public Configurator evaluatorProvider(SimpleBuilder<? extends ProvidesEvaluators> builder) {
             evaluatorProviderBuilders.add(builder);
             return this;
         }
 
-        public EvaluatorConfiguration build(ComponentCollection cc) {
-            return new EvaluatorConfiguration(cc, ImmutableList.copyOf(evaluatorProviderBuilders));
+        public EvaluatorConfiguration build(GlobalComponentRepository gcr) {
+            return new EvaluatorConfiguration(gcr, ImmutableList.copyOf(evaluatorProviderBuilders));
         }
     }
 

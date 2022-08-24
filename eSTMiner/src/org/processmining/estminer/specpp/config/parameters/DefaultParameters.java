@@ -5,17 +5,13 @@ import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 import org.processmining.estminer.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 
-import static org.processmining.estminer.specpp.componenting.data.ParameterRequirements.*;
-
 public class DefaultParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
 
     public DefaultParameters() {
-        componentSystemAdapter().provide(ParameterRequirements.parameters(OUTPUT_PATH_PARAMETERS, StaticDataSource.of(OutputPathParameters.getDefault())))
-                                .provide(ParameterRequirements.parameters("supervision.parameters", SupervisionParameters.class, StaticDataSource.of(SupervisionParameters.getDefault())))
-                                .provide(ParameterRequirements.parameters(TAU_FITNESS_THRESHOLDS, StaticDataSource.of(TauFitnessThresholds.getDefault())))
-                                .provide(ParameterRequirements.parameters(DELTA_PARAMETERS, StaticDataSource.of(DeltaParameters.getDefault())))
-                                .provide(ParameterRequirements.parameters("tree.tracker.parameters", TreeTrackerParameters.class, StaticDataSource.of(TreeTrackerParameters.getDefault())))
-                                .provide(ParameterRequirements.parameters(PLACE_GENERATOR_PARAMETERS, StaticDataSource.of(PlaceGeneratorParameters.getDefault())));
+        componentSystemAdapter().provide(ParameterRequirements.OUTPUT_PATH_PARAMETERS.fulfilWith(StaticDataSource.of(OutputPathParameters.getDefault())))
+                                .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWith(StaticDataSource.of(SupervisionParameters.getDefault())))
+                                .provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWith(StaticDataSource.of(TauFitnessThresholds.getDefault())))
+                                .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWith(StaticDataSource.of(PlaceGeneratorParameters.getDefault())));
     }
 
 }
