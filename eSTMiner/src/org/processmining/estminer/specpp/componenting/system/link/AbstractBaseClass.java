@@ -16,10 +16,26 @@ public abstract class AbstractBaseClass implements FullComponentSystemUser {
 
     private final List<FullComponentSystemUser> subcomponents = new LinkedList<>();
 
+    protected List<FullComponentSystemUser> getSubComponents() {
+        return subcomponents;
+    }
 
     @Override
     public void registerSubComponent(FullComponentSystemUser subComponent) {
-        subcomponents.add(subComponent);
+        if (subComponent != null)
+            subcomponents.add(subComponent);
+    }
+
+    /**
+     * This may have some unintended consequences. Same thing for late registrations, i.e. after initial {@code SPECpp} component initialization.
+     * If this class fulfils any requirements, e.g. data, evaluators, or provides observables or observes another component they will dangle.
+     * Currently, all requirement containers are refillable, i.e. do not report {@code isFull() == true} ever.
+     * In effect, the unregistered component's provisions will still be used until they are re-fulfilled. Consuming containers may forever retain a reference to the component.
+     * At the very least, a localComponentSystem update should be performed through the {@code SPECpp} provided handle. It may fix <it>some</it> things.
+     */
+    @Override
+    public void unregisterSubComponent(FullComponentSystemUser subComponent) {
+        if (subComponent != null) subcomponents.remove(subComponent);
     }
 
     @Override
@@ -58,7 +74,7 @@ public abstract class AbstractBaseClass implements FullComponentSystemUser {
     }
 
     @Override
-    public ComponentCollection componentSystemAdapter() {
+    public ComponentCollection globalComponentSystem() {
         return gcr;
     }
 

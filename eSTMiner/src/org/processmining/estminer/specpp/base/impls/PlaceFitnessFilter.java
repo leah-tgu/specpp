@@ -33,9 +33,9 @@ public class PlaceFitnessFilter<I extends CompositionComponent<Place>, R extends
     public PlaceFitnessFilter(ComposerComponent<Place, I, R> childComposer) {
         super(childComposer);
         fitnessCache = new BasicCache<>();
-        componentSystemAdapter().require(EvaluationRequirements.DETAILED_FITNESS, fitnessEvaluator)
-                                .require(ParameterRequirements.TAU_FITNESS_THRESHOLDS, fitnessThresholds)
-                                .provide(SupervisionRequirements.observable("composer.constraints.under_over_fed", getPublishedConstraintClass(), getConstraintPublisher()));
+        globalComponentSystem().require(EvaluationRequirements.DETAILED_FITNESS, fitnessEvaluator)
+                               .require(ParameterRequirements.TAU_FITNESS_THRESHOLDS, fitnessThresholds)
+                               .provide(SupervisionRequirements.observable("composer.constraints.under_over_fed", getPublishedConstraintClass(), getConstraintPublisher()));
         localComponentSystem().provide(SupervisionRequirements.observable("composer.constraints.under_over_fed", getPublishedConstraintClass(), getConstraintPublisher()))
                               .provide(DataRequirements.dataSource("fitness_cache", JavaTypingUtils.castClass(BasicCache.class), StaticDataSource.of(fitnessCache)));
     }

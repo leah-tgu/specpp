@@ -26,7 +26,7 @@ public class InstrumentedSPECpp<C extends Candidate, I extends CompositionCompon
 
     public InstrumentedSPECpp(GlobalComponentRepository cr, List<Supervisor> supervisors, ProposerComponent<C> proposer, ComposerComponent<C, I, R> composer, PostProcessor<R, F> postProcessor) {
         super(cr, supervisors, proposer, composer, postProcessor);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("pec.performance", PerformanceEvent.class, timeStopper));
+        globalComponentSystem().provide(SupervisionRequirements.observable("pec.performance", PerformanceEvent.class, timeStopper));
     }
 
     @Override

@@ -13,7 +13,7 @@ public class InstrumentedChildGenerationLogic<P extends NodeProperties, S extend
 
     public InstrumentedChildGenerationLogic(ChildGenerationLogicComponent<P, S, N> delegate) {
         super(delegate);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("child_generation_logic.performance", PerformanceEvent.class, timeStopper));
+        globalComponentSystem().provide(SupervisionRequirements.observable("child_generation_logic.performance", PerformanceEvent.class, timeStopper));
     }
 
     public N generateChild(N parent) {

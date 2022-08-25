@@ -13,22 +13,22 @@ public class ComponentInitializer extends AbstractGlobalComponentSystemUser {
         if (other instanceof RequiresComponents || other instanceof FulfilledRequirementsCollection || other instanceof ProvisionsComponents) {
             if (other instanceof RequiresComponents) {
                 RequiresComponents requiresComponents = (RequiresComponents) other;
-                componentSystemAdapter().fulfil(requiresComponents);
+                globalComponentSystem().fulfil(requiresComponents);
             }
             if (other instanceof FulfilledRequirementsCollection) {
                 FulfilledRequirementsCollection<?> frp = (FulfilledRequirementsCollection<?>) other;
-                componentSystemAdapter().fulfilFrom(frp);
-                if (frp instanceof IsGlobalProvider) componentSystemAdapter().absorb(frp);
+                globalComponentSystem().fulfilFrom(frp);
+                if (frp instanceof IsGlobalProvider) globalComponentSystem().absorb(frp);
             }
             if (other instanceof ProvisionsComponents) {
                 ProvisionsComponents provisionsComponents = (ProvisionsComponents) other;
                 for (FulfilledRequirementsCollection<?> frp : provisionsComponents.componentProvisions().values()) {
-                    componentSystemAdapter().fulfilFrom(frp);
-                    if (frp instanceof IsGlobalProvider) componentSystemAdapter().absorb(frp);
+                    globalComponentSystem().fulfilFrom(frp);
+                    if (frp instanceof IsGlobalProvider) globalComponentSystem().absorb(frp);
                 }
             }
         } else if (other instanceof UsesGlobalComponentSystem) {
-            checkout(((UsesGlobalComponentSystem) other).componentSystemAdapter());
+            checkout(((UsesGlobalComponentSystem) other).globalComponentSystem());
         }
         if (other instanceof IsGlobalProvider) absorbProvisions(other);
         return other;

@@ -34,13 +34,18 @@ public class WrappedPostProcessor<R extends Result, F extends Result> extends Ab
         return delegate.toString();
     }
 
+    @Override
+    public String getLabel() {
+        return delegate.getLabel();
+    }
+
     public static class Builder<R extends Result, F extends Result> extends ComponentSystemAwareBuilder<PostProcessorComponent<? super R, F>> {
         private final SimpleBuilder<? extends PostProcessor<? super R, F>> wrappedBuilder;
 
         public Builder(SimpleBuilder<? extends PostProcessor<? super R, F>> wrappedBuilder) {
             this.wrappedBuilder = wrappedBuilder;
             if (wrappedBuilder instanceof UsesGlobalComponentSystem)
-                componentSystemAdapter().consumeEntirely(((UsesGlobalComponentSystem) wrappedBuilder).componentSystemAdapter());
+                globalComponentSystem().consumeEntirely(((UsesGlobalComponentSystem) wrappedBuilder).globalComponentSystem());
         }
 
         @Override

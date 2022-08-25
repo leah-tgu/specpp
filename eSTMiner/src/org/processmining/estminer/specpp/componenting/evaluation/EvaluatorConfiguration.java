@@ -41,7 +41,7 @@ public class EvaluatorConfiguration extends Configuration {
             SimpleBuilder<ProvidesEvaluators> builder = () -> {
                 class Wrap extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators {
                     public Wrap() {
-                        componentSystemAdapter().provide(EvaluationRequirements.evaluator(evaluableClass, evaluationClass, Reflection.instance(evaluatorClass)::eval));
+                        globalComponentSystem().provide(EvaluationRequirements.evaluator(evaluableClass, evaluationClass, Reflection.instance(evaluatorClass)::eval));
                     }
                 }
                 return new Wrap();

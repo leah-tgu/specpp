@@ -16,7 +16,7 @@ public class ConstrainingPlaceCollection extends PlaceCollection implements Cons
     private final EventSupervision<CandidateConstraint<Place>> constraintOutput = PipeWorks.eventSupervision();
 
     public ConstrainingPlaceCollection() {
-        componentSystemAdapter().provide(SupervisionRequirements.observable("composition.constraints.wiring", getPublishedConstraintClass(), getConstraintPublisher()));
+        globalComponentSystem().provide(SupervisionRequirements.observable("composition.constraints.wiring", getPublishedConstraintClass(), getConstraintPublisher()));
         localComponentSystem().provide(SupervisionRequirements.observable("composition.constraints.wiring", getPublishedConstraintClass(), getConstraintPublisher()));
     }
 

@@ -16,7 +16,7 @@ public class PerformanceSupervisor extends MonitoringSupervisor {
     private final ConcurrencyBridge<PerformanceEvent> performanceEventConcurrencyBridge = PipeWorks.concurrencyBridge();
 
     public PerformanceSupervisor() {
-        componentSystemAdapter().require(observable(regex("^.+\\.performance$"), PerformanceEvent.class), ContainerUtils.observeResults(performanceEventConcurrencyBridge));
+        globalComponentSystem().require(observable(regex("^.+\\.performance$"), PerformanceEvent.class), ContainerUtils.observeResults(performanceEventConcurrencyBridge));
 
         createMonitor("performance", new PerformanceStatisticsMonitor());
     }

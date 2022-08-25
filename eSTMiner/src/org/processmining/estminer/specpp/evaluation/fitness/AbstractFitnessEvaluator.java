@@ -25,9 +25,9 @@ public abstract class AbstractFitnessEvaluator extends AbstractGlobalComponentSy
     }
 
     public AbstractFitnessEvaluator() {
-        componentSystemAdapter().require(DataRequirements.CONSIDERED_VARIANTS, variantSubsetSource)
-                                .require(DataRequirements.ENC_LOG, multiEncodedLogSource)
-                                .provide(SupervisionRequirements.observable("evaluator.performance", PerformanceEvent.class, timeStopper));
+        globalComponentSystem().require(DataRequirements.CONSIDERED_VARIANTS, variantSubsetSource)
+                               .require(DataRequirements.ENC_LOG, multiEncodedLogSource)
+                               .provide(SupervisionRequirements.observable("evaluator.performance", PerformanceEvent.class, timeStopper));
     }
 
     public void updateConsideredVariants() {

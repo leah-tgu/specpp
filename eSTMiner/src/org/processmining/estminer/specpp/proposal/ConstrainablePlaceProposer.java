@@ -2,15 +2,19 @@ package org.processmining.estminer.specpp.proposal;
 
 import org.processmining.estminer.specpp.base.ConstrainableProposer;
 import org.processmining.estminer.specpp.base.Constrainer;
+import org.processmining.estminer.specpp.base.impls.AbstractEfficientTreeBasedProposer;
 import org.processmining.estminer.specpp.base.impls.CandidateConstraint;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.delegators.ContainerUtils;
 import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.componenting.system.ComponentSystemAwareBuilder;
+import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
 import org.processmining.estminer.specpp.componenting.system.link.ChildGenerationLogicComponent;
 import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
+import org.processmining.estminer.specpp.componenting.system.link.ProposerComponent;
 import org.processmining.estminer.specpp.config.EfficientTreeConfiguration;
+import org.processmining.estminer.specpp.config.SimpleBuilder;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.base.ConstrainableChildGenerationLogic;
 import org.processmining.estminer.specpp.datastructures.tree.base.GenerationConstraint;
@@ -30,37 +34,63 @@ import org.processmining.estminer.specpp.util.JavaTypingUtils;
  * @see CandidateConstraint
  * @see ConstrainableChildGenerationLogic
  */
-public class ConstrainablePlaceProposer extends PlaceProposer implements ConstrainableProposer<Place, CandidateConstraint<Place>>, Constrainer<GenerationConstraint> {
+public class ConstrainablePlaceProposer extends AbstractBaseClass implements ConstrainableProposer<Place, CandidateConstraint<Place>>, Constrainer<GenerationConstraint>, ProposerComponent<Place> {
+    protected final ChildGenerationLogicComponent<Place, PlaceState, PlaceNode> cgl;
+    protected final SimpleBuilder<EfficientTreeComponent<PlaceNode>> treeBuilder;
+
     public static class Builder extends ComponentSystemAwareBuilder<ConstrainablePlaceProposer> {
 
-        private final DelegatingDataSource<EfficientTreeConfiguration<Place, PlaceState, PlaceNode>> delegatingDataSource = new DelegatingDataSource<>();
+        protected final DelegatingDataSource<EfficientTreeConfiguration<Place, PlaceState, PlaceNode>> delegatingDataSource = new DelegatingDataSource<>();
 
         public Builder() {
-            componentSystemAdapter().require(DataRequirements.efficientTreeConfiguration(), delegatingDataSource);
+            globalComponentSystem().require(DataRequirements.efficientTreeConfiguration(), delegatingDataSource);
         }
 
         @Override
         protected ConstrainablePlaceProposer buildIfFullySatisfied() {
             EfficientTreeConfiguration<Place, PlaceState, PlaceNode> config = delegatingDataSource.getData();
-            return new ConstrainablePlaceProposer(config.createPossiblyInstrumentedChildGenerationLogic(), config.createPossiblyInstrumentedTree());
+            return new ConstrainablePlaceProposer(config.createPossiblyInstrumentedChildGenerationLogic(), config::createPossiblyInstrumentedTree);
         }
 
+
     }
+
+    protected AbstractEfficientTreeBasedProposer<Place, PlaceNode> proposer;
 
     protected final EventSupervision<GenerationConstraint> constraintOutput = PipeWorks.eventSupervision();
 
-    public ConstrainablePlaceProposer(ChildGenerationLogicComponent<Place, PlaceState, PlaceNode> cgl, EfficientTreeComponent<PlaceNode> tree) {
-        super(cgl, tree);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("proposer.constraints", getPublishedConstraintClass(), getConstraintPublisher()));
+    public ConstrainablePlaceProposer(ChildGenerationLogicComponent<Place, PlaceState, PlaceNode> cgl, SimpleBuilder<EfficientTreeComponent<PlaceNode>> treeBuilder) {
+        this.cgl = cgl;
+        this.treeBuilder = treeBuilder;
+        globalComponentSystem().provide(SupervisionRequirements.observable("proposer.constraints", getPublishedConstraintClass(), getConstraintPublisher()));
         localComponentSystem().require(SupervisionRequirements.observable(SupervisionRequirements.regex("composer\\.constraints.*"), getAcceptedConstraintClass()), ContainerUtils.observeResults(this))
                               .require(SupervisionRequirements.observable(SupervisionRequirements.regex("composition\\.constraints.*"), getAcceptedConstraintClass()), ContainerUtils.observeResults(this))
                               .provide(SupervisionRequirements.observable("proposer.constraints", getPublishedConstraintClass(), getConstraintPublisher()));
+        proposer = createSubProposer();
+        setProposer(proposer);
     }
 
+    protected AbstractEfficientTreeBasedProposer<Place, PlaceNode> createSubProposer() {
+        return new PlaceProposer(cgl, treeBuilder.build());
+    }
+
+    protected void setProposer(AbstractEfficientTreeBasedProposer<Place, PlaceNode> proposer) {
+        this.proposer = proposer;
+        registerSubComponent(proposer);
+    }
+
+    @Override
+    protected void initSelf() {
+    }
+
+    @Override
+    public Place proposeCandidate() {
+        return proposer.proposeCandidate();
+    }
 
     @Override
     public void acceptConstraint(CandidateConstraint<Place> candidateConstraint) {
-        PlaceNode placeNode = getPreviousProposedNode();
+        PlaceNode placeNode = proposer.getPreviousProposedNode();
         if (candidateConstraint instanceof WiringConstraint) {
             constraintOutput.observe((GenerationConstraint) candidateConstraint);
         } else if (candidateConstraint instanceof ClinicallyUnderfedPlace) {

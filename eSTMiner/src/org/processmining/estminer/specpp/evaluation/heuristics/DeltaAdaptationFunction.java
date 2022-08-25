@@ -19,7 +19,7 @@ public class DeltaAdaptationFunction implements Evaluator<EvaluationParameterTup
         private final DelegatingDataSource<DeltaParameters> delta = new DelegatingDataSource<>();
 
         public Builder() {
-            componentSystemAdapter().require(ParameterRequirements.DELTA_PARAMETERS, delta);
+            globalComponentSystem().require(ParameterRequirements.DELTA_PARAMETERS, delta);
         }
 
         @Override
@@ -32,7 +32,7 @@ public class DeltaAdaptationFunction implements Evaluator<EvaluationParameterTup
 
         public Provider(DeltaParameters deltaParameters) {
             DeltaAdaptationFunction func = new DeltaAdaptationFunction(deltaParameters.getDelta());
-            componentSystemAdapter().provide(EvaluationRequirements.DELTA_ADAPTATION_FUNCTION.fulfilWith(func));
+            globalComponentSystem().provide(EvaluationRequirements.DELTA_ADAPTATION_FUNCTION.fulfilWith(func));
         }
     }
 

@@ -4,6 +4,8 @@ import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.PartiallyOrdered;
 
 import java.util.BitSet;
+import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
 import java.util.stream.IntStream;
 
 public class BitMask extends BitSet implements Copyable<BitMask>, SetQueries<BitMask>, MutatingSetOperations<BitMask>, PartiallyOrdered<BitMask> {
@@ -25,6 +27,30 @@ public class BitMask extends BitSet implements Copyable<BitMask>, SetQueries<Bit
     }
 
     public BitMask() {
+    }
+
+    public PrimitiveIterator.OfInt iterator() {
+        return new BitSetIterator();
+    }
+
+    private class BitSetIterator implements PrimitiveIterator.OfInt {
+        int next = nextSetBit(0);
+
+        @Override
+        public boolean hasNext() {
+            return next != -1;
+        }
+
+        @Override
+        public int nextInt() {
+            if (next != -1) {
+                int ret = next;
+                next = nextSetBit(next + 1);
+                return ret;
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
     }
 
     public BitMask(int nbits) {

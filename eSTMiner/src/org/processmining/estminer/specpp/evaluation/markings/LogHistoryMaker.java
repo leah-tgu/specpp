@@ -19,9 +19,9 @@ public class LogHistoryMaker extends AbstractGlobalComponentSystemUser implement
     private BitMask consideredVariants;
 
     public LogHistoryMaker() {
-        componentSystemAdapter().require(DataRequirements.ENC_LOG, encodedLogSource)
-                                .require(DataRequirements.CONSIDERED_VARIANTS, consideredVariantsSource)
-                                .provide(EvaluationRequirements.PLACE_MARKING_HISTORY.fulfilWith(this::computeVariantMarkingHistories));
+        globalComponentSystem().require(DataRequirements.ENC_LOG, encodedLogSource)
+                               .require(DataRequirements.CONSIDERED_VARIANTS, consideredVariantsSource)
+                               .provide(EvaluationRequirements.PLACE_MARKING_HISTORY.fulfilWith(this::computeVariantMarkingHistories));
     }
 
     protected void updateConsideredVariants() {

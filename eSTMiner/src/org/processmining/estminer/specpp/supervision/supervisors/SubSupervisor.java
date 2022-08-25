@@ -15,15 +15,15 @@ public abstract class SubSupervisor extends SchedulingSupervisor {
     protected final DelegatingDataSource<OutputPathParameters> pathParametersSource = new DelegatingDataSource<>();
 
     public SubSupervisor() {
-        componentSystemAdapter().require(BaseSupervisor.FILE_LOGGER_REQUIREMENT, fileLogger)
-                                .require(BaseSupervisor.CONSOLE_LOGGER_REQUIREMENT, consoleLogger)
-                                .require(ParameterRequirements.OUTPUT_PATH_PARAMETERS, pathParametersSource);
+        globalComponentSystem().require(BaseSupervisor.FILE_LOGGER_REQUIREMENT, fileLogger)
+                               .require(BaseSupervisor.CONSOLE_LOGGER_REQUIREMENT, consoleLogger)
+                               .require(ParameterRequirements.OUTPUT_PATH_PARAMETERS, pathParametersSource);
     }
 
 
     @Override
     public void initSelf() {
-        if (componentSystemAdapter().areAllRequirementsMet()) instantiateObservationHandlingFullySatisfied();
+        if (globalComponentSystem().areAllRequirementsMet()) instantiateObservationHandlingFullySatisfied();
         else instantiateObservationHandlingPartiallySatisfied();
     }
 

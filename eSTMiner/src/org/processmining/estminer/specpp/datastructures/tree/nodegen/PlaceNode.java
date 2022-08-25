@@ -48,12 +48,12 @@ public class PlaceNode extends LocalNodeWithExternalizedLogic<Place, PlaceState,
     }
 
     @Override
-    protected boolean canExpandBasedOnGenerator() {
+    protected boolean canExpandBasedOnExternalLogic() {
         return getGenerationLogic().hasChildrenLeft(this);
     }
 
     @Override
-    protected Optional<Boolean> canExpandBasedOnState() {
+    protected Optional<Boolean> canExpandBasedOnInternalState() {
         return getState().canNeverExpand() ? Optional.of(Boolean.FALSE) : Optional.empty();
     }
 

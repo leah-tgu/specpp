@@ -26,8 +26,8 @@ public class EventingEnumeratingTree<N extends TreeNode & LocallyExpandable<N>> 
     }
 
     protected void makeProvisions() {
-        componentSystemAdapter().provide(SupervisionRequirements.observable("tree.events", TreeEvent.class, eventSupervision))
-                                .provide(SupervisionRequirements.adHocObservable("tree.stats", EnumeratingTreeStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new EnumeratingTreeStatsEvent(leaves.size()))));
+        globalComponentSystem().provide(SupervisionRequirements.observable("tree.events", TreeEvent.class, eventSupervision))
+                               .provide(SupervisionRequirements.adHocObservable("tree.stats", EnumeratingTreeStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new EnumeratingTreeStatsEvent(leaves.size()))));
     }
 
     @Override

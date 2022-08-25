@@ -20,7 +20,7 @@ import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceState;
  * @see EnumeratingTree
  * @see ConstrainableChildGenerationLogic
  */
-public class PlaceProposer extends EfficientTreeWithExternalizedLogicBasedProposer<Place, PlaceNode> {
+public class PlaceProposer extends EfficientTreeWithExternalizedLogicBasedProposer<Place, PlaceState, PlaceNode> {
 
     public PlaceProposer(ChildGenerationLogicComponent<Place, PlaceState, PlaceNode> generationLogic, EfficientTreeComponent<PlaceNode> tree) {
         super(generationLogic, tree);
@@ -38,7 +38,9 @@ public class PlaceProposer extends EfficientTreeWithExternalizedLogicBasedPropos
 
     @Override
     protected void initSelf() {
-        tree.setRootOnce(generationLogic.generateRoot());
+        PlaceNode root = generationLogic.generateRoot();
+        root.setGenerationLogic(generationLogic);
+        tree.setRootOnce(root);
     }
 
 }

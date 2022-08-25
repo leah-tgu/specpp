@@ -13,7 +13,7 @@ public class InstrumentedExpansionStrategy<N extends TreeNode & LocallyExpandabl
 
     public InstrumentedExpansionStrategy(ExpansionStrategyComponent<N> delegate) {
         super(delegate);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("tree.strategy.performance", PerformanceEvent.class, timeStopper));
+        globalComponentSystem().provide(SupervisionRequirements.observable("tree.strategy.performance", PerformanceEvent.class, timeStopper));
     }
 
     public N nextExpansion() {

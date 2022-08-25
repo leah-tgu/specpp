@@ -27,8 +27,8 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
     private final DelegatingObservable<TreeHeuristicsEvent> heuristicsEvents = new DelegatingObservable<>();
 
     public DetailedHeuristicsSupervisor() {
-        componentSystemAdapter().require(SupervisionRequirements.observable("heuristics.events", JavaTypingUtils.<HeuristicComputationEvent<DoubleScore>>castClass(HeuristicComputationEvent.class)), heuristicsEvents)
-                                .require(SupervisionRequirements.adHocObservable("heuristics.stats", HeuristicStatsEvent.class), heuristicStats);
+        globalComponentSystem().require(SupervisionRequirements.observable("heuristics.events", JavaTypingUtils.<HeuristicComputationEvent<DoubleScore>>castClass(HeuristicComputationEvent.class)), heuristicsEvents)
+                               .require(SupervisionRequirements.adHocObservable("heuristics.stats", HeuristicStatsEvent.class), heuristicStats);
         createMonitor("heuristics.queue.size", new TimeSeriesMonitor<>("queue.size", TimeSeriesMonitor.<TreeHeuristicQueueingEvent<PlaceNode>>delta_accumulator()));
     }
 

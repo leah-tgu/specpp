@@ -3,7 +3,7 @@ package org.processmining.estminer.specpp.orchestra;
 import org.processmining.estminer.specpp.base.AdvancedComposition;
 import org.processmining.estminer.specpp.base.impls.PlaceAccepter;
 import org.processmining.estminer.specpp.base.impls.PlaceFitnessFilter;
-import org.processmining.estminer.specpp.base.impls.QueueingPostponingPlaceComposer;
+import org.processmining.estminer.specpp.base.impls.QueueingDeltaComposer;
 import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
@@ -41,7 +41,7 @@ public class TauDeltaComponentConfig extends BaseSpecOpsComponentConfig {
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(PlaceCollection::new)
                             .terminalComposer(PlaceAccepter::new)
-                            .composerChain(PlaceFitnessFilter::new, QueueingPostponingPlaceComposer::new)
+                            .composerChain(PlaceFitnessFilter::new, QueueingDeltaComposer::new)
                             .build(gcr);
     }
 

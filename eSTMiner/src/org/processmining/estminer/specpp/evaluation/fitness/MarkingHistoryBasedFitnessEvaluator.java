@@ -29,11 +29,11 @@ public class MarkingHistoryBasedFitnessEvaluator extends AbstractGlobalComponent
     private BitMask consideredVariants;
 
     public MarkingHistoryBasedFitnessEvaluator() {
-        componentSystemAdapter().require(EvaluationRequirements.PLACE_MARKING_HISTORY, historyMaker)
-                                .require(DataRequirements.CONSIDERED_VARIANTS, variantSubsetSource)
-                                .provide(EvaluationRequirements.evaluator(Place.class, AggregatedBasicFitnessEvaluation.class, this::aggregatedEval))
-                                .provide(EvaluationRequirements.evaluator(Place.class, FullBasicFitnessEvaluation.class, this::fullEval))
-                                .provide(SupervisionRequirements.observable("evaluator.performance", PerformanceEvent.class, timeStopper));
+        globalComponentSystem().require(EvaluationRequirements.PLACE_MARKING_HISTORY, historyMaker)
+                               .require(DataRequirements.CONSIDERED_VARIANTS, variantSubsetSource)
+                               .provide(EvaluationRequirements.evaluator(Place.class, AggregatedBasicFitnessEvaluation.class, this::aggregatedEval))
+                               .provide(EvaluationRequirements.evaluator(Place.class, FullBasicFitnessEvaluation.class, this::fullEval))
+                               .provide(SupervisionRequirements.observable("evaluator.performance", PerformanceEvent.class, timeStopper));
     }
 
     private void updateConsideredVariants() {

@@ -22,6 +22,11 @@ public abstract class AbstractFCSUDelegator<T extends FullComponentSystemUser> e
         delegate.registerSubComponent(subComponent);
     }
 
+    @Override
+    public void unregisterSubComponent(FullComponentSystemUser subComponent) {
+        delegate.unregisterSubComponent(subComponent);
+    }
+
     public List<FullComponentSystemUser> collectTransitiveSubcomponents() {
         return delegate.collectTransitiveSubcomponents();
     }
@@ -34,8 +39,8 @@ public abstract class AbstractFCSUDelegator<T extends FullComponentSystemUser> e
         return delegate.getComponentCollection();
     }
 
-    public ComponentCollection componentSystemAdapter() {
-        return delegate.componentSystemAdapter();
+    public ComponentCollection globalComponentSystem() {
+        return delegate.globalComponentSystem();
     }
 
     public ComponentCollection localComponentSystem() {

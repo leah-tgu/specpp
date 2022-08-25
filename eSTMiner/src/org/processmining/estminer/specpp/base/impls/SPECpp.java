@@ -1,6 +1,9 @@
 package org.processmining.estminer.specpp.base.impls;
 
 import org.processmining.estminer.specpp.base.*;
+import org.processmining.estminer.specpp.componenting.data.DataRequirements;
+import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
+import org.processmining.estminer.specpp.componenting.system.FullComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.componenting.system.LocalComponentRepository;
 import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
@@ -9,6 +12,7 @@ import org.processmining.estminer.specpp.componenting.system.link.CompositionCom
 import org.processmining.estminer.specpp.componenting.system.link.ProposerComponent;
 import org.processmining.estminer.specpp.config.Configuration;
 import org.processmining.estminer.specpp.supervision.Supervisor;
+import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.traits.Joinable;
 import org.processmining.estminer.specpp.traits.StartStoppable;
 
@@ -42,7 +46,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         this.postProcessor = postProcessor;
         configuration = new Configuration(cr);
 
-
+        localComponentSystem().provide(DataRequirements.dataSource("update_local_component_system", Runnable.class, StaticDataSource.of(this::updateLocalComponentSystem)));
         registerSubComponent(proposer);
         registerSubComponent(composer);
     }
@@ -59,6 +63,16 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         return finalResult;
     }
 
+    private void updateLocalComponentSystem() {
+        LocalComponentRepository proposerLcr = new LocalComponentRepository();
+        LocalComponentRepository composerLcr = new LocalComponentRepository();
+        proposer.connectLocalComponentSystem(proposerLcr);
+        composer.connectLocalComponentSystem(composerLcr);
+        proposerLcr.fulfil(composerLcr);
+        composerLcr.fulfil(proposerLcr);
+        localComponentSystem().fulfil(proposerLcr);
+        localComponentSystem().fulfil(composerLcr);
+    }
 
     @Override
     protected void preSubComponentInit() {
@@ -67,12 +81,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
             supervisor.init();
             configuration.absorbProvisions(supervisor);
         }
-        LocalComponentRepository proposerLcr = new LocalComponentRepository();
-        LocalComponentRepository composerLcr = new LocalComponentRepository();
-        proposer.connectLocalComponentSystem(proposerLcr);
-        composer.connectLocalComponentSystem(composerLcr);
-        proposerLcr.fulfil(composerLcr);
-        composerLcr.fulfil(proposerLcr);
+        updateLocalComponentSystem();
     }
 
     @Override

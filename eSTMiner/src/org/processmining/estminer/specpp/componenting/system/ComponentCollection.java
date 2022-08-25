@@ -43,8 +43,6 @@ public class ComponentCollection implements RequiresComponents, ProvisionsCompon
                 collection.add((FulfilledRequirement) f);
             }
         }
-        //componentRequirements.putAll(other.componentRequirements);
-        //componentProvisions.putAll(other.componentProvisions);
     }
 
     public void addComponent(ComponentType componentType) {
@@ -150,11 +148,11 @@ public class ComponentCollection implements RequiresComponents, ProvisionsCompon
     }
 
     public void overridingAbsorb(UsesGlobalComponentSystem other) {
-        overridingAbsorb(other.componentSystemAdapter());
+        overridingAbsorb(other.globalComponentSystem());
     }
 
     public void absorb(UsesGlobalComponentSystem other) {
-        absorb(other.componentSystemAdapter());
+        absorb(other.globalComponentSystem());
     }
 
     public void absorb(ProvisionsComponents other) {

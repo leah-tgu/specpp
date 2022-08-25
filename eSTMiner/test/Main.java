@@ -208,7 +208,7 @@ public class Main {
 
 
         MarkingHistoryBasedFitnessEvaluator ev = new MarkingHistoryBasedFitnessEvaluator();
-        ev.componentSystemAdapter().fulfilFrom(DataRequirements.CONSIDERED_VARIANTS.fulfilWith(() -> BitMask.of(0)));
+        ev.globalComponentSystem().fulfilFrom(DataRequirements.CONSIDERED_VARIANTS.fulfilWith(() -> BitMask.of(0)));
         EvaluatorCollection ec = new EvaluatorCollection();
         ec.register(EvaluationRequirements.evaluator(Place.class, AggregatedBasicFitnessEvaluation.class, ev::aggregatedEval));
 
@@ -230,7 +230,7 @@ public class Main {
         ev.setConsideredVariants(BitMask.of(0));
         Place pprime = maker.preset(ta, tb).postset(tc, td).get();
         PlaceCollection c2 = new PlaceCollection();
-        c2.componentSystemAdapter().fulfilFrom(ec);
+        c2.globalComponentSystem().fulfilFrom(ec);
         c2.accept(p1);
         System.out.println(c2.rateImplicitness(pprime));
 
@@ -238,7 +238,7 @@ public class Main {
         Place psmaller = maker.preset(ta, tb).postset(tb, td).get();
         Place pbigger = maker.preset(ta, tb, tc).postset(tb, tc, td).get();
         PlaceCollection c3 = new PlaceCollection();
-        c3.componentSystemAdapter().fulfilFrom(ec);
+        c3.globalComponentSystem().fulfilFrom(ec);
         c3.accept(pbigger);
         System.out.println(c3.rateImplicitness(psmaller));
 

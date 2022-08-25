@@ -5,6 +5,6 @@ import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
 
 public class LightweightExpansionLimitedParameters extends ExpansionLimitedParameters {
     public LightweightExpansionLimitedParameters() {
-        componentSystemAdapter().provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWith(StaticDataSource.of(new SupervisionParameters(false))));
+        globalComponentSystem().provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWith(StaticDataSource.of(new SupervisionParameters(false))));
     }
 }

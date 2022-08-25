@@ -13,9 +13,8 @@ import org.processmining.estminer.specpp.supervision.piping.Observable;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 import org.processmining.estminer.specpp.traits.Triggerable;
 
-public abstract class AbstractPostponingComposer<C extends Candidate, I extends CompositionComponent<C>, R extends Result, L extends CandidateConstraint<C>> extends RecursiveComposer<C, I, R> implements ConstrainingComposer<C, I, R, L>, Triggerable, UsesGlobalComponentSystem {
+public abstract class AbstractPostponingComposer<C extends Candidate, I extends CompositionComponent<C>, R extends Result, L extends CandidateConstraint<C>> extends RecursiveComposer<C, I, R> implements ConstrainingComposer<C, I, R, L>, Triggerable {
 
-    private final GlobalComponentRepository gcr = new GlobalComponentRepository();
     private final EventSupervision<L> constraintOutput = PipeWorks.eventSupervision();
 
     public AbstractPostponingComposer(ComposerComponent<C, I, R> childComposer) {
@@ -29,11 +28,6 @@ public abstract class AbstractPostponingComposer<C extends Candidate, I extends 
     @Override
     public final Observable<L> getConstraintPublisher() {
         return constraintOutput;
-    }
-
-    @Override
-    public ComponentCollection getComponentCollection() {
-        return gcr;
     }
 
     @Override
@@ -62,9 +56,13 @@ public abstract class AbstractPostponingComposer<C extends Candidate, I extends 
 
     protected abstract CandidateDecision deliberateCandidate(C candidate);
 
-    protected abstract CandidateDecision reDeliberateCandidate(C candidate);
 
-
+    /**
+     * Hook method to define one iteration of postponed decision traversal.
+     * This may be called multiple times.
+     *
+     * @return true if the set of postponed decisions changed
+     */
     protected abstract boolean handlePostponedDecisions();
 
     protected int handlePostponedDecisionsUntilNoChange() {
@@ -89,9 +87,4 @@ public abstract class AbstractPostponingComposer<C extends Candidate, I extends 
         handlePostponedDecisionsUntilNoChange();
     }
 
-
-    @Override
-    public final ComponentCollection componentSystemAdapter() {
-        return gcr;
-    }
 }

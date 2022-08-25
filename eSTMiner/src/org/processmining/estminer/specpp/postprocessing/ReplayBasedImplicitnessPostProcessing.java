@@ -31,7 +31,7 @@ public class ReplayBasedImplicitnessPostProcessing implements PostProcessor<Petr
         private final DelegatingEvaluator<Place, DenseVariantMarkingHistories> evaluatorDelegator = new DelegatingEvaluator<>();
 
         public Builder() {
-            componentSystemAdapter().require(EvaluationRequirements.PLACE_MARKING_HISTORY, evaluatorDelegator);
+            globalComponentSystem().require(EvaluationRequirements.PLACE_MARKING_HISTORY, evaluatorDelegator);
         }
 
         @Override

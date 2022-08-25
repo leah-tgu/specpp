@@ -20,12 +20,13 @@ public class PlaceExporter extends AbstractGlobalComponentSystemUser implements 
         this.outputPathParameters = outputPathParameters;
     }
 
+
     public static class Builder extends ComponentSystemAwareBuilder<PostProcessor<PetriNet, PetriNet>> {
 
         private final DelegatingDataSource<OutputPathParameters> outputPathParameters = new DelegatingDataSource<>();
 
         public Builder() {
-            componentSystemAdapter().require(ParameterRequirements.OUTPUT_PATH_PARAMETERS, outputPathParameters);
+            globalComponentSystem().require(ParameterRequirements.OUTPUT_PATH_PARAMETERS, outputPathParameters);
         }
 
         @Override

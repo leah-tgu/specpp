@@ -16,8 +16,8 @@ public class ProposalTreeSupervisor extends MonitoringSupervisor {
     private final DelegatingDataSource<TreeTrackerParameters> paramSource = new DelegatingDataSource<>();
 
     public ProposalTreeSupervisor() {
-        componentSystemAdapter().require(SupervisionRequirements.observable("tree.events", TreeEvent.class), treeEvents)
-                                .require(ParameterRequirements.parameters("tree.tracker.parameters", TreeTrackerParameters.class), paramSource);
+        globalComponentSystem().require(SupervisionRequirements.observable("tree.events", TreeEvent.class), treeEvents)
+                               .require(ParameterRequirements.parameters("tree.tracker.parameters", TreeTrackerParameters.class), paramSource);
     }
 
     @Override

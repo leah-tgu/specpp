@@ -8,8 +8,8 @@ import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 public class ExhaustiveParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
 
     public ExhaustiveParameters() {
-        componentSystemAdapter().provide(ParameterRequirements.parameters(ParameterRequirements.TAU_FITNESS_THRESHOLDS, StaticDataSource.of(TauFitnessThresholds.tau(1))))
-                                .provide(ParameterRequirements.parameters(ParameterRequirements.PLACE_GENERATOR_PARAMETERS, StaticDataSource.of(PlaceGeneratorParameters.getDefault())));
+        globalComponentSystem().provide(ParameterRequirements.parameters(ParameterRequirements.TAU_FITNESS_THRESHOLDS, StaticDataSource.of(TauFitnessThresholds.tau(1))))
+                               .provide(ParameterRequirements.parameters(ParameterRequirements.PLACE_GENERATOR_PARAMETERS, StaticDataSource.of(PlaceGeneratorParameters.getDefault())));
     }
 
 }

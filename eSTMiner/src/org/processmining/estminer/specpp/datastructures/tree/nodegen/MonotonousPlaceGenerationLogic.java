@@ -38,7 +38,7 @@ public class MonotonousPlaceGenerationLogic extends PlaceGenerationLogic {
     protected final List<Tuple2<Class<? extends GenerationConstraint>, Consumer<GenerationConstraint>>> constraintHandlers;
 
     public enum ExpansionType {
-        Postset, Preset;
+        Postset, Preset
 
     }
 
@@ -53,8 +53,8 @@ public class MonotonousPlaceGenerationLogic extends PlaceGenerationLogic {
 
 
         public Builder() {
-            componentSystemAdapter().require(DataRequirements.ENC_TRANS, transitionEncodings)
-                                    .require(ParameterRequirements.PLACE_GENERATOR_PARAMETERS, parameters);
+            globalComponentSystem().require(DataRequirements.ENC_TRANS, transitionEncodings)
+                                   .require(ParameterRequirements.PLACE_GENERATOR_PARAMETERS, parameters);
         }
 
         @Override
@@ -94,8 +94,9 @@ public class MonotonousPlaceGenerationLogic extends PlaceGenerationLogic {
             constraintHandlers.add(new ImmutableTuple2<>(SubtreeCutoffConstraint.class, this::handleCullChildrenConstraint));
         }
         if (parameters.isAcceptWiringConstraints()) {
-            ListBasedWiringTester wiringTester = new ListBasedWiringTester();
+            WiringTester wiringTester = new UnWiringMatrix(transitionEncodings);
             potentialExpansionFilters.add(wiringTester);
+            expansionStoppers.add(wiringTester);
             constraintHandlers.add(new ImmutableTuple2<>(WiringConstraint.class, c -> handleWiringConstraint(wiringTester, c)));
         }
         if (parameters.isAcceptTransitionBlacklistingConstraints()) {
@@ -342,8 +343,10 @@ public class MonotonousPlaceGenerationLogic extends PlaceGenerationLogic {
         transitionBlacklister.blacklist(((BlacklistTransition) constraint).getTransition());
     }
 
-    protected void handleWiringConstraint(ListBasedWiringTester wiringTester, GenerationConstraint constraint) {
+    protected void handleWiringConstraint(WiringTester wiringTester, GenerationConstraint constraint) {
         if (constraint instanceof AddWiredPlace) wiringTester.wire(((AddWiredPlace) constraint).getAffectedCandidate());
+        if (constraint instanceof RemoveWiredPlace)
+            wiringTester.unwire(((RemoveWiredPlace) constraint).getAffectedCandidate());
     }
 
     protected void handleDepthConstraint(DepthLimiter depthLimiter, GenerationConstraint constraint) {

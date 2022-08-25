@@ -32,11 +32,11 @@ public class SPECppBuilder<C extends Candidate, I extends CompositionComponent<C
 
 
     public SPECppBuilder() {
-        componentSystemAdapter().require(DataRequirements.proposerComposerConfiguration(), pcConfigDelegator)
-                                .require(DataRequirements.postprocessingConfiguration(), ppConfigDelegator)
-                                .require(DataRequirements.EVALUATOR_CONFIG, evConfigDelegator)
-                                .require(DataRequirements.SUPERVISOR_CONFIG, svConfigDelegator)
-                                .require(ParameterRequirements.SUPERVISION_PARAMETERS, svParametersDelegator);
+        globalComponentSystem().require(DataRequirements.proposerComposerConfiguration(), pcConfigDelegator)
+                               .require(DataRequirements.postprocessingConfiguration(), ppConfigDelegator)
+                               .require(DataRequirements.EVALUATOR_CONFIG, evConfigDelegator)
+                               .require(DataRequirements.SUPERVISOR_CONFIG, svConfigDelegator)
+                               .require(ParameterRequirements.SUPERVISION_PARAMETERS, svParametersDelegator);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class SPECppBuilder<C extends Candidate, I extends CompositionComponent<C
         SupervisionConfiguration svConfig = svConfigDelegator.getData();
         List<Supervisor> supervisorList = svConfig.createSupervisors();
         for (Supervisor supervisor : supervisorList) {
-            gcr.consumeEntirely(supervisor.componentSystemAdapter());
+            gcr.consumeEntirely(supervisor.globalComponentSystem());
         }
         ProposerComposerConfiguration<C, I, R> pcConfig = pcConfigDelegator.getData();
         PostProcessingConfiguration<R, F> ppConfig = ppConfigDelegator.getData();

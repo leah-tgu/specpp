@@ -12,7 +12,7 @@ public class GlobalComponentRepository extends ComponentCollection implements Us
     }
 
     @Override
-    public ComponentCollection componentSystemAdapter() {
+    public ComponentCollection globalComponentSystem() {
         return this;
     }
 

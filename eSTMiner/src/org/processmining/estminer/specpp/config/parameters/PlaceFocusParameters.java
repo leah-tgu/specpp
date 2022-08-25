@@ -7,7 +7,7 @@ import org.processmining.estminer.specpp.componenting.traits.ProvidesParameters;
 
 public class PlaceFocusParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
     public PlaceFocusParameters() {
-        componentSystemAdapter().provide(ParameterRequirements.parameters("placegenerator.parameters", PlaceGeneratorParameters.class, StaticDataSource.of(new PlaceGeneratorParameters(5, true, false, true, true))))
-                                .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWith(StaticDataSource.of(new SupervisionParameters(false))));
+        globalComponentSystem().provide(ParameterRequirements.parameters("placegenerator.parameters", PlaceGeneratorParameters.class, StaticDataSource.of(new PlaceGeneratorParameters(5, true, false, true, true))))
+                               .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWith(StaticDataSource.of(new SupervisionParameters(false))));
     }
 }

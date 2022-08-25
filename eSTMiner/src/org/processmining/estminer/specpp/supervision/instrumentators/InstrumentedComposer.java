@@ -15,7 +15,7 @@ public class InstrumentedComposer<C extends Candidate, I extends CompositionComp
 
     public InstrumentedComposer(ComposerComponent<C, I, R> delegate) {
         super(delegate);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("composer.performance", PerformanceEvent.class, timeStopper));
+        globalComponentSystem().provide(SupervisionRequirements.observable("composer.performance", PerformanceEvent.class, timeStopper));
     }
 
     public boolean isFinished() {

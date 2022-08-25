@@ -22,6 +22,7 @@ import org.processmining.plugins.graphviz.visualisation.DotPanel;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,7 +47,7 @@ public class PostSpecOps {
             showFinalResult(finalResult, petrinetVisualization);
             saveFinalResult(outputPathParameters, finalResult, petrinetVisualization);
         }
-        List<Monitor<?, ?>> monitors = getMonitors(specPP);
+        List<Map.Entry<String, Monitor<?, ?>>> monitors = getMonitors(specPP);
         if (allowPrinting) showMonitoringResults(monitors);
         saveMonitoringResults(outputPathParameters, monitors);
     }
@@ -65,7 +66,7 @@ public class PostSpecOps {
         return petrinetVisualization;
     }
 
-    private static void showMonitoringResults(List<Monitor<?, ?>> monitors) {
+    private static void showMonitoringResults(List<Map.Entry<String, Monitor<?, ?>>> monitors) {
         for (Visualization<?> resultingVisualization : getResultingVisualizations(monitors.stream())) {
             VizUtils.showVisualization(resultingVisualization);
         }
@@ -74,7 +75,7 @@ public class PostSpecOps {
         }
     }
 
-    public static void saveMonitoringResults(OutputPathParameters outputPathParameters, List<Monitor<?, ?>> monitors) {
+    public static void saveMonitoringResults(OutputPathParameters outputPathParameters, List<Map.Entry<String, Monitor<?, ?>>> monitors) {
         for (Visualization<?> resultingVisualization : getResultingVisualizations(monitors.stream())) {
             JComponent component = resultingVisualization.getComponent();
             String title = resultingVisualization.getTitle().toLowerCase().replace(".", "_");
@@ -90,30 +91,31 @@ public class PostSpecOps {
         FileUtils.saveStrings(filePath, getResultingStrings(monitors.stream()));
     }
 
-    static Stream<Monitor<?, ?>> getMonitorStream(SPECpp<?, ?, ?, ?> specpp) {
+    static Stream<Map.Entry<String, Monitor<?, ?>>> getMonitorStream(SPECpp<?, ?, ?, ?> specpp) {
         return specpp.getSupervisors()
                      .stream()
                      .filter(s -> s instanceof Monitoring)
                      .map(s -> (Monitoring) s)
-                     .flatMap(m -> m.getMonitors().stream());
+                     .flatMap(m -> m.getLabeledMonitor().stream());
     }
 
-    private static List<Monitor<?, ?>> getMonitors(SPECpp<?, ?, ?, ?> specpp) {
+    private static List<Map.Entry<String, Monitor<?, ?>>> getMonitors(SPECpp<?, ?, ?, ?> specpp) {
         return getMonitorStream(specpp).collect(Collectors.toList());
     }
 
-    private static List<String> getResultingStrings(Stream<Monitor<?, ?>> monitors) {
-        return monitors.filter(m -> m instanceof ProvidesResults)
-                       .map(m -> (ProvidesResults) m)
-                       .flatMap(pr -> pr.getResults().stream())
-                       .map(TypedItem::getItem)
-                       .filter(item -> item instanceof String)
-                       .map(s -> (String) s)
+    private static List<String> getResultingStrings(Stream<Map.Entry<String, Monitor<?, ?>>> monitors) {
+        return monitors.filter(e -> e.getValue() instanceof ProvidesResults)
+                       .flatMap(e -> ((ProvidesResults) e.getValue()).getResults()
+                                                                     .stream()
+                                                                     .map(TypedItem::getItem)
+                                                                     .filter(item -> item instanceof String)
+                                                                     .map(s -> e.getKey() + ":: " + s))
                        .collect(Collectors.toList());
     }
 
-    private static List<Visualization<?>> getResultingVisualizations(Stream<Monitor<?, ?>> monitors) {
-        return monitors.filter(m -> m instanceof ProvidesResults)
+    private static List<Visualization<?>> getResultingVisualizations(Stream<Map.Entry<String, Monitor<?, ?>>> monitors) {
+        return monitors.map(Map.Entry::getValue)
+                       .filter(m -> m instanceof ProvidesResults)
                        .map(m -> (ProvidesResults) m)
                        .flatMap(pr -> pr.getResults().stream())
                        .map(TypedItem::getItem)

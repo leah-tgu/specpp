@@ -11,7 +11,7 @@ public class InstrumentedProposer<C extends Candidate> extends AbstractInstrumen
 
     public InstrumentedProposer(ProposerComponent<C> delegate) {
         super(delegate);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("proposer.performance", PerformanceEvent.class, timeStopper));
+        globalComponentSystem().provide(SupervisionRequirements.observable("proposer.performance", PerformanceEvent.class, timeStopper));
     }
 
     public C proposeCandidate() {

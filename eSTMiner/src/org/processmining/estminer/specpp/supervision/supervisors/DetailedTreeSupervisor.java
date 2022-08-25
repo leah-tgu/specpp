@@ -23,8 +23,8 @@ public class DetailedTreeSupervisor extends MonitoringSupervisor {
     private final DelegatingAdHocObservable<TreeStatsEvent> treeStats = new DelegatingAdHocObservable<>();
 
     public DetailedTreeSupervisor() {
-        componentSystemAdapter().require(SupervisionRequirements.observable("tree.events", TreeEvent.class), treeEvents)
-                                .require(SupervisionRequirements.adHocObservable("tree.stats", TreeStatsEvent.class), treeStats);
+        globalComponentSystem().require(SupervisionRequirements.observable("tree.events", TreeEvent.class), treeEvents)
+                               .require(SupervisionRequirements.adHocObservable("tree.stats", TreeStatsEvent.class), treeStats);
         createMonitor("tree.leaves.count", new TimeSeriesMonitor<>("leaves.count", TimeSeriesMonitor.<LeafEvent<PlaceNode>>delta_accumulator()));
     }
 

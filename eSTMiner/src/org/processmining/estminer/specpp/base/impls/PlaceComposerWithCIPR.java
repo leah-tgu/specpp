@@ -21,7 +21,7 @@ public class PlaceComposerWithCIPR<I extends AdvancedComposition<Place>> extends
 
     public PlaceComposerWithCIPR(I composition) {
         super(composition, c -> new PetriNet(c.toSet()));
-        componentSystemAdapter()
+        globalComponentSystem()
                 .provide(SupervisionRequirements.observable("composer.events", JavaTypingUtils.castClass(CandidateCompositionEvent.class), compositionEventSupervision));
         localComponentSystem()
                 .require(EvaluationRequirements.PLACE_IMPLICITNESS, implicitnessEvaluator);

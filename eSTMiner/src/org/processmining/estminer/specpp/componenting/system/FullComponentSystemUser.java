@@ -10,6 +10,8 @@ public interface FullComponentSystemUser extends UsesLocalComponentSystem, UsesG
 
     void registerSubComponent(FullComponentSystemUser subComponent);
 
+    void unregisterSubComponent(FullComponentSystemUser subComponent);
+
     List<FullComponentSystemUser> collectTransitiveSubcomponents();
 
     default void connectLocalComponentSystem(LocalComponentRepository lcr) {

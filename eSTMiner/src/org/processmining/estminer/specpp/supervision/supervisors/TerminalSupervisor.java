@@ -14,7 +14,7 @@ public class TerminalSupervisor extends AbstractSupervisor implements Joinable {
     private final ListContainer<Observable<?>> observables = ContainerUtils.listContainer();
 
     public TerminalSupervisor() {
-        componentSystemAdapter().require(SupervisionRequirements.observable(SupervisionRequirements.regex("\\w+"), Observation.class), observables);
+        globalComponentSystem().require(SupervisionRequirements.observable(SupervisionRequirements.regex("\\w+"), Observation.class), observables);
     }
 
     @Override

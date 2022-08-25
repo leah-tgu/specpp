@@ -17,7 +17,7 @@ public abstract class AbstractBasicFitnessEvaluator extends AbstractFitnessEvalu
 
 
     public AbstractBasicFitnessEvaluator() {
-        componentSystemAdapter()
+        globalComponentSystem()
                 .provide(EvaluationRequirements.evaluator(Place.class, BasicFitnessEvaluation.class, this::eval))
                 .provide(EvaluationRequirements.evaluator(Place.class, DetailedFitnessEvaluation.class, this::detailedEval))
                 .provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), BasicFitnessEvaluation.class, this::subsetEval))

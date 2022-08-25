@@ -15,7 +15,7 @@ public abstract class AbstractGlobalComponentSystemUser implements UsesGlobalCom
     }
 
     @Override
-    public GlobalComponentRepository componentSystemAdapter() {
+    public GlobalComponentRepository globalComponentSystem() {
         return componentSystemAdapter;
     }
 

@@ -8,9 +8,9 @@ public abstract class ComponentSystemAwareBuilder<T> extends AbstractGlobalCompo
 
     @Override
     public T build() {
-        if (componentSystemAdapter().areAllRequirementsMet())
+        if (globalComponentSystem().areAllRequirementsMet())
             return buildIfFullySatisfied();
-        else throw new RequirementsNotSatisfiedException(componentSystemAdapter().toString());
+        else throw new RequirementsNotSatisfiedException(globalComponentSystem().toString());
     }
 
 }

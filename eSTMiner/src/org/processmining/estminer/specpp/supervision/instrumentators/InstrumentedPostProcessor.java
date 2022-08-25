@@ -17,7 +17,7 @@ public class InstrumentedPostProcessor<R extends Result, F extends Result> exten
         super(postProcessor);
         String fullLabel = "postprocessor." + label;
         task = new TaskDescription(fullLabel);
-        componentSystemAdapter().provide(SupervisionRequirements.observable(fullLabel + ".performance", PerformanceEvent.class, timeStopper));
+        globalComponentSystem().provide(SupervisionRequirements.observable(fullLabel + ".performance", PerformanceEvent.class, timeStopper));
     }
 
     public static class Builder<R extends Result, F extends Result> extends ComponentSystemAwareBuilder<InstrumentedPostProcessor<R, F>> {
@@ -29,7 +29,7 @@ public class InstrumentedPostProcessor<R extends Result, F extends Result> exten
             this.label = label;
             this.inner = inner;
             if (inner instanceof UsesGlobalComponentSystem)
-                componentSystemAdapter().consumeEntirely(((UsesGlobalComponentSystem) inner).componentSystemAdapter());
+                globalComponentSystem().consumeEntirely(((UsesGlobalComponentSystem) inner).globalComponentSystem());
         }
 
         @Override

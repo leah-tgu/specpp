@@ -7,6 +7,7 @@ import org.processmining.estminer.specpp.supervision.traits.Monitoring;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class MonitoringSupervisor extends SubSupervisor implements Monitoring {
 
@@ -28,6 +29,11 @@ public abstract class MonitoringSupervisor extends SubSupervisor implements Moni
     @Override
     public Collection<Monitor<?, ?>> getMonitors() {
         return monitorMap.values();
+    }
+
+    @Override
+    public Set<Map.Entry<String, Monitor<?, ?>>> getLabeledMonitor() {
+        return monitorMap.entrySet();
     }
 
 }

@@ -22,6 +22,8 @@ public abstract class QueueingPostponingComposer<C extends Candidate, I extends 
         postponedCandidates.add(candidate);
     }
 
+    protected abstract CandidateDecision reDeliberateCandidate(C candidate);
+
     @Override
     protected boolean handlePostponedDecisions() {
         LinkedList<C> postponedAgain = new LinkedList<>();

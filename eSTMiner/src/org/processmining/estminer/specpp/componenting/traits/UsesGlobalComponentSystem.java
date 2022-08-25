@@ -4,11 +4,11 @@ import org.processmining.estminer.specpp.componenting.system.ComponentCollection
 
 public interface UsesGlobalComponentSystem extends HasComponentCollection, IsGlobalProvider {
 
-    ComponentCollection componentSystemAdapter();
+    ComponentCollection globalComponentSystem();
 
     @Override
     default ComponentCollection getComponentCollection() {
-        return componentSystemAdapter();
+        return globalComponentSystem();
     }
 
 }

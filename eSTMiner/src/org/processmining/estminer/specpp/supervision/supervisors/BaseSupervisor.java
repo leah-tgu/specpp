@@ -23,8 +23,8 @@ public class BaseSupervisor extends AbstractSupervisor {
     private final DelegatingDataSource<SupervisionParameters> supervisionParameters = new DelegatingDataSource<>();
 
     public BaseSupervisor() {
-        componentSystemAdapter().require(ParameterRequirements.OUTPUT_PATH_PARAMETERS, outputPathParameters)
-                                .require(ParameterRequirements.SUPERVISION_PARAMETERS, supervisionParameters);
+        globalComponentSystem().require(ParameterRequirements.OUTPUT_PATH_PARAMETERS, outputPathParameters)
+                               .require(ParameterRequirements.SUPERVISION_PARAMETERS, supervisionParameters);
     }
 
 
@@ -34,13 +34,13 @@ public class BaseSupervisor extends AbstractSupervisor {
             Observer<LogMessage> observer = o -> {
             };
             if (supervisionParameters.getData().isUseConsole()) observer = PipeWorks.consoleLogger();
-            componentSystemAdapter().provide(observer(CONSOLE_LOGGER_REQUIREMENT, observer));
+            globalComponentSystem().provide(observer(CONSOLE_LOGGER_REQUIREMENT, observer));
         }
         if (outputPathParameters.isSet()) {
             OutputPathParameters parameters = outputPathParameters.getData();
             String filePath = parameters.getFilePath(PathTools.OutputFileType.MAIN_LOG, "main");
             MessageLogger fileLogger = PipeWorks.fileLogger("main", filePath);
-            componentSystemAdapter().provide(observer(FILE_LOGGER_REQUIREMENT, fileLogger));
+            globalComponentSystem().provide(observer(FILE_LOGGER_REQUIREMENT, fileLogger));
         }
     }
 

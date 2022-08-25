@@ -18,7 +18,7 @@ public class EventingPlaceFitnessFilter<I extends CompositionComponent<Place>, R
 
     public EventingPlaceFitnessFilter(ComposerComponent<Place, I, R> childComposer) {
         super(childComposer);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("composer.filter.events", JavaTypingUtils.castClass(CandidateCompositionEvent.class), composerEventSupervision));
+        globalComponentSystem().provide(SupervisionRequirements.observable("composer.filter.events", JavaTypingUtils.castClass(CandidateCompositionEvent.class), composerEventSupervision));
     }
 
     @Override

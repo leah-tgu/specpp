@@ -16,7 +16,7 @@ public class EventingPlaceComposerWithCIPR<I extends AdvancedComposition<Place>>
 
     public EventingPlaceComposerWithCIPR(I composition) {
         super(composition);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("composer.events", JavaTypingUtils.castClass(CandidateCompositionEvent.class), compositionEventSupervision));
+        globalComponentSystem().provide(SupervisionRequirements.observable("composer.events", JavaTypingUtils.castClass(CandidateCompositionEvent.class), compositionEventSupervision));
     }
 
 

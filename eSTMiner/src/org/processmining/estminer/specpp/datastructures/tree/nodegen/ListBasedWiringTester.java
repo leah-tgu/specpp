@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class ListBasedWiringTester implements PotentialExpansionsFilter {
+public class ListBasedWiringTester implements WiringTester {
 
     private final ArrayList<Place> wiredPlaces;
 
@@ -52,4 +52,8 @@ public class ListBasedWiringTester implements PotentialExpansionsFilter {
         wiredPlaces.remove(place);
     }
 
+    @Override
+    public boolean notAllowedToExpand(PlaceNode placeNode) {
+        return !meetsWiringConstraint(placeNode.getPlace());
+    }
 }

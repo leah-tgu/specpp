@@ -18,8 +18,8 @@ public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & Loc
 
     public EventingHeuristicTreeExpansion(HeuristicStrategy<N, H> heuristicStrategy) {
         super(heuristicStrategy);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("heuristics.events", JavaTypingUtils.castClass(HeuristicComputationEvent.class), eventSupervision))
-                                .provide(SupervisionRequirements.adHocObservable("heuristics.stats", HeuristicStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new HeuristicStatsEvent(priorityQueue.size()))));
+        globalComponentSystem().provide(SupervisionRequirements.observable("heuristics.events", JavaTypingUtils.castClass(HeuristicComputationEvent.class), eventSupervision))
+                               .provide(SupervisionRequirements.adHocObservable("heuristics.stats", HeuristicStatsEvent.class, AsyncAdHocObservableWrapper.wrap(() -> new HeuristicStatsEvent(priorityQueue.size()))));
     }
 
     @Override

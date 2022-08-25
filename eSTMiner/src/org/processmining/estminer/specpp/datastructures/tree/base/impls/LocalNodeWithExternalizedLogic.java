@@ -7,10 +7,14 @@ import org.processmining.estminer.specpp.datastructures.tree.base.NodeState;
 import java.util.Optional;
 
 public abstract class LocalNodeWithExternalizedLogic<P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>> extends AbstractLocalNode<P, S, N> {
-    private final ChildGenerationLogic<P, S, N> generationLogic;
+    private ChildGenerationLogic<P, S, N> generationLogic;
 
     public LocalNodeWithExternalizedLogic(boolean isRoot, P nodeProperties, S nodeState, ChildGenerationLogic<P, S, N> generationLogic, int depth) {
         super(isRoot, nodeProperties, nodeState, depth);
+        this.generationLogic = generationLogic;
+    }
+
+    public void setGenerationLogic(ChildGenerationLogic<P, S, N> generationLogic) {
         this.generationLogic = generationLogic;
     }
 
@@ -20,12 +24,12 @@ public abstract class LocalNodeWithExternalizedLogic<P extends NodeProperties, S
 
     @Override
     public final boolean canExpand() {
-        return canExpandBasedOnState().orElseGet(this::canExpandBasedOnGenerator);
+        return canExpandBasedOnInternalState().orElseGet(this::canExpandBasedOnExternalLogic);
     }
 
-    protected abstract Optional<Boolean> canExpandBasedOnState();
+    protected abstract Optional<Boolean> canExpandBasedOnInternalState();
 
-    protected abstract boolean canExpandBasedOnGenerator();
+    protected abstract boolean canExpandBasedOnExternalLogic();
 
 
 }

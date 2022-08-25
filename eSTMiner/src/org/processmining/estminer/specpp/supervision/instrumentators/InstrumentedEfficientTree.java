@@ -15,7 +15,7 @@ public class InstrumentedEfficientTree<N extends TreeNode & LocallyExpandable<N>
 
     public InstrumentedEfficientTree(EfficientTreeComponent<N> delegate) {
         super(delegate);
-        componentSystemAdapter().provide(SupervisionRequirements.observable("tree.performance", PerformanceEvent.class, timeStopper));
+        globalComponentSystem().provide(SupervisionRequirements.observable("tree.performance", PerformanceEvent.class, timeStopper));
     }
 
     public N getRoot() {

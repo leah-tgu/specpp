@@ -19,8 +19,8 @@ public class Configuration extends ComponentInitializer {
     }
 
     protected boolean shouldBeInstrumented(Object o) {
-        SupervisionParameters ask = componentSystemAdapter().parameters()
-                                                            .askForData(ParameterRequirements.SUPERVISION_PARAMETERS);
+        SupervisionParameters ask = globalComponentSystem().parameters()
+                                                           .askForData(ParameterRequirements.SUPERVISION_PARAMETERS);
         return ask != null && ask.shouldBeInstrumented(o);
     }
 }

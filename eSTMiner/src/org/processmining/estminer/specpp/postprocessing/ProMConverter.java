@@ -11,4 +11,5 @@ public class ProMConverter implements PostProcessor<PetriNet, ProMPetrinetWrappe
         ProMPetrinetBuilder builder = new ProMPetrinetBuilder(result.getPlaces());
         return builder.build();
     }
+
 }

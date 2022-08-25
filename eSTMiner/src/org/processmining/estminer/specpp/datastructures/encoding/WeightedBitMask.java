@@ -53,4 +53,12 @@ public class WeightedBitMask extends BitMask {
         stream().forEach(result::set);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "WeightedBitMask{" +
+                "weight=" + weight +
+                ", mask=" + super.toString() +
+                '}';
+    }
 }
