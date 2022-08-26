@@ -4,6 +4,8 @@ import org.apache.commons.text.StringEscapeUtils;
 
 public class PathTools {
 
+    public static final String PATH_FOLDER_SEPARATOR = "/";
+
     public enum FolderStructure {
         BASE_OUTPUT_FOLDER("output"), LOG_FOLDER(BASE_OUTPUT_FOLDER, "logs"), EXPORT_FOLDER(BASE_OUTPUT_FOLDER, "exports"), VIS_FOLDER(BASE_OUTPUT_FOLDER, "vis"), BASE_INPUT_FOLDER("input"), EVENT_LOG_FOLDER(BASE_INPUT_FOLDER, "event_logs");
 
@@ -70,8 +72,8 @@ public class PathTools {
     }
 
     public static String getRelativeFolderPath(FolderStructure folder) {
-        if (folder.parent == null) return folder.name + "\\";
-        else return getRelativeFolderPath(folder.parent) + folder.name + "\\";
+        if (folder.parent == null) return folder.name + PATH_FOLDER_SEPARATOR;
+        else return getRelativeFolderPath(folder.parent) + folder.name + PATH_FOLDER_SEPARATOR;
     }
 
 

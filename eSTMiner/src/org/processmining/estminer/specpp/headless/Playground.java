@@ -34,7 +34,7 @@ import java.util.Arrays;
 public class Playground {
 
     public static void main(String[] args) {
-        play(BaseSpecOpsConfigBundle::new, InputData.loadData(PublicPaths.SAMPLE_EVENTLOG_2, PreProcessingParameters.getDefault()));
+        play(BaseSpecOpsConfigBundle::new, InputData.loadData(PublicPaths.SAMPLE_EVENTLOG_1, PreProcessingParameters.getDefault()));
     }
 
 
