@@ -7,6 +7,7 @@ import org.processmining.estminer.specpp.datastructures.util.EvaluationParameter
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
+import org.processmining.estminer.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
 import java.nio.IntBuffer;
@@ -15,6 +16,9 @@ import java.util.stream.Stream;
 
 public abstract class AbstractBasicFitnessEvaluator extends AbstractFitnessEvaluator {
 
+
+    public static final TaskDescription BASIC_EVALUATION = new TaskDescription("Basic Fitness Evaluation");
+    public static final TaskDescription DETAILED_EVALUATION = new TaskDescription("Detailed Fitness Evaluation");
 
     public AbstractBasicFitnessEvaluator() {
         globalComponentSystem()
@@ -26,11 +30,11 @@ public abstract class AbstractBasicFitnessEvaluator extends AbstractFitnessEvalu
     }
 
     protected Spliterator<IndexedItem<Tuple2<IntBuffer, IntBuffer>>> getIndexedItemSpliterator() {
-        return getMultiEncodedLog().efficientIndexedSpliterator();
+        return getMultiEncodedLog().indexedSpliterator();
     }
 
     protected Stream<IndexedItem<Tuple2<IntBuffer, IntBuffer>>> getIndexedItemStream() {
-        return getMultiEncodedLog().efficientIndexedStream(false);
+        return getMultiEncodedLog().indexedStream(false);
     }
 
     protected IntVector getVariantFrequencies() {

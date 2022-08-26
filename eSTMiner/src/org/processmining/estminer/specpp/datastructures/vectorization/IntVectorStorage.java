@@ -3,10 +3,10 @@ package org.processmining.estminer.specpp.datastructures.vectorization;
 import org.apache.commons.lang3.ArrayUtils;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.BitMaskSplitty;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedBitMaskSplitty;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedSplitty;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.Splitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliteration.BitMaskSplitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliteration.IndexedBitMaskSplitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliteration.IndexedSplitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliteration.Splitty;
 import org.processmining.estminer.specpp.traits.Copyable;
 import org.processmining.estminer.specpp.traits.PartiallyOrdered;
 import org.processmining.estminer.specpp.util.StreamUtils;
@@ -15,8 +15,6 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.Consumer;
-import java.util.function.IntConsumer;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -68,7 +66,7 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
         return startIndices[index + 1] - startIndices[index];
     }
 
-    public Spliterator.OfInt getVector(int index) {
+    public Spliterator.OfInt getVectorSpliterator(int index) {
         assert isValidVectorIndex(index);
         return Spliterators.spliterator(storage, startIndices[index], startIndices[index + 1], Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL | Spliterator.CONCURRENT);
     }
@@ -91,18 +89,6 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
         }
     }
 
-    public void feedInto(IntConsumer elementConsumer) {
-        Arrays.stream(storage).forEach(elementConsumer);
-    }
-
-    public void feedInto(Consumer<IntStream> vectorConsumer) {
-        view().forEach(vectorConsumer);
-    }
-
-    public void feedInto(IntStream indices, Consumer<IntStream> vectorConsumer) {
-        view(indices).forEach(vectorConsumer);
-    }
-
     public void differencing() {
         int startIndex = 0;
         for (int i = 0; i < getVectorCount(); ) {
@@ -122,8 +108,7 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
         return Arrays.stream(storage, startIndices[index], startIndices[index + 1]);
     }
 
-    public IntBuffer vectorBuffer(int index) {
-        // .asReadOnly apparently has worse performance
+    public IntBuffer getVector(int index) {
         return IntBuffer.wrap(storage, startIndices[index], startIndices[index + 1] - startIndices[index]);
     }
 
@@ -146,6 +131,23 @@ public class IntVectorStorage implements Copyable<IntVectorStorage>, Mathable<In
     public Stream<IndexedItem<IntStream>> viewIndexed() {
         return viewIndexed(indexStream());
     }
+
+    public Stream<IntBuffer> getVectors() {
+        return getVectors(indexStream());
+    }
+
+    public Stream<IntBuffer> getVectors(IntStream indices) {
+        return indices.mapToObj(this::getVector);
+    }
+
+    public Stream<IndexedItem<IntBuffer>> getIndexedVectors(IntStream indices) {
+        return indices.mapToObj(i -> new IndexedItem<>(i, getVector(i)));
+    }
+
+    public Stream<IndexedItem<IntBuffer>> getIndexedVectors() {
+        return getIndexedVectors(indexStream());
+    }
+
 
     public IntStream vectorwisePredicateStream(Predicate<IntStream> predicate) {
         return vectorwisePredicateStream(indexStream(), predicate);

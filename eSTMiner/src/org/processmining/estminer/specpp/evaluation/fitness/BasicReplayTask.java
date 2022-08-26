@@ -7,9 +7,9 @@ import java.util.EnumSet;
 import java.util.Spliterator;
 import java.util.function.IntUnaryOperator;
 
-public class SimpleReplayTask extends AbstractReplayTask<ReplayUtils.ReplayOutcomes, BasicFitnessEvaluation> {
+public class BasicReplayTask extends AbstractEnumSetReplayTask<ReplayUtils.ReplayOutcomes, BasicFitnessEvaluation> {
 
-    public SimpleReplayTask(Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> toAggregate, IntUnaryOperator variantCountMapper, int enumLength) {
+    public BasicReplayTask(Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> toAggregate, IntUnaryOperator variantCountMapper, int enumLength) {
         super(toAggregate, variantCountMapper, enumLength);
     }
 
@@ -22,7 +22,7 @@ public class SimpleReplayTask extends AbstractReplayTask<ReplayUtils.ReplayOutco
                 counts[e.ordinal()] += c;
             }
         });
-        return ReplayUtils.summarizeInto(new EnumCounts<>(counts));
+        return ReplayUtils.summarizeReplayOutcomeCounts(new EnumCounts<>(counts));
     }
 
     @Override
@@ -32,8 +32,8 @@ public class SimpleReplayTask extends AbstractReplayTask<ReplayUtils.ReplayOutco
     }
 
     @Override
-    protected SimpleReplayTask createSubTask(int enumLength, Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator) {
-        return new SimpleReplayTask(spliterator, variantCountMapper, enumLength);
+    protected BasicReplayTask createSubTask(int enumLength, Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator) {
+        return new BasicReplayTask(spliterator, variantCountMapper, enumLength);
     }
 
 }

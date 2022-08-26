@@ -18,9 +18,9 @@ public class IntBufferVariantsTest {
         IndexSubset subset = IndexSubset.of(m);
         IntVectorSubsetStorage ivss = IntVectorSubsetStorage.zeros(subset, m.stream().toArray());
         System.out.println(ivss);
-        System.out.println(ivss.getVector(3).estimateSize());
+        System.out.println(ivss.getVectorSpliterator(3).estimateSize());
 
-        IntBuffer intBuffer = ivss.vectorBuffer(3);
+        IntBuffer intBuffer = ivss.getVector(3);
         while (intBuffer.hasRemaining()) {
             int i = intBuffer.get();
             System.out.println(i);

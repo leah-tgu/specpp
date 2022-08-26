@@ -126,7 +126,7 @@ public class MonotonousPlaceGenerationLogic extends PlaceGenerationLogic {
         Place place = Place.of(preset, postset);
         BitMask preMask = canHavePresetChildren(place) ? getStaticPotentialExpansions(preset) : new BitMask();
         BitMask postMask = canHavePostsetChildren(place) ? getStaticPotentialExpansions(postset) : new BitMask();
-        return PlaceNode.root(place, PlaceState.withPotentialExpansions(preMask, postMask), this); // TODO sneaky self reference
+        return PlaceNode.root(place, PlaceState.withPotentialExpansions(preMask, postMask), this);
     }
 
     @Override

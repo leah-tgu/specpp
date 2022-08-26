@@ -5,8 +5,12 @@ import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.util.EnumCounts;
+import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 
+import java.nio.IntBuffer;
 import java.util.EnumSet;
+import java.util.Spliterator;
+import java.util.concurrent.ExecutionException;
 import java.util.function.IntUnaryOperator;
 
 public class ReplayUtils {
@@ -21,47 +25,48 @@ public class ReplayUtils {
         return i -> postset.containsIndex(i) ? -1 : 0;
     }
 
-    public static BasicFitnessEvaluation summarizeInto(EnumCounts<ReplayOutcomes> enumCounts) {
-        int fitting = enumCounts.getCount(ReplayOutcomes.FITTING);
-        int nonFitting = enumCounts.getCount(ReplayOutcomes.NON_FITTING);
-        int underfed = enumCounts.getCount(ReplayOutcomes.WENT_NEGATIVE);
-        int overfed = enumCounts.getCount(ReplayOutcomes.OVERFED);
-        double sum = fitting + nonFitting;
-        return BasicFitnessEvaluation.ofCounts(sum, fitting, underfed, overfed, nonFitting);
+    public static BasicFitnessEvaluation summarizeReplayOutcomeCounts(EnumCounts<ReplayOutcomes> enumCounts) {
+        int activated = enumCounts.getCount(ReplayOutcomes.ACTIVATED);
+        int unactivated = enumCounts.getCount(ReplayOutcomes.NOT_ACTIVATED);
+        double total = activated + unactivated;
+        double[] fracArr = new double[BasicFitnessStatus.values().length];
+        fracArr[BasicFitnessStatus.FITTING.ordinal()] = enumCounts.getCount(ReplayOutcomes.FITTING) / total;
+        fracArr[BasicFitnessStatus.UNDERFED.ordinal()] = enumCounts.getCount(ReplayOutcomes.UNDERFED) / total;
+        fracArr[BasicFitnessStatus.OVERFED.ordinal()] = enumCounts.getCount(ReplayOutcomes.OVERFED) / total;
+        fracArr[BasicFitnessStatus.ACTIVATED.ordinal()] = activated / total;
+        fracArr[BasicFitnessStatus.UNACTIVATED.ordinal()] = unactivated / total;
+        return new BasicFitnessEvaluation(total, fracArr);
     }
 
-    public static int[] getCounts() {
+    public static int[] getCountArray() {
         return new int[ReplayOutcomes.values().length];
     }
 
-    public static void updateCounts(int[] counts, boolean wentUnder, boolean wentOver, boolean notZeroAtEnd, int c) {
-        if (!notZeroAtEnd && !wentUnder && !wentOver) counts[ReplayOutcomes.FITTING.ordinal()] += c;
+    public static void updateCounts(int[] counts, int count, boolean activated, boolean wentUnder, boolean wentOver, boolean notZeroAtEnd) {
+        if (!activated) counts[ReplayOutcomes.NOT_ACTIVATED.ordinal()] += count;
         else {
-            counts[ReplayOutcomes.NON_FITTING.ordinal()] += c;
-            if (notZeroAtEnd) {
-                counts[ReplayOutcomes.OVERFED.ordinal()] += c;
-                counts[ReplayOutcomes.NOT_ENDING_ON_ZERO.ordinal()] += c;
-            }
-            if (wentOver) counts[ReplayOutcomes.WENT_ABOVE_ONE.ordinal()] += c;
-            if (wentUnder) counts[ReplayOutcomes.WENT_NEGATIVE.ordinal()] += c;
+            counts[ReplayOutcomes.ACTIVATED.ordinal()] += count;
+            if (!wentUnder && !notZeroAtEnd) counts[ReplayOutcomes.FITTING.ordinal()] += count;
+            if (wentOver) counts[ReplayOutcomes.UNSAFE.ordinal()] += count;
+            if (wentUnder) counts[ReplayOutcomes.UNDERFED.ordinal()] += count;
+            if (notZeroAtEnd) counts[ReplayOutcomes.OVERFED.ordinal()] += count;
+        }
+    }
+
+    public static EnumSet<ReplayOutcomes> getReplayOutcomeEnumSet(boolean activated, boolean wentUnder, boolean wentOver, boolean notZeroAtEnd) {
+        if (!activated) return EnumSet.of(ReplayOutcomes.NOT_ACTIVATED);
+        else {
+            EnumSet<ReplayOutcomes> enumSet = EnumSet.of(ReplayOutcomes.ACTIVATED);
+            if (!wentUnder && !notZeroAtEnd) enumSet.add(ReplayOutcomes.FITTING);
+            if (wentUnder) enumSet.add(ReplayOutcomes.UNDERFED);
+            if (wentOver) enumSet.add(ReplayOutcomes.UNSAFE);
+            if (notZeroAtEnd) enumSet.add(ReplayOutcomes.OVERFED);
+            return enumSet;
         }
     }
 
     public static void updateFittingVariantMask(BitMask bm, boolean wentUnder, boolean wentOver, boolean notZeroAtEnd, int idx) {
-        if (!notZeroAtEnd && !wentUnder && !wentOver) bm.set(idx);
-    }
-
-    public static void updateBitMasks(BitMask[] bms, boolean wentUnder, boolean wentOver, boolean notZeroAtEnd, int idx) {
-        if (!notZeroAtEnd && !wentUnder && !wentOver) bms[ReplayOutcomes.FITTING.ordinal()].set(idx);
-        else {
-            bms[ReplayOutcomes.NON_FITTING.ordinal()].set(idx);
-            if (notZeroAtEnd) {
-                bms[ReplayOutcomes.OVERFED.ordinal()].set(idx);
-                bms[ReplayOutcomes.NOT_ENDING_ON_ZERO.ordinal()].set(idx);
-            }
-            if (wentOver) bms[ReplayOutcomes.WENT_ABOVE_ONE.ordinal()].set(idx);
-            if (wentUnder) bms[ReplayOutcomes.WENT_NEGATIVE.ordinal()].set(idx);
-        }
+        if (!wentUnder && !notZeroAtEnd) bm.set(idx);
     }
 
     public static BitMask[] getBitMasks() {
@@ -72,23 +77,58 @@ public class ReplayUtils {
         return bms;
     }
 
-    public static EnumSet<ReplayOutcomes> getReplayOutcomeEnumSet(boolean wentUnder, boolean wentOver, boolean notZeroAtEnd) {
-        if (!notZeroAtEnd && !wentUnder && !wentOver) return EnumSet.of(ReplayOutcomes.FITTING);
-        else {
-            EnumSet<ReplayOutcomes> enumSet = EnumSet.of(ReplayOutcomes.NON_FITTING);
-            if (notZeroAtEnd) {
-                enumSet.add(ReplayOutcomes.NOT_ENDING_ON_ZERO);
-                enumSet.add(ReplayOutcomes.OVERFED);
-            }
-            if (wentOver) {
-                enumSet.add(ReplayOutcomes.WENT_ABOVE_ONE);
-            }
-            if (wentUnder) enumSet.add(ReplayOutcomes.WENT_NEGATIVE);
-            return enumSet;
+    static EnumSet<ReplayOutcomes> variantReplay(IntBuffer presetVariantBuffer, IntUnaryOperator presetIndicator, IntBuffer postsetVariantBuffer, IntUnaryOperator postsetIndicator) {
+        int acc = 0;
+        boolean wentUnder = false, wentOver = false;
+        boolean activated = false;
+        while (presetVariantBuffer.hasRemaining() && postsetVariantBuffer.hasRemaining()) {
+            int postsetExecution = postsetIndicator.applyAsInt(postsetVariantBuffer.get());
+            int presetExecution = presetIndicator.applyAsInt(presetVariantBuffer.get());
+            acc += postsetExecution;
+            wentUnder |= acc < 0;
+            activated |= acc != 0;
+            acc += presetExecution;
+            wentOver |= acc > 1;
+            activated |= acc != 0;
+        }
+        boolean notEndingOnZero = acc > 0;
+        return getReplayOutcomeEnumSet(activated, wentUnder, wentOver, notEndingOnZero);
+    }
+
+    public static EnumSet<ReplayUtils.ReplayOutcomes> markingBasedReplay(IntBuffer markingHistory) {
+        int next = 0;
+        boolean wentUnder = false, activated = false, wentOver = false;
+        while (markingHistory.hasRemaining()) {
+            next = markingHistory.get();
+            activated |= next != 0;
+            wentUnder |= next < 0;
+            wentOver |= next > 1;
+        }
+        return getReplayOutcomeEnumSet(activated, wentUnder, wentOver, next > 0);
+    }
+
+    public static <R> R computeHere(AbstractEnumSetReplayTask<ReplayOutcomes, R> task) {
+        return task.computeHere();
+    }
+
+    public static <R> R computeForkJoinLike(AbstractEnumSetReplayTask<ReplayOutcomes, R> task) {
+        task.fork();
+        try {
+            return task.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
         }
     }
 
+    public static AbstractEnumSetReplayTask<ReplayOutcomes, BasicFitnessEvaluation> createBasicReplayTask(Spliterator<IndexedItem<EnumSet<ReplayOutcomes>>> spliterator, IntUnaryOperator variantFrequencyMapper) {
+        return new BasicReplayTask(spliterator, variantFrequencyMapper, ReplayOutcomes.values().length);
+    }
+
+    public static AbstractEnumSetReplayTask<ReplayOutcomes, DetailedFitnessEvaluation> createDetailedReplayTask(Spliterator<IndexedItem<EnumSet<ReplayOutcomes>>> spliterator, IntUnaryOperator variantFrequencyMapper) {
+        return new DetailedReplayTask(spliterator, variantFrequencyMapper, ReplayOutcomes.values().length);
+    }
+
     public enum ReplayOutcomes {
-        FITTING, OVERFED, NON_FITTING, WENT_ABOVE_ONE, WENT_NEGATIVE, NOT_ENDING_ON_ZERO
+        FITTING, UNDERFED, OVERFED, UNSAFE, ACTIVATED, NOT_ACTIVATED
     }
 }

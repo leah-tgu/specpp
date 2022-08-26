@@ -4,10 +4,10 @@ import org.processmining.estminer.specpp.base.Evaluable;
 import org.processmining.estminer.specpp.base.Evaluation;
 import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
-import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.util.EvaluationParameterTuple2;
+import org.processmining.estminer.specpp.datastructures.vectorization.VariantMarkingHistories;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.DetailedFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.implicitness.ImplicitnessRating;
@@ -20,8 +20,8 @@ public class EvaluationRequirements {
 
     public static final EvaluatorRequirement<EvaluationParameterTuple2<Place, BitMask>, BasicFitnessEvaluation> SUBSET_BASIC_FITNESS = evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), BasicFitnessEvaluation.class);
     public static final EvaluatorRequirement<Place, ImplicitnessRating> PLACE_IMPLICITNESS = evaluator(Place.class, ImplicitnessRating.class);
-    public static final EvaluatorRequirement<Place, DenseVariantMarkingHistories> PLACE_MARKING_HISTORY = evaluator(Place.class, DenseVariantMarkingHistories.class);
-    public static final EvaluatorRequirement<EvaluationParameterTuple2<Place, BitMask>, DenseVariantMarkingHistories> PLACE_SUBSET_MARKING_HISTORY = evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), DenseVariantMarkingHistories.class);
+    public static final EvaluatorRequirement<Place, VariantMarkingHistories> PLACE_MARKING_HISTORY = evaluator(Place.class, VariantMarkingHistories.class);
+    public static final EvaluatorRequirement<EvaluationParameterTuple2<Place, BitMask>, VariantMarkingHistories> PLACE_SUBSET_MARKING_HISTORY = evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), VariantMarkingHistories.class);
     public static final EvaluatorRequirement<EvaluationParameterTuple2<Place, Integer>, DoubleScore> DELTA_ADAPTATION_FUNCTION = evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), DoubleScore.class);
 
 

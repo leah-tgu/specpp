@@ -1,4 +1,4 @@
-package org.processmining.estminer.specpp.datastructures.vectorization.spliterators;
+package org.processmining.estminer.specpp.datastructures.vectorization.spliteration;
 
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
 
@@ -13,7 +13,7 @@ public class Splitty extends AbstractSplitty<IntBuffer> {
 
     @Override
     protected IntBuffer make(int index) {
-        return ivs.vectorBuffer(index);
+        return ivs.getVector(index);
     }
 
     @Override

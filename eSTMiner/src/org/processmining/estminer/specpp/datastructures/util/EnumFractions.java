@@ -15,6 +15,10 @@ public class EnumFractions<E extends Enum<E>> {
         return fractions[enumInstance.ordinal()];
     }
 
+    protected double[] underlyingArr() {
+        return fractions;
+    }
+
     @Override
     public String toString() {
         return "EnumFractions(" + Arrays.toString(fractions) + ")";

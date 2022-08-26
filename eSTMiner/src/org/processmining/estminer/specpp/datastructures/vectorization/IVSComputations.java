@@ -77,44 +77,6 @@ public class IVSComputations {
         return new IntVectorSubsetStorage(IndexSubset.of(indices), dataArray, startIndicesArray);
     }
 
-    /* OLD
-    public static IntVectorStorage interleaveOn(BitMask leftIndices, IntVectorStorage leftVectors, BitMask rightIndices, IntVectorStorage rightVectors) {
-        return interleaveOn(leftIndices, leftVectors, IntUnaryOperator.identity(), rightIndices, rightVectors, IntUnaryOperator.identity());
-    }
-
-    public static IntVectorStorage interleaveOn(BitMask leftIndices, IntVectorStorage leftVectors, IntUnaryOperator leftMapper, BitMask rightIndices, IntVectorStorage rightVectors, IntUnaryOperator rightMapper) {
-        int[] startIndices = Stream.concat(IntStream.of(0).boxed(), Streams.zip(leftIndices.stream()
-                                                                                           .mapToObj(leftVectors::getVectorLength), rightIndices.stream()
-                                                                                                                                                .mapToObj(rightVectors::getVectorLength), Math::min)
-                                                                           .map(i -> 2 * i)
-
-        ).mapToInt(i -> i).toArray();
-        Arrays.parallelPrefix(startIndices, Integer::sum);
-
-        int[] leftStartIndices = leftVectors.startIndices;
-        int[] rightStartIndices = rightVectors.startIndices;
-        int[] data = new int[startIndices[startIndices.length - 1]];
-
-        int index = 0;
-        int startIndex = 0;
-        PrimitiveIterator.OfInt left = leftIndices.stream().iterator(), right = rightIndices.stream().iterator();
-        while (left.hasNext() && right.hasNext()) {
-            int i = left.nextInt(), j = right.nextInt();
-            int leftStartIndex = leftStartIndices[i];
-            int rightStartIndex = rightStartIndices[j];
-            int endIndex = startIndices[++index];
-            int L = endIndex - startIndex;
-            for (int k = 0; k < L / 2; k++) {
-                data[startIndex + k * 2] = leftMapper.applyAsInt(leftVectors.storage[leftStartIndex + k]);
-                data[startIndex + k * 2 + 1] = rightMapper.applyAsInt(rightVectors.storage[rightStartIndex + k]);
-            }
-            startIndex = endIndex;
-        }
-
-        return new IntVectorStorage(data, startIndices);
-    }
-*/
-
     public static IntVectorStorage basicSumConvolution(IntVectorStorage ivs) {
         return convolve(ivs, 2, () -> 0, Integer::sum);
     }
@@ -128,31 +90,6 @@ public class IVSComputations {
     }
 
 
-    /*
-    arraylist version which does not require pre computations which however requires extensive (un)boxing of primitive ints
-    public static IntVectorStorage interleaveOn(IntStream leftIndices, IntVectorStorage leftVectors, IntUnaryOperator leftMapper, IntStream rightIndices, IntVectorStorage rightVectors, IntUnaryOperator rightMapper) {
-        ArrayList<Integer> dataList = new ArrayList<>();
-        ArrayList<Integer> startIndicesList = new ArrayList<>();
-
-        int sum = 0;
-        PrimitiveIterator.OfInt left = leftIndices.iterator(), right = rightIndices.iterator();
-        while (left.hasNext() && right.hasNext()) {
-            int i = left.nextInt(), j = right.nextInt();
-            startIndicesList.add(sum);
-            PrimitiveIterator.OfInt leftStream = leftVectors.viewVector(i).iterator();
-            PrimitiveIterator.OfInt rightStream = rightVectors.viewVector(j).iterator();
-            while (leftStream.hasNext() && rightStream.hasNext()) {
-                int next = sum % 2 == 0 ? leftMapper.applyAsInt(leftStream.nextInt()) : rightMapper.applyAsInt(rightStream.nextInt());
-                dataList.add(next);
-                sum++;
-            }
-        }
-        startIndicesList.add(sum);
-        int[] data = dataList.stream().mapToInt(i -> i).toArray();
-        int[] startIndices = startIndicesList.stream().mapToInt(i -> i).toArray();
-        return new IntVectorStorage(data, startIndices);
-    }
-     */
     public static IntVectorStorage convolve(IntVectorStorage ivs, int stride, IntSupplier initial, IntBinaryOperator convolution) {
         assert ivs.getTotalSize() % stride == 0;
         int L = ivs.getTotalSize() / stride;
@@ -290,8 +227,8 @@ public class IVSComputations {
         while (leftIds.hasNext() && rightIds.hasNext()) {
             int i = leftIds.nextInt();
             int j = rightIds.nextInt();
-            IntBuffer left = leftVectors.vectorBuffer(i);
-            IntBuffer right = rightVectors.vectorBuffer(j);
+            IntBuffer left = leftVectors.getVector(i);
+            IntBuffer right = rightVectors.getVector(j);
             A acc = computation.newAccumulatorSupplier.get();
             while (left.hasRemaining() && right.hasRemaining()) {
                 int l = left.get(), r = right.get();
@@ -313,8 +250,8 @@ public class IVSComputations {
         while (leftIds.hasNext() && rightIds.hasNext()) {
             int i = leftIds.nextInt();
             int j = rightIds.nextInt();
-            IntBuffer left = leftVectors.vectorBuffer(i);
-            IntBuffer right = rightVectors.vectorBuffer(j);
+            IntBuffer left = leftVectors.getVector(i);
+            IntBuffer right = rightVectors.getVector(j);
             while (left.hasRemaining() && right.hasRemaining()) {
                 int c = computation.compute.applyAsInt(left.get(), right.get());
                 res.addAll(computation.toAdd.apply(c));

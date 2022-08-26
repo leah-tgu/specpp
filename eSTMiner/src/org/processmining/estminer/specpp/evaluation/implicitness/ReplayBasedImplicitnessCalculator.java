@@ -3,10 +3,10 @@ package org.processmining.estminer.specpp.evaluation.implicitness;
 import org.processmining.estminer.specpp.datastructures.encoding.BitEncodedSet;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.MutatingSetOperations;
-import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.util.Pair;
+import org.processmining.estminer.specpp.datastructures.vectorization.VariantMarkingHistories;
 
 import java.util.Map;
 
@@ -31,9 +31,9 @@ public class ReplayBasedImplicitnessCalculator {
         } else return null;
     }
 
-    public static ImplicitnessRating replaySubregionImplicitnessOn(BitMask on, Place place, DenseVariantMarkingHistories placeHistory, Map<Place, DenseVariantMarkingHistories> histories) {
-        for (Map.Entry<Place, DenseVariantMarkingHistories> entry : histories.entrySet()) {
-            DenseVariantMarkingHistories h = entry.getValue();
+    public static ImplicitnessRating replaySubregionImplicitnessOn(BitMask on, Place place, VariantMarkingHistories placeHistory, Map<Place, VariantMarkingHistories> histories) {
+        for (Map.Entry<Place, VariantMarkingHistories> entry : histories.entrySet()) {
+            VariantMarkingHistories h = entry.getValue();
             if (placeHistory.gtOn(on, h)) {
                 // the examined place is a log replay subregion of an existing place
                 Place p3 = computeP3(place, entry.getKey());
@@ -49,9 +49,9 @@ public class ReplayBasedImplicitnessCalculator {
         return BooleanImplicitness.NOT_IMPLICIT;
     }
 
-    public static ImplicitnessRating replaySubregionImplicitness(Place place, DenseVariantMarkingHistories placeHistory, Map<Place, DenseVariantMarkingHistories> histories) {
-        for (Map.Entry<Place, DenseVariantMarkingHistories> entry : histories.entrySet()) {
-            DenseVariantMarkingHistories h = entry.getValue();
+    public static ImplicitnessRating replaySubregionImplicitness(Place place, VariantMarkingHistories placeHistory, Map<Place, VariantMarkingHistories> histories) {
+        for (Map.Entry<Place, VariantMarkingHistories> entry : histories.entrySet()) {
+            VariantMarkingHistories h = entry.getValue();
             if (placeHistory.gt(h)) {
                 // the examined place is a log replay subregion of an existing place
                 Place p3 = computeP3(place, entry.getKey());

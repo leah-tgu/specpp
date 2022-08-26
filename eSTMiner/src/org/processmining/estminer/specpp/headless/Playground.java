@@ -12,14 +12,14 @@ import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.SimpleBuilder;
 import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.Log;
-import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.datastructures.petri.Transition;
-import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
-import org.processmining.estminer.specpp.evaluation.fitness.BasicVariantFitnessStatus;
-import org.processmining.estminer.specpp.evaluation.fitness.FullBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.datastructures.vectorization.VariantMarkingHistories;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessStatus;
+import org.processmining.estminer.specpp.evaluation.fitness.DetailedFitnessEvaluation;
 import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
 import org.processmining.estminer.specpp.orchestra.PreProcessingParameters;
 import org.processmining.estminer.specpp.orchestra.SpecOps;
@@ -53,12 +53,12 @@ public class Playground {
         IntEncodings<Transition> transitionEncodings = dc.askForData(DataRequirements.ENC_TRANS);
 
         EvaluatorCollection ec = cr.evaluators();
-        Evaluator<Place, DenseVariantMarkingHistories> historiesEvaluator = ec.askForEvaluator(EvaluationRequirements.PLACE_MARKING_HISTORY);
+        Evaluator<Place, VariantMarkingHistories> historiesEvaluator = ec.askForEvaluator(EvaluationRequirements.PLACE_MARKING_HISTORY);
 
         //playAround(cr, new NaivePlacemaker(transitionEncodings), historiesEvaluator, aggregatedBasicFitnessEvaluator, fullBasicFitnessEvaluator);
     }
 
-    public static void playAround(GlobalComponentRepository cr, NaivePlacemaker placemaker, Evaluator<Place, DenseVariantMarkingHistories> markingHistoriesEvaluator, Evaluator<Place, AggregatedBasicFitnessEvaluation> basicFitnessFractionsEvaluator, Evaluator<Place, FullBasicFitnessEvaluation> fullBasicFitnessEvaluator) {
+    public static void playAround(GlobalComponentRepository cr, NaivePlacemaker placemaker, Evaluator<Place, VariantMarkingHistories> markingHistoriesEvaluator, Evaluator<Place, BasicFitnessEvaluation> basicFitnessFractionsEvaluator, Evaluator<Place, DetailedFitnessEvaluation> fullBasicFitnessEvaluator) {
 
         Log data = cr.dataSources().askForData(DataRequirements.RAW_LOG);
         System.out.println("Log");
@@ -71,9 +71,9 @@ public class Playground {
         Place p2 = placemaker.preset("place order").postset("cancel order", "pay").get();
 
 
-        DenseVariantMarkingHistories h1 = markingHistoriesEvaluator.eval(p1);
+        VariantMarkingHistories h1 = markingHistoriesEvaluator.eval(p1);
         System.out.println(h1);
-        DenseVariantMarkingHistories h2 = markingHistoriesEvaluator.eval(p2);
+        VariantMarkingHistories h2 = markingHistoriesEvaluator.eval(p2);
         System.out.println(h2);
 
         System.out.println(h1.getIndexSubset());
@@ -82,7 +82,7 @@ public class Playground {
         System.out.println(h2.gt(h1));
         System.out.println(h1.lt(h2));
 
-        System.out.println(Arrays.toString(BasicVariantFitnessStatus.values()));
+        System.out.println(Arrays.toString(BasicFitnessStatus.values()));
         System.out.println("basic fitness");
         System.out.println(basicFitnessFractionsEvaluator.eval(p1));
         System.out.println(basicFitnessFractionsEvaluator.eval(p2));

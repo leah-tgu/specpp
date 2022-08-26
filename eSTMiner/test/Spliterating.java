@@ -2,9 +2,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
-import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorSubsetStorage;
+import org.processmining.estminer.specpp.datastructures.vectorization.VariantMarkingHistories;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class Spliterating {
         System.out.println(subset);
         System.out.println(ivss);
         for (int i = m.nextSetBit(0); i < m.length() && i >= 0; i = m.nextSetBit(i + 1)) {
-            System.out.println(i + ": " + ivss.getVector(i).estimateSize());
+            System.out.println(i + ": " + ivss.getVectorSpliterator(i).estimateSize());
         }
         System.out.println("=================");
 
@@ -44,10 +44,10 @@ public class Spliterating {
         assertIndexedSpliterator(ivss.indexedSpliterator(tm), tmArr, false);
 
         IndexSubset ts = IndexSubset.of(tm);
-        DenseVariantMarkingHistories sh = new DenseVariantMarkingHistories(ts, ivss);
+        VariantMarkingHistories sh = new VariantMarkingHistories(ts, ivss);
 
-        assertIndexedSpliterator(sh.spliterator(), tmArr, false);
-        assertIndexedSpliterator(sh.spliterator(tm), tmArr, true);
+        assertIndexedSpliterator(sh.indexedSpliterator(), tmArr, false);
+        assertIndexedSpliterator(sh.indexedSpliterator(tm), tmArr, true);
     }
 
     public void assertIndexedSpliterator(Spliterator<IndexedItem<IntBuffer>> spliterator, Integer[] arr, boolean print) {
@@ -70,10 +70,9 @@ public class Spliterating {
         Assert.assertEquals(spliterator.estimateSize(), arr.length);
         List<Integer> l = new ArrayList<>();
         spliterator.forEachRemaining(v -> l.add((int) v.remaining()));
-        if (print)
-            for (int i = 0; i < arr.length; i++) {
-                System.out.println(arr[i] + "\t" + l.get(i));
-            }
+        if (print) for (int i = 0; i < arr.length; i++) {
+            System.out.println(arr[i] + "\t" + l.get(i));
+        }
         Assert.assertArrayEquals(l.toArray(), arr);
     }
 

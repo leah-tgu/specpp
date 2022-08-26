@@ -23,7 +23,6 @@ import org.processmining.estminer.specpp.postprocessing.PlaceExporter;
 import org.processmining.estminer.specpp.postprocessing.ProMConverter;
 import org.processmining.estminer.specpp.postprocessing.ReplayBasedImplicitnessPostProcessing;
 import org.processmining.estminer.specpp.postprocessing.SelfLoopPlaceMerger;
-import org.processmining.estminer.specpp.proposal.ConstrainablePlaceProposer;
 import org.processmining.estminer.specpp.proposal.RestartablePlaceProposer;
 import org.processmining.estminer.specpp.supervision.supervisors.*;
 

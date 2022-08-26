@@ -90,7 +90,6 @@ public class BitEncodedSet<T> implements EncodedSet<T, Integer>, ProperlyHashabl
         }
     }
 
-    // TODO this needs optimization
     public boolean containsIndex(int index) {
         return index >= 0 && set.get(index);
     }
@@ -101,7 +100,7 @@ public class BitEncodedSet<T> implements EncodedSet<T, Integer>, ProperlyHashabl
     }
 
     /**
-     * Computes a bitmask of the unset indices between the {@code k}-th largest and {@code k-1}-th largest set indices.
+     * Computes a bitmask of the unset indices between the {@code k}-th largest and the {@code k-1}-th largest set indices.
      *
      * @param k
      * @return

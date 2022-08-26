@@ -44,8 +44,8 @@ public class EncodedLogImpl implements EncodedLog {
     }
 
     @Override
-    public IntStream getEncodedVariant(int index) {
-        return ivs.viewVector(index);
+    public IntBuffer getEncodedVariant(int index) {
+        return ivs.getVector(index);
     }
 
     @Override
@@ -69,12 +69,23 @@ public class EncodedLogImpl implements EncodedLog {
     }
 
     @Override
-    public Spliterator<IntBuffer> efficientSpliterator() {
+    public Spliterator<IntBuffer> spliterator() {
         return ivs.spliterator();
     }
 
     @Override
-    public Spliterator<IndexedItem<IntBuffer>> efficientIndexedSpliterator() {
+    public Spliterator<IntBuffer> spliterator(BitMask bitMask) {
+        return ivs.spliterator(bitMask);
+    }
+
+    @Override
+    public Spliterator<IndexedItem<IntBuffer>> indexedSpliterator() {
         return ivs.indexedSpliterator();
     }
+
+    @Override
+    public Spliterator<IndexedItem<IntBuffer>> indexedSpliterator(BitMask bitMask) {
+        return ivs.indexedSpliterator(bitMask);
+    }
+
 }

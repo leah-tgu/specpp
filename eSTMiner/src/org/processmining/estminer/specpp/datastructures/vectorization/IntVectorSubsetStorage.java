@@ -5,8 +5,8 @@ import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.IndexSubset;
 import org.processmining.estminer.specpp.datastructures.log.OnlyCoversIndexSubset;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.BitMaskSplitty;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.IndexedBitMaskSplitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliteration.BitMaskSplitty;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliteration.IndexedBitMaskSplitty;
 
 import java.nio.IntBuffer;
 import java.util.Arrays;
@@ -53,13 +53,13 @@ public class IntVectorSubsetStorage extends IntVectorStorage implements OnlyCove
     }
 
     @Override
-    public Spliterator.OfInt getVector(int index) {
+    public Spliterator.OfInt getVectorSpliterator(int index) {
         if (!isInSubset(index)) return null;
-        return super.getVector(mapIndex(index));
+        return super.getVectorSpliterator(mapIndex(index));
     }
 
     public Spliterator.OfInt getVectorInternal(int index) {
-        return super.getVector(index);
+        return super.getVectorSpliterator(index);
     }
 
     @Override
@@ -73,8 +73,8 @@ public class IntVectorSubsetStorage extends IntVectorStorage implements OnlyCove
     }
 
     @Override
-    public IntBuffer vectorBuffer(int index) {
-        return super.vectorBuffer(mapIndex(index));
+    public IntBuffer getVector(int index) {
+        return super.getVector(mapIndex(index));
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.processmining.estminer.specpp.datastructures.vectorization.spliterators;
+package org.processmining.estminer.specpp.datastructures.vectorization.spliteration;
 
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.util.IndexedItem;
@@ -19,7 +19,7 @@ public class IndexedBitMaskSplitty extends AbstractBitMaskSplitty<IndexedItem<In
 
     @Override
     protected IndexedItem<IntBuffer> make(int index) {
-        return new IndexedItem<>(outsideMapper.applyAsInt(index), ivs.vectorBuffer(index));
+        return new IndexedItem<>(outsideMapper.applyAsInt(index), ivs.getVector(index));
     }
 
     @Override

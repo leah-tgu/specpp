@@ -2,7 +2,6 @@ package org.processmining.estminer.specpp.proposal;
 
 import org.processmining.estminer.specpp.base.impls.AbstractEfficientTreeBasedProposer;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
-import org.processmining.estminer.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.estminer.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.estminer.specpp.componenting.system.link.ChildGenerationLogicComponent;
 import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
@@ -14,7 +13,6 @@ import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.estminer.specpp.datastructures.util.Button;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
-import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 
 public class RestartablePlaceProposer extends ConstrainablePlaceProposer {
 

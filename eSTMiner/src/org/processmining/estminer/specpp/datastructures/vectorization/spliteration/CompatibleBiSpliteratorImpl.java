@@ -1,4 +1,4 @@
-package org.processmining.estminer.specpp.util;
+package org.processmining.estminer.specpp.datastructures.vectorization.spliteration;
 
 import org.processmining.estminer.specpp.datastructures.util.MutableTuple2;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;

@@ -16,7 +16,7 @@ import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.encoding.*;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.log.Log;
-import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
+import org.processmining.estminer.specpp.datastructures.vectorization.*;
 import org.processmining.estminer.specpp.datastructures.log.impls.LogBuilderImpl;
 import org.processmining.estminer.specpp.datastructures.log.impls.VariantImpl;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
@@ -30,9 +30,7 @@ import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.datastructures.util.Label;
 import org.processmining.estminer.specpp.datastructures.util.RegexLabel;
 import org.processmining.estminer.specpp.datastructures.util.Tuple2;
-import org.processmining.estminer.specpp.datastructures.vectorization.IVSComputations;
-import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
-import org.processmining.estminer.specpp.evaluation.fitness.AggregatedBasicFitnessEvaluation;
+import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
 import org.processmining.estminer.specpp.orchestra.BaseSpecOpsConfigBundle;
 import org.processmining.estminer.specpp.postprocessing.SelfLoopPlaceMerger;
@@ -210,13 +208,13 @@ public class Main {
         MarkingHistoryBasedFitnessEvaluator ev = new MarkingHistoryBasedFitnessEvaluator();
         ev.globalComponentSystem().fulfilFrom(DataRequirements.CONSIDERED_VARIANTS.fulfilWith(() -> BitMask.of(0)));
         EvaluatorCollection ec = new EvaluatorCollection();
-        ec.register(EvaluationRequirements.evaluator(Place.class, AggregatedBasicFitnessEvaluation.class, ev::aggregatedEval));
+        ec.register(EvaluationRequirements.evaluator(Place.class, BasicFitnessEvaluation.class, ev::eval));
 
-        System.out.println(ev.aggregatedEval(p1));
-        System.out.println(ev.aggregatedEval(p2));
-        System.out.println(ev.aggregatedEval(p3));
-        System.out.println(ev.aggregatedEval(p4));
-        System.out.println(ev.aggregatedEval(p5));
+        System.out.println(ev.eval(p1));
+        System.out.println(ev.eval(p2));
+        System.out.println(ev.eval(p3));
+        System.out.println(ev.eval(p4));
+        System.out.println(ev.eval(p5));
 
         PlaceCollection comp = new PlaceCollection();
         comp.accept(p1);
@@ -252,16 +250,16 @@ public class Main {
         IndexSubset s1 = IndexSubset.of(BitMask.of(0, 1, 2, 3));
         IndexSubset s2 = IndexSubset.of(BitMask.of(1, 2, 5));
 
-        DenseVariantMarkingHistories h1 = new DenseVariantMarkingHistories(s1, ivs1);
-        DenseVariantMarkingHistories h2 = new DenseVariantMarkingHistories(s2, ivs2);
+        VariantMarkingHistories h1 = new VariantMarkingHistories(s1, ivs1);
+        VariantMarkingHistories h2 = new VariantMarkingHistories(s2, ivs2);
 
         BitMask variantMask = BitMask.of(2);
 
         System.out.println("h1 gt h2: " + h1.gtOn(variantMask, h2));
         System.out.println("h1 lt h2: " + h1.ltOn(variantMask, h2));
-        System.out.println("h1 ordering h2: " + h1.orderingRelationsOn(variantMask, h2));
-        System.out.println(Arrays.toString(h1.getAt(2).toArray()));
-        System.out.println(Arrays.toString(h2.getAt(2).toArray()));
+        System.out.println("h1 ordering h2: " + VMHComputations.orderingRelationsOn(variantMask, h1, h2));
+        System.out.println(h1.getAt(2));
+        System.out.println(h2.getAt(2));
     }
 
     @Test

@@ -5,12 +5,13 @@ import org.processmining.estminer.specpp.datastructures.encoding.IntEncoding;
 import org.processmining.estminer.specpp.datastructures.log.Activity;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVector;
 import org.processmining.estminer.specpp.datastructures.vectorization.IntVectorStorage;
-import org.processmining.estminer.specpp.datastructures.vectorization.spliterators.EfficientlySpliterable;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliteration.IndexedSpliterable;
+import org.processmining.estminer.specpp.datastructures.vectorization.spliteration.Spliterable;
 
 import java.nio.IntBuffer;
 import java.util.stream.IntStream;
 
-public interface EncodedLog extends EfficientlySpliterable<IntBuffer> {
+public interface EncodedLog extends Spliterable<IntBuffer>, IndexedSpliterable<IntBuffer> {
     IntEncoding<Activity> getEncoding();
 
     IntVectorStorage getEncodedVariantVectors();
@@ -19,7 +20,7 @@ public interface EncodedLog extends EfficientlySpliterable<IntBuffer> {
 
     int getVariantFrequency(int index);
 
-    IntStream getEncodedVariant(int index);
+    IntBuffer getEncodedVariant(int index);
 
     IntStream streamIndices();
 

@@ -1,4 +1,4 @@
-package org.processmining.estminer.specpp.util;
+package org.processmining.estminer.specpp.datastructures.vectorization.spliteration;
 
 @FunctionalInterface
 public interface IntBiConsumer {

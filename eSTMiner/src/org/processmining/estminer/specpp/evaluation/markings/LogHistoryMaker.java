@@ -7,9 +7,9 @@ import org.processmining.estminer.specpp.componenting.system.AbstractGlobalCompo
 import org.processmining.estminer.specpp.componenting.traits.IsGlobalProvider;
 import org.processmining.estminer.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
-import org.processmining.estminer.specpp.datastructures.log.impls.DenseVariantMarkingHistories;
 import org.processmining.estminer.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
+import org.processmining.estminer.specpp.datastructures.vectorization.VariantMarkingHistories;
 
 public class LogHistoryMaker extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
 
@@ -28,7 +28,7 @@ public class LogHistoryMaker extends AbstractGlobalComponentSystemUser implement
         setConsideredVariants(consideredVariantsSource.getData());
     }
 
-    public DenseVariantMarkingHistories computeVariantMarkingHistories(Place input) {
+    public VariantMarkingHistories computeVariantMarkingHistories(Place input) {
         updateConsideredVariants();
         return consideredVariantsSource.isSet() ? QuickReplay.makeHistoryOn(consideredVariants, encodedLogSource.getData(), input) : QuickReplay.makeHistory(encodedLogSource.getData(), input);
     }

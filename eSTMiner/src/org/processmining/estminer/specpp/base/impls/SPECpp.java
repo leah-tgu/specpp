@@ -3,7 +3,6 @@ package org.processmining.estminer.specpp.base.impls;
 import org.processmining.estminer.specpp.base.*;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.StaticDataSource;
-import org.processmining.estminer.specpp.componenting.system.FullComponentSystemUser;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.componenting.system.LocalComponentRepository;
 import org.processmining.estminer.specpp.componenting.system.link.AbstractBaseClass;
@@ -12,7 +11,6 @@ import org.processmining.estminer.specpp.componenting.system.link.CompositionCom
 import org.processmining.estminer.specpp.componenting.system.link.ProposerComponent;
 import org.processmining.estminer.specpp.config.Configuration;
 import org.processmining.estminer.specpp.supervision.Supervisor;
-import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.traits.Joinable;
 import org.processmining.estminer.specpp.traits.StartStoppable;
 

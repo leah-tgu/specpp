@@ -1,13 +1,11 @@
 package org.processmining.estminer.specpp.orchestra;
 
 import org.processmining.estminer.specpp.base.AdvancedComposition;
-import org.processmining.estminer.specpp.base.impls.LightweightPlaceCollection;
 import org.processmining.estminer.specpp.base.impls.PlaceAccepter;
 import org.processmining.estminer.specpp.base.impls.PlaceFitnessFilter;
 import org.processmining.estminer.specpp.base.impls.UniwiredComposer;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.composition.ConstrainingPlaceCollection;
-import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.Configurators;
 import org.processmining.estminer.specpp.config.EfficientTreeConfiguration;
 import org.processmining.estminer.specpp.config.PostProcessingConfiguration;
@@ -16,7 +14,6 @@ import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.estminer.specpp.datastructures.tree.base.impls.EventingEnumeratingTree;
-import org.processmining.estminer.specpp.datastructures.tree.base.impls.TestEventingEnumeratingTree;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.EventingHeuristicTreeExpansion;
 import org.processmining.estminer.specpp.datastructures.tree.heuristic.HeuristicUtils;

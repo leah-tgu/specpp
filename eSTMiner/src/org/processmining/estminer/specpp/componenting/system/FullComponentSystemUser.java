@@ -17,7 +17,6 @@ public interface FullComponentSystemUser extends UsesLocalComponentSystem, UsesG
     default void connectLocalComponentSystem(LocalComponentRepository lcr) {
         collectTransitiveSubcomponents().forEach(csu -> lcr.consumeEntirely(csu.localComponentSystem()));
         lcr.fulfil(lcr);
-        // TODO decide whether this is a good idea collectTransitiveSubcomponents().forEachOrdered(csu -> csu.localComponentSystem().consumeEntirely(lcr));
     }
 
     @Override

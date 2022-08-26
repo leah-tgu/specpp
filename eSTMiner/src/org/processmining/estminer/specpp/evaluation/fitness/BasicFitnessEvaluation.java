@@ -2,6 +2,7 @@ package org.processmining.estminer.specpp.evaluation.fitness;
 
 import org.processmining.estminer.specpp.base.CandidateEvaluation;
 import org.processmining.estminer.specpp.datastructures.util.DisjointMergeable;
+import org.processmining.estminer.specpp.datastructures.util.EnumCounts;
 import org.processmining.estminer.specpp.datastructures.util.EnumFractions;
 
 public class BasicFitnessEvaluation extends EnumFractions<BasicFitnessStatus> implements CandidateEvaluation, DisjointMergeable<BasicFitnessEvaluation> {
@@ -13,8 +14,13 @@ public class BasicFitnessEvaluation extends EnumFractions<BasicFitnessStatus> im
         this.weight = weight;
     }
 
-    public static BasicFitnessEvaluation ofCounts(double sum, int fitting, int underfed, int overfed, int nonFitting) {
-        return new BasicFitnessEvaluation(sum, new double[]{fitting / sum, underfed / sum, overfed / sum, nonFitting / sum});
+    public static BasicFitnessEvaluation ofCounts(EnumCounts<BasicFitnessStatus> enumCounts) {
+        double total = enumCounts.getCount(BasicFitnessStatus.UNACTIVATED) + enumCounts.getCount(BasicFitnessStatus.ACTIVATED);
+        double[] fractions = new double[BasicFitnessStatus.values().length];
+        for (int i = 0; i < enumCounts.counts.length; i++) {
+            fractions[i] = enumCounts.counts[i] / total;
+        }
+        return new BasicFitnessEvaluation(total, fractions);
     }
 
     public double getFittingFraction() {
