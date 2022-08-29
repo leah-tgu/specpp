@@ -12,6 +12,8 @@ public interface Composer<C extends Candidate, I extends Composition<C>, R exten
 
     boolean isFinished();
 
+    void candidatesAreExhausted();
+
     I getIntermediateResult();
 
     R generateResult();

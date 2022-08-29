@@ -19,6 +19,8 @@ public class UniwiredComposer<I extends AdvancedComposition<Place>, R extends Re
     protected final ArrayList<Place> collectedPlaces;
     protected final DelegatingObserver<ProposerSignal> proposerSignalsIn = new DelegatingObserver<>();
 
+    protected int targetTreeLevel = 0;
+
     public UniwiredComposer(ComposerComponent<Place, I, R> childComposer) {
         super(childComposer);
         collectedPlaces = new ArrayList<>();
@@ -28,10 +30,12 @@ public class UniwiredComposer<I extends AdvancedComposition<Place>, R extends Re
 
     @Override
     protected CandidateDecision deliberateCandidate(Place candidate) {
-        if (candidate.size() >= 5) {
+        if (candidate.size() >= targetTreeLevel && !collectedPlaces.isEmpty()) {
+            targetTreeLevel = candidate.size();
             DebuggingSupervisor.debug("uniwired", "testing restart triggered by" + candidate);
-            trigger();
+            handlePostponedDecisionsUntilNoChange();
             proposerSignalsIn.observe(new RestartProposer());
+            return CandidateDecision.Discard;
         }
         return CandidateDecision.Postpone;
     }

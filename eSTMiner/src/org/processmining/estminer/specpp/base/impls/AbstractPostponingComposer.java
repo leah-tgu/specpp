@@ -84,4 +84,10 @@ public abstract class AbstractPostponingComposer<C extends Candidate, I extends 
         handlePostponedDecisionsUntilNoChange();
     }
 
+    @Override
+    public void candidatesAreExhausted() {
+        handlePostponedDecisionsUntilNoChange();
+        super.candidatesAreExhausted();
+    }
+
 }

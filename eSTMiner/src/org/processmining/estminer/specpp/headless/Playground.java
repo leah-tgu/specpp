@@ -4,18 +4,13 @@ import org.processmining.estminer.specpp.base.Evaluator;
 import org.processmining.estminer.specpp.base.impls.SPECpp;
 import org.processmining.estminer.specpp.componenting.data.DataRequirements;
 import org.processmining.estminer.specpp.componenting.data.DataSource;
-import org.processmining.estminer.specpp.componenting.data.DataSourceCollection;
-import org.processmining.estminer.specpp.componenting.evaluation.EvaluationRequirements;
-import org.processmining.estminer.specpp.componenting.evaluation.EvaluatorCollection;
 import org.processmining.estminer.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.estminer.specpp.composition.PlaceCollection;
 import org.processmining.estminer.specpp.config.SimpleBuilder;
-import org.processmining.estminer.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.estminer.specpp.datastructures.log.Log;
 import org.processmining.estminer.specpp.datastructures.petri.PetriNet;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.petri.ProMPetrinetWrapper;
-import org.processmining.estminer.specpp.datastructures.petri.Transition;
 import org.processmining.estminer.specpp.datastructures.vectorization.VariantMarkingHistories;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.estminer.specpp.evaluation.fitness.BasicFitnessStatus;
@@ -34,7 +29,7 @@ import java.util.Arrays;
 public class Playground {
 
     public static void main(String[] args) {
-        play(BaseSpecOpsConfigBundle::new, InputData.loadData(PublicPaths.SAMPLE_EVENTLOG_1, PreProcessingParameters.getDefault()));
+        play(BaseSpecOpsConfigBundle::new, InputData.loadData(PublicPaths.SAMPLE_EVENTLOG_3, PreProcessingParameters.getDefault()));
     }
 
 
@@ -46,6 +41,7 @@ public class Playground {
 
         // ========================================= //
 
+        /*
         GlobalComponentRepository cr = specPP.getGlobalComponentRepository();
 
         DataSourceCollection dc = cr.dataSources();
@@ -56,7 +52,9 @@ public class Playground {
         Evaluator<Place, VariantMarkingHistories> historiesEvaluator = ec.askForEvaluator(EvaluationRequirements.PLACE_MARKING_HISTORY);
 
         //playAround(cr, new NaivePlacemaker(transitionEncodings), historiesEvaluator, aggregatedBasicFitnessEvaluator, fullBasicFitnessEvaluator);
+    */
     }
+
 
     public static void playAround(GlobalComponentRepository cr, NaivePlacemaker placemaker, Evaluator<Place, VariantMarkingHistories> markingHistoriesEvaluator, Evaluator<Place, BasicFitnessEvaluation> basicFitnessFractionsEvaluator, Evaluator<Place, DetailedFitnessEvaluation> fullBasicFitnessEvaluator) {
 

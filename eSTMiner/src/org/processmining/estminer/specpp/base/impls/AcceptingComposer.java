@@ -37,4 +37,9 @@ public class AcceptingComposer<C extends Candidate, I extends AdvancedCompositio
     protected void initSelf() {
 
     }
+
+    @Override
+    public void candidatesAreExhausted() {
+
+    }
 }

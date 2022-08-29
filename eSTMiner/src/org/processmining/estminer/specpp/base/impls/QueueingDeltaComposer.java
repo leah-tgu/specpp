@@ -25,7 +25,7 @@ import org.processmining.estminer.specpp.evaluation.fitness.DetailedFitnessEvalu
 import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.estminer.specpp.util.JavaTypingUtils;
 
-public class QueueingDeltaComposer<I extends AdvancedComposition<Place>, R extends Result> extends QueueingPostponingComposer<Place, I, R, CandidateConstraint<Place>> {
+public class QueueingDeltaComposer<I extends AdvancedComposition<Place>, R extends Result> extends AbstractQueueingComposer<Place, I, R, CandidateConstraint<Place>> {
 
     private final DelegatingEvaluator<Place, DetailedFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
     private final DelegatingEvaluator<EvaluationParameterTuple2<Place, Integer>, DoubleScore> deltaAdaptationFunction = new DelegatingEvaluator<>();
@@ -66,7 +66,7 @@ public class QueueingDeltaComposer<I extends AdvancedComposition<Place>, R exten
             DebuggingSupervisor.debug("handlePostponedDecisionsUntilNoChange", "emptying postponed candidates queue as tree level changed: " + currentTreeLevel + " to " + candidate.size());
             currentTreeLevel = candidate.size();
             DebuggingSupervisor.debug("handlePostponedDecisionsUntilNoChange", "starting with queue of length " + postponedCandidates.size());
-            trigger();
+            handlePostponedDecisionsUntilNoChange();
         }
 
         return meetsCurrentDelta(candidate) ? CandidateDecision.Accept : CandidateDecision.Postpone;

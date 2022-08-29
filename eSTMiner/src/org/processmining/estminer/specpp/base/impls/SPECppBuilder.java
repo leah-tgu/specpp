@@ -19,6 +19,7 @@ import org.processmining.estminer.specpp.config.SupervisionConfiguration;
 import org.processmining.estminer.specpp.config.parameters.SupervisionParameters;
 import org.processmining.estminer.specpp.supervision.Supervisor;
 import org.processmining.estminer.specpp.supervision.instrumentators.InstrumentedSPECpp;
+import org.processmining.estminer.specpp.supervision.supervisors.DebuggingSupervisor;
 
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class SPECppBuilder<C extends Candidate, I extends CompositionComponent<C
         ComposerComponent<C, I, R> composer = pcConfig.createPossiblyInstrumentedComposer();
         PostProcessor<R, F> processor = ppConfig.createPostProcessorPipeline();
         SupervisionParameters svParams = svParametersDelegator.getData();
-        if (svParams.shouldBeInstrumented(SPECpp.class))
+        if (svParams.shouldClassBeInstrumented(SPECpp.class))
             return new InstrumentedSPECpp<>(gcr, supervisorList, proposer, composer, processor);
         else return new SPECpp<>(gcr, supervisorList, proposer, composer, processor);
     }

@@ -7,6 +7,7 @@ import org.processmining.estminer.specpp.componenting.system.link.ChildGeneratio
 import org.processmining.estminer.specpp.componenting.system.link.EfficientTreeComponent;
 import org.processmining.estminer.specpp.config.EfficientTreeConfiguration;
 import org.processmining.estminer.specpp.config.SimpleBuilder;
+import org.processmining.estminer.specpp.datastructures.encoding.BitMask;
 import org.processmining.estminer.specpp.datastructures.petri.Place;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.estminer.specpp.datastructures.tree.nodegen.PlaceState;
@@ -14,11 +15,17 @@ import org.processmining.estminer.specpp.datastructures.util.Button;
 import org.processmining.estminer.specpp.supervision.EventSupervision;
 import org.processmining.estminer.specpp.supervision.piping.PipeWorks;
 
+import java.util.ArrayList;
+import java.util.PrimitiveIterator;
+
+import static org.python.util.jython.shouldRestart;
+
 public class RestartablePlaceProposer extends ConstrainablePlaceProposer {
 
     private final Button updateLocalComponentSystem = new Button();
-
     private final EventSupervision<ProposerSignal> proposerSignalOutput = PipeWorks.eventSupervision();
+    private boolean shouldRestart;
+
 
     public static class Builder extends ConstrainablePlaceProposer.Builder {
 
@@ -34,12 +41,18 @@ public class RestartablePlaceProposer extends ConstrainablePlaceProposer {
         localComponentSystem().require(DataRequirements.dataSource("update_local_component_system", Runnable.class), updateLocalComponentSystem)
                               .provide(SupervisionRequirements.observable("proposer.signals.out", ProposerSignal.class, proposerSignalOutput))
                               .provide(SupervisionRequirements.observer("proposer.signals.in", ProposerSignal.class, this::receiveSignal));
+        shouldRestart = false;
     }
 
+    @Override
+    public Place proposeCandidate() {
+        if (shouldRestart) restart();
+        return super.proposeCandidate();
+    }
 
     private void receiveSignal(ProposerSignal proposerSignal) {
         if (proposerSignal instanceof RestartProposer) {
-            restart();
+            shouldRestart = true;
         }
     }
 
@@ -50,6 +63,7 @@ public class RestartablePlaceProposer extends ConstrainablePlaceProposer {
     }
 
     public void restart() {
+        shouldRestart = false;
         setProposer(createSubProposer());
         updateLocalComponentSystem.press();
         proposer.init();

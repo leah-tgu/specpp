@@ -33,6 +33,11 @@ public class InstrumentedComposer<C extends Candidate, I extends CompositionComp
         return r;
     }
 
+    @Override
+    public void candidatesAreExhausted() {
+        delegate.candidatesAreExhausted();
+    }
+
     public void accept(C c) {
         timeStopper.start(CANDIDATE_COMPOSITION);
         delegate.accept(c);

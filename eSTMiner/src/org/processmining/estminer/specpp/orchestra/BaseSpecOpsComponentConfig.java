@@ -34,7 +34,6 @@ public class BaseSpecOpsComponentConfig implements SpecOpsComponentConfig {
                             .supervisor(BaseSupervisor::new)
                             .supervisor(PerformanceSupervisor::new)
                             .supervisor(AltEventCountsSupervisor::new)
-                            .supervisor(DetailedComposerSupervisor::new)
                             .supervisor(TerminalSupervisor::new)
                             .build(gcr);
     }

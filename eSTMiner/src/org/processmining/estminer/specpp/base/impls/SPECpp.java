@@ -30,7 +30,8 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     private final PostProcessor<R, F> postProcessor;
 
     private final Configuration configuration;
-    private int stepCount = 0;
+    private int cycleCount = 0;
+    private boolean computationCancelled;
     private R result;
 
     private F finalResult;
@@ -42,8 +43,10 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         this.proposer = proposer;
         this.composer = composer;
         this.postProcessor = postProcessor;
+        computationCancelled = false;
         configuration = new Configuration(cr);
 
+        globalComponentSystem().provide(DataRequirements.dataSource("cancel_gracefully", Runnable.class, StaticDataSource.of(this::cancelGracefully)));
         localComponentSystem().provide(DataRequirements.dataSource("update_local_component_system", Runnable.class, StaticDataSource.of(this::updateLocalComponentSystem)));
         registerSubComponent(proposer);
         registerSubComponent(composer);
@@ -96,13 +99,20 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     public boolean executePECCycle() {
         if (composer.isFinished()) return true;
         C c = proposer.proposeCandidate();
-        if (c == null) return true;
+        if (computationCancelled || c == null) {
+            composer.candidatesAreExhausted();
+            return true;
+        }
         composer.accept(c);
         return false;
     }
 
+    public void cancelGracefully() {
+        computationCancelled = true;
+    }
+
     protected void executeAllPECCycles() {
-        while (!executePECCycle()) ++stepCount;
+        while (!executePECCycle()) ++cycleCount;
     }
 
     protected void generateResult() {
@@ -133,7 +143,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     }
 
     public int stepCount() {
-        return stepCount;
+        return cycleCount;
     }
 
     @Override

@@ -21,6 +21,6 @@ public class Configuration extends ComponentInitializer {
     protected boolean shouldBeInstrumented(Object o) {
         SupervisionParameters ask = globalComponentSystem().parameters()
                                                            .askForData(ParameterRequirements.SUPERVISION_PARAMETERS);
-        return ask != null && ask.shouldBeInstrumented(o);
+        return ask != null && ask.shouldObjBeInstrumented(o);
     }
 }

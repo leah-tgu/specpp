@@ -16,6 +16,10 @@ public abstract class RecursiveComposer<C extends Candidate, I extends Compositi
         registerSubComponent(childComposer);
     }
 
+    @Override
+    public void candidatesAreExhausted() {
+        childComposer.candidatesAreExhausted();
+    }
 
     @Override
     public boolean isFinished() {

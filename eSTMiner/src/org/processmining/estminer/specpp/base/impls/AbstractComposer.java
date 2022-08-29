@@ -71,6 +71,4 @@ public abstract class AbstractComposer<C extends Candidate, I extends AdvancedCo
     public final R generateResult() {
         return assembleResult.apply(composition);
     }
-
-
 }

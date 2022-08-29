@@ -40,6 +40,5 @@ public abstract class AbstractConstrainingComposer<C extends Candidate, I extend
         return constraintOutput;
     }
 
-
 }
 

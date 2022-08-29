@@ -96,7 +96,8 @@ public class ConstrainablePlaceProposer extends AbstractBaseClass implements Con
         } else if (candidateConstraint instanceof ClinicallyUnderfedPlace) {
             constraintOutput.observe(new CullPostsetChildren(placeNode));
         } else if (candidateConstraint instanceof ClinicallyOverfedPlace) {
-            if (placeNode.getState().getPotentialPostsetExpansions().isEmpty()) {
+            PlaceState state = placeNode.getState();
+            if (state.getPotentialPostsetExpansions().isEmpty() && !state.getPotentialPresetExpansions().isEmpty()) {
                 constraintOutput.observe(new CullPresetChildren(placeNode));
             }
         }

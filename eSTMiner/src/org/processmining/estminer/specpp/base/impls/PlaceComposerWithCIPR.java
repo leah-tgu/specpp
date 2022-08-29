@@ -65,4 +65,8 @@ public class PlaceComposerWithCIPR<I extends AdvancedComposition<Place>> extends
 
     }
 
+    @Override
+    public void candidatesAreExhausted() {
+
+    }
 }

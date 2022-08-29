@@ -34,18 +34,21 @@ public class SupervisionParameters implements Parameters {
         return classesToInstrument;
     }
 
-    public boolean shouldBeInstrumented(Object o) {
-        Class<?> oClass = o.getClass();
+    public boolean shouldObjBeInstrumented(Object o) {
+        return shouldClassBeInstrumented(o.getClass());
+    }
+
+    public boolean shouldClassBeInstrumented(Class<?> oClass) {
         for (Class<?> aClass : classesToInstrument) {
             if (aClass.isAssignableFrom(oClass)) {
                 return true;
             }
         }
         return classesToInstrument.contains(oClass);
-        //return classesToInstrument.stream().anyMatch(c -> c.isAssignableFrom(o.getClass()));
     }
 
-    public boolean isUseConsole() {
+
+        public boolean isUseConsole() {
         return useConsole;
     }
 

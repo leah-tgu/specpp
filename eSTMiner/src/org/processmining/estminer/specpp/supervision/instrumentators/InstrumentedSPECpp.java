@@ -32,14 +32,14 @@ public class InstrumentedSPECpp<C extends Candidate, I extends CompositionCompon
     @Override
     protected void executeAllPECCycles() {
         timeStopper.start(TOTAL_CYCLING);
-        executeAllPECCycles();
+        super.executeAllPECCycles();
         timeStopper.stop(TOTAL_CYCLING);
     }
 
     @Override
     public boolean executePECCycle() {
         timeStopper.start(PEC_CYCLE);
-        boolean stop = executePECCycle();
+        boolean stop = super.executePECCycle();
         timeStopper.stop(PEC_CYCLE);
         return stop;
     }
