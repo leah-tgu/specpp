@@ -28,7 +28,7 @@
 
  		<!-- Third party library downloaded from maven repository. -->
     	<!-- dependency conf="lib->default" org="org.reflections" name="reflections" rev="0.9.10" /-->
-		<dependency org="com.google.guava" name="guava" rev="28.1-jre" conf="lib->default" />
+		<dependency org="com.google.guava" name="guava" rev="31.1-jre" conf="lib->default" />
 		<!-- Third party library downloaded from ProM library. -->
     	<!-- dependency conf="lib->default" org="prom-libs" name="opencsv" rev="2.4-patched" transitive="false" /--> 
     </dependencies>
