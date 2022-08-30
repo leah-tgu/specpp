@@ -37,6 +37,7 @@ import org.processmining.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEva
 import org.processmining.specpp.orchestra.BaseSPECppConfigBundle;
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.specpp.preprocessing.*;
+import org.processmining.specpp.preprocessing.orderings.*;
 import org.processmining.specpp.supervision.observations.Observation;
 import org.processmining.specpp.supervision.piping.PipeWorks;
 import org.processmining.specpp.util.*;
@@ -354,7 +355,7 @@ public class Main {
                                                    .collect(Collectors.toMap(e -> e.getKey()
                                                                                    .toString(), Map.Entry::getKey));
 
-        List<Class<? extends TransitionEncodingsBuilder>> classes = new LinkedList<>();
+        List<Class<? extends ActivityOrderingBuilder>> classes = new LinkedList<>();
         classes.add(AverageTracePositionOrdering.class);
         classes.add(TraceFrequencyOrdering.class);
         classes.add(ActivityFrequencyOrdering.class);
@@ -364,8 +365,8 @@ public class Main {
         System.out.println(activityMap.values());
         log.stream().limit(10).forEach(System.out::println);
 
-        for (Class<? extends TransitionEncodingsBuilder> aClass : classes) {
-            TransitionEncodingsBuilder instance = Reflection.instance(aClass, log, activityMap, mapping);
+        for (Class<? extends ActivityOrderingBuilder> aClass : classes) {
+            ActivityOrderingBuilder instance = Reflection.instance(aClass, log, activityMap, mapping);
             System.out.println(aClass);
             System.out.println(instance);
             System.out.println(instance.build());

@@ -1,11 +1,9 @@
-package org.processmining.specpp.preprocessing;
+package org.processmining.specpp.preprocessing.orderings;
 
-import org.apache.commons.collections4.BidiMap;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.log.Variant;
 import org.processmining.specpp.datastructures.log.impls.IndexedVariant;
-import org.processmining.specpp.datastructures.petri.Transition;
 import org.processmining.specpp.datastructures.util.Counter;
 import org.processmining.specpp.datastructures.util.ImmutablePair;
 import org.processmining.specpp.datastructures.util.Pair;
@@ -13,13 +11,13 @@ import org.processmining.specpp.datastructures.util.Pair;
 import java.util.Comparator;
 import java.util.Map;
 
-public class ActivityFrequencyOrdering extends TransitionEncodingsBuilder {
-    public ActivityFrequencyOrdering(Log log, Map<String, Activity> activityMapping, BidiMap<Activity, Transition> transitionMapping) {
-        super(log, activityMapping, transitionMapping);
+public class ActivityFrequencyOrdering extends ActivityOrderingBuilder {
+    public ActivityFrequencyOrdering(Log log, Map<String, Activity> activityMapping) {
+        super(log, activityMapping);
     }
 
     @Override
-    protected Pair<Comparator<Activity>> computeActivityOrderings(Log log, Map<String, Activity> mapping) {
+    public Pair<Comparator<Activity>> computeActivityOrderings(Log log, Map<String, Activity> mapping) {
 
         Counter<Activity> counter = new Counter<>();
 

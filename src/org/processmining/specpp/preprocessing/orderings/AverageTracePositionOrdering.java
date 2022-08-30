@@ -1,12 +1,10 @@
-package org.processmining.specpp.preprocessing;
+package org.processmining.specpp.preprocessing.orderings;
 
 import com.google.common.collect.Maps;
-import org.apache.commons.collections4.BidiMap;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.log.Variant;
 import org.processmining.specpp.datastructures.log.impls.IndexedVariant;
-import org.processmining.specpp.datastructures.petri.Transition;
 import org.processmining.specpp.datastructures.util.ImmutablePair;
 import org.processmining.specpp.datastructures.util.Pair;
 
@@ -15,13 +13,13 @@ import java.util.IntSummaryStatistics;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class AverageTracePositionOrdering extends TransitionEncodingsBuilder {
-    public AverageTracePositionOrdering(Log log, Map<String, Activity> activityMapping, BidiMap<Activity, Transition> transitionMapping) {
-        super(log, activityMapping, transitionMapping);
+public class AverageTracePositionOrdering extends ActivityOrderingBuilder {
+    public AverageTracePositionOrdering(Log log, Map<String, Activity> activityMapping) {
+        super(log, activityMapping);
     }
 
     @Override
-    protected Pair<Comparator<Activity>> computeActivityOrderings(Log log, Map<String, Activity> activityMap) {
+    public Pair<Comparator<Activity>> computeActivityOrderings(Log log, Map<String, Activity> activityMap) {
         Map<Activity, IntSummaryStatistics> stats = activityMap.entrySet()
                                                                .stream()
                                                                .collect(Collectors.toMap(Map.Entry::getValue, en -> new IntSummaryStatistics()));

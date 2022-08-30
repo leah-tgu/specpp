@@ -5,7 +5,7 @@ import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.orchestra.SPECppOperations;
 import org.processmining.specpp.preprocessing.InputData;
 
-public class ProMlessSPECpp {
+public class ProMLessSPECpp {
 
     public static void main(String[] args) {
         if (args.length < 1) return;
