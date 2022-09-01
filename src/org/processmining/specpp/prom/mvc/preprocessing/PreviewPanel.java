@@ -12,6 +12,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.IntStream;
 
 public class PreviewPanel extends JPanel {
 
@@ -23,7 +24,7 @@ public class PreviewPanel extends JPanel {
     private final JButton applyButton;
 
     public PreviewPanel(PreProcessingController controller) {
-        super(new BorderLayout());
+        super(new GridBagLayout());
         this.controller = controller;
 
         presetList = new ProMList<>("Preset Activities");
@@ -36,13 +37,23 @@ public class PreviewPanel extends JPanel {
         postsetList.getList().setModel(postsetListModel);
         presetList.setPreferredSize(new Dimension(200, 200));
         postsetList.setPreferredSize(new Dimension(200, 200));
-        add(presetList, BorderLayout.WEST);
-        add(postsetList, BorderLayout.EAST);
+
         applyButton = SlickerFactory.instance().createButton("apply");
         applyButton.addActionListener(e -> {
             controller.applyWorker(collectSelectedActivities());
         });
-        add(applyButton, BorderLayout.SOUTH);
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.WEST;
+        add(presetList, c);
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.EAST;
+        add(postsetList, c);
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.SOUTH;
+        add(applyButton, c);
     }
 
 
@@ -72,10 +83,10 @@ public class PreviewPanel extends JPanel {
                     postsetListModel.clear();
                     pair.first().forEach(presetListModel::addElement);
                     pair.second().forEach(postsetListModel::addElement);
-                    presetList.setSelection(presetListModel.toArray());
-                    postsetList.setSelection(postsetListModel.toArray());
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
+                    presetList.setSelectedIndices(IntStream.range(0, presetListModel.size()).toArray());
+                    postsetList.setSelectedIndices(IntStream.range(0, postsetListModel.size()).toArray());
+                } catch (InterruptedException | ExecutionException ignored) {
+
                 }
             }
         }.execute();

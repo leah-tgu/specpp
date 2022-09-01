@@ -78,6 +78,7 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
         return currentlySupportedVariants;
     }
 
+    @Override
     public ImplicitnessRating rateImplicitness(Place place) {
         timeStopper.start(REPLAY_BASED_CONCURRENT_IMPLICITNESS);
         VariantMarkingHistories h = historyMaker.eval(place);

@@ -16,6 +16,10 @@ public interface PostProcessor<S extends Result, T extends Result> extends Funct
         return new PostProcessorPipe<>(before, this);
     }
 
+    Class<S> getInputClass();
+
+    Class<T> getOutputClass();
+
     @Override
     default T apply(S s) {
         return postProcess(s);

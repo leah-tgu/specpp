@@ -21,6 +21,8 @@ import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.preprocessing.orderings.ActivityOrderingBuilder;
 import org.processmining.specpp.util.Reflection;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.*;
 
 public class XLogBasedInputDataBundle implements DataSource<InputDataBundle> {
@@ -70,7 +72,7 @@ public class XLogBasedInputDataBundle implements DataSource<InputDataBundle> {
 
     public static XLog readLog(String path) {
         try {
-            return XUtils.loadLog(path);
+            return XUtils.loadLog(new File(path));
         } catch (Exception e) {
             throw new InputLoadingException(e);
         }

@@ -21,8 +21,12 @@ import org.processmining.specpp.util.PathTools;
 import org.processmining.specpp.util.VizUtils;
 
 import javax.swing.*;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,19 +85,26 @@ public class PostSpecOps {
     }
 
     public static void saveMonitoringResults(OutputPathParameters outputPathParameters, List<Map.Entry<String, Monitor<?, ?>>> monitors) {
+        Collection<CompletableFuture<?>> futures = new LinkedList<>();
         for (Visualization<?> resultingVisualization : getResultingVisualizations(monitors.stream())) {
             JComponent component = resultingVisualization.getComponent();
             String title = resultingVisualization.getTitle().toLowerCase().replace(".", "_");
             if (component instanceof DotPanel) {
                 String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.GRAPH, title);
-                FileUtils.saveDotPanel(filePath, ((DotPanel) component));
+                futures.add(CompletableFuture.runAsync(() -> FileUtils.saveDotPanel(filePath, ((DotPanel) component))));
             } else if (component instanceof ChartPanel) {
                 String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.CHART, title);
-                FileUtils.saveChart(filePath, ((ChartPanel) component).getChart());
+                futures.add(CompletableFuture.runAsync(() -> FileUtils.saveChart(filePath, ((ChartPanel) component).getChart())));
             }
         }
         String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.MISC_EXPORT, "monitoring_results", ".txt");
         FileUtils.saveStrings(filePath, getResultingStrings(monitors.stream()));
+
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     static Stream<Map.Entry<String, Monitor<?, ?>>> getMonitorStream(SPECpp<?, ?, ?, ?> specpp) {

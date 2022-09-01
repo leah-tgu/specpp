@@ -5,6 +5,7 @@ import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.specpp.componenting.system.ComponentSystemAwareBuilder;
+import org.processmining.specpp.componenting.system.link.PetriNetPostProcessor;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.ImmutableTuple2;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ReplayBasedImplicitnessPostProcessing implements PostProcessor<PetriNet, PetriNet> {
+public class ReplayBasedImplicitnessPostProcessing implements PetriNetPostProcessor {
 
     private final Evaluator<Place, VariantMarkingHistories> markingHistoriesEvaluator;
 
@@ -26,7 +27,7 @@ public class ReplayBasedImplicitnessPostProcessing implements PostProcessor<Petr
     }
 
 
-    public static class Builder extends ComponentSystemAwareBuilder<PostProcessor<PetriNet, PetriNet>> {
+    public static class Builder extends ComponentSystemAwareBuilder<PetriNetPostProcessor> {
 
         private final DelegatingEvaluator<Place, VariantMarkingHistories> evaluatorDelegator = new DelegatingEvaluator<>();
 
@@ -65,4 +66,5 @@ public class ReplayBasedImplicitnessPostProcessing implements PostProcessor<Petr
         places.removeAll(exclusionZone);
         return new PetriNet(places);
     }
+
 }

@@ -9,6 +9,7 @@ import org.processmining.specpp.supervision.observations.ClassKey;
 import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class ParametersPanel extends JPanel {
     private final JButton previewButton;
 
     public ParametersPanel(PreProcessingController controller, List<XEventClassifier> eventClassifiers) {
+        super(new GridBagLayout());
         this.controller = controller;
         PreProcessingParameters defaultParameters = PreProcessingParameters.getDefault();
 
@@ -64,11 +66,14 @@ public class ParametersPanel extends JPanel {
             controller.preview(collectParameters());
         });
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(classifierComboBox);
-        add(orderingComboBox);
-        add(artificialTransitionsCheckBox);
-        add(previewButton);
+        GridBagConstraints c = new GridBagConstraints();
+        add(classifierComboBox, c);
+        c.gridy++;
+        add(orderingComboBox, c);
+        c.gridy++;
+        add(artificialTransitionsCheckBox, c);
+        c.gridy++;
+        add(previewButton, c);
 
     }
 

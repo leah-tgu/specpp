@@ -29,7 +29,7 @@ import java.util.Arrays;
 public class Playground {
 
     public static void main(String[] args) {
-        play(BaseSPECppConfigBundle::new, InputData.loadData(PublicPaths.SAMPLE_EVENTLOG_3, PreProcessingParameters.getDefault()));
+        play(BaseSPECppConfigBundle::new, InputData.loadData(PublicPaths.SAMPLE_EVENTLOG_2, PreProcessingParameters.getDefault()));
     }
 
 
