@@ -34,6 +34,8 @@ public class PreviewPanel extends JPanel {
         postsetListModel = new DefaultListModel<>();
         presetList.getList().setModel(presetListModel);
         postsetList.getList().setModel(postsetListModel);
+        presetList.setPreferredSize(new Dimension(200, 200));
+        postsetList.setPreferredSize(new Dimension(200, 200));
         add(presetList, BorderLayout.WEST);
         add(postsetList, BorderLayout.EAST);
         applyButton = SlickerFactory.instance().createButton("apply");
@@ -67,6 +69,7 @@ public class PreviewPanel extends JPanel {
                 try {
                     Pair<List<Activity>> pair = get();
                     presetListModel.clear();
+                    postsetListModel.clear();
                     pair.first().forEach(presetListModel::addElement);
                     pair.second().forEach(postsetListModel::addElement);
                     presetList.setSelection(presetListModel.toArray());

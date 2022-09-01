@@ -29,7 +29,6 @@ public class VariantPanel extends JPanel {
             public Class<?> getColumnClass(int columnIndex) {
                 switch (columnIndex) {
                     case 0:
-                        return Integer.class;
                     case 1:
                         return Integer.class;
                     case 2:
@@ -56,7 +55,7 @@ public class VariantPanel extends JPanel {
         SwingUtilities.invokeLater(() -> {
             int oldCount = tableModel.getRowCount();
             tableModel.setRowCount(0);
-            tableModel.rowsRemoved(new TableModelEvent(tableModel, 0, oldCount));
+            tableModel.rowsRemoved(new TableModelEvent(tableModel, 0, 0, TableModelEvent.DELETE));
             Iterator<IndexedVariant> it = log.iterator();
             while (it.hasNext()) {
                 IndexedVariant next = it.next();
@@ -65,7 +64,7 @@ public class VariantPanel extends JPanel {
                 String variantString = next.getVariant().toString();
                 tableModel.addRow(new Object[]{i, f, variantString});
             }
-            tableModel.newRowsAdded(new TableModelEvent(tableModel, 0, tableModel.getRowCount()));
+            tableModel.newRowsAdded(new TableModelEvent(tableModel, 0, tableModel.getRowCount() - 1, TableModelEvent.INSERT));
         });
 
     }

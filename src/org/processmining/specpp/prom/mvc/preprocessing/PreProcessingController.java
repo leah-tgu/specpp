@@ -1,7 +1,10 @@
 package org.processmining.specpp.prom.mvc.preprocessing;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.deckfour.xes.classification.XEventClassifier;
+import org.deckfour.xes.classification.XEventNameClassifier;
 import org.deckfour.xes.model.XLog;
 import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.log.Activity;
@@ -17,10 +20,7 @@ import org.processmining.specpp.prom.mvc.SPECppController;
 import org.processmining.specpp.prom.mvc.StageController;
 
 import javax.swing.*;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class PreProcessingController implements StageController {
@@ -50,7 +50,8 @@ public class PreProcessingController implements StageController {
     }
 
     public ParametersPanel createParametersPanel() {
-        return new ParametersPanel(this, rawLog.getClassifiers());
+        List<XEventClassifier> classifiers = rawLog.getClassifiers();
+        return new ParametersPanel(this, classifiers.isEmpty() ? ImmutableList.of(new XEventNameClassifier()) : classifiers);
     }
 
     public PreviewPanel createPreviewPanel() {
@@ -96,7 +97,7 @@ public class PreProcessingController implements StageController {
                 } catch (InterruptedException | ExecutionException e) {
                     throw new RuntimeException(e);
                 } finally {
-                    parametersPanel.disableButton();
+                    parametersPanel.enableButton();
                 }
             }
         };

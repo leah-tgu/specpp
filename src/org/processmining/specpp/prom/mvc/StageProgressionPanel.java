@@ -23,6 +23,8 @@ public class StageProgressionPanel extends JPanel {
         GridBagConstraints c = new GridBagConstraints();
         c.weightx = 1;
         c.weighty = 1;
+        c.anchor = GridBagConstraints.NORTH;
+        c.fill = GridBagConstraints.HORIZONTAL;
 
         stageButtons = new ArrayList<>();
         for (SPECppController.PluginStage stage : SPECppController.PLUGIN_STAGES) {
