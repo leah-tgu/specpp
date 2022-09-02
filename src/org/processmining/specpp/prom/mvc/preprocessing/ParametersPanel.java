@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableList;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.preprocessing.orderings.ActivityOrderingBuilder;
+import org.processmining.specpp.prom.util.FactoryUtils;
+import org.processmining.specpp.prom.util.LabeledComboBox;
 import org.processmining.specpp.supervision.observations.ClassKey;
 import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 
@@ -18,7 +20,7 @@ public class ParametersPanel extends JPanel {
 
     private final PreProcessingController controller;
     private final JComboBox<XEventClassifier> classifierComboBox;
-    private final JComboBox<Class<? extends ActivityOrderingBuilder>> orderingComboBox;
+    private final JComboBox<ClassKey<? extends ActivityOrderingBuilder>> orderingComboBox;
     private final JCheckBox artificialTransitionsCheckBox;
     private final List<Class<? extends ActivityOrderingBuilder>> availableOrderings;
     private final ImmutableList<XEventClassifier> availableEventClassifiers;
@@ -30,8 +32,10 @@ public class ParametersPanel extends JPanel {
         PreProcessingParameters defaultParameters = PreProcessingParameters.getDefault();
 
         availableEventClassifiers = ImmutableList.copyOf(eventClassifiers);
-        classifierComboBox = (JComboBox<XEventClassifier>) SlickerFactory.instance()
-                                                                         .createComboBox(availableEventClassifiers.toArray(new XEventClassifier[0]));
+        LabeledComboBox<XEventClassifier> eventClassifierBox = FactoryUtils.labeledComboBox("Event Classifier", availableEventClassifiers.toArray(new XEventClassifier[0]));
+        classifierComboBox = eventClassifierBox.getComboBox();
+        classifierComboBox.setMinimumSize(new Dimension(175, 25));
+        classifierComboBox.setSelectedItem(defaultParameters.getEventClassifier());
         classifierComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 Object item = e.getItem();
@@ -46,8 +50,9 @@ public class ParametersPanel extends JPanel {
         ClassKey<? extends ActivityOrderingBuilder> selected = new ClassKey<>(defaultParameters.getTransitionEncodingsBuilderClass());
 
 
-        orderingComboBox = (JComboBox<Class<? extends ActivityOrderingBuilder>>) SlickerFactory.instance()
-                                                                                               .createComboBox(tebOptions);
+        LabeledComboBox<ClassKey<? extends ActivityOrderingBuilder>> orderingStrategyBox = FactoryUtils.labeledComboBox("Ordering Strategy", tebOptions);
+        orderingComboBox = orderingStrategyBox.getComboBox();
+        orderingComboBox.setMinimumSize(new Dimension(250, 25));
         orderingComboBox.setSelectedItem(selected);
         orderingComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -55,7 +60,6 @@ public class ParametersPanel extends JPanel {
                 DebuggingSupervisor.debug("ParametersPanel", "selected " + item + " as activity ordering strategy");
             }
         });
-
 
         artificialTransitionsCheckBox = SlickerFactory.instance()
                                                       .createCheckBox("introduce artificial start & end transitions", defaultParameters.isAddStartEndTransitions());
@@ -67,12 +71,17 @@ public class ParametersPanel extends JPanel {
         });
 
         GridBagConstraints c = new GridBagConstraints();
-        add(classifierComboBox, c);
+        c.anchor = GridBagConstraints.CENTER;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weighty = 0.2;
+        add(eventClassifierBox, c);
         c.gridy++;
-        add(orderingComboBox, c);
+        add(orderingStrategyBox, c);
         c.gridy++;
         add(artificialTransitionsCheckBox, c);
         c.gridy++;
+        c.weighty = 0.2;
         add(previewButton, c);
 
     }

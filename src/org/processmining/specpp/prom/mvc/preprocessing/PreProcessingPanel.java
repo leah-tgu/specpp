@@ -1,19 +1,19 @@
 package org.processmining.specpp.prom.mvc.preprocessing;
 
-import org.processmining.framework.util.ui.widgets.ProMSplitPane;
+import org.processmining.specpp.prom.mvc.AbstractStagePanel;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class PreProcessingPanel extends JPanel {
+public class PreProcessingPanel extends AbstractStagePanel<PreProcessingController> {
 
-    public PreProcessingPanel(JComponent variantPanel, JComponent parametersPanel, JComponent previewPanel) {
-        setLayout(new BorderLayout());
-        ProMSplitPane rightSplit = new ProMSplitPane(ProMSplitPane.VERTICAL_SPLIT);
+    public PreProcessingPanel(PreProcessingController controller, JComponent variantPanel, JComponent parametersPanel, JComponent previewPanel) {
+        super(controller, new BorderLayout());
+        JSplitPane rightSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         rightSplit.setDividerLocation(0.5);
         rightSplit.setTopComponent(parametersPanel);
         rightSplit.setBottomComponent(previewPanel);
-        ProMSplitPane mainSplit = new ProMSplitPane(ProMSplitPane.HORIZONTAL_SPLIT);
+        JSplitPane mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         mainSplit.setDividerLocation(0.5);
         mainSplit.setLeftComponent(variantPanel);
         mainSplit.setRightComponent(rightSplit);

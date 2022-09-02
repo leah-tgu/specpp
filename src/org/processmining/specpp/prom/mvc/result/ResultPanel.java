@@ -1,6 +1,16 @@
 package org.processmining.specpp.prom.mvc.result;
 
-import javax.swing.*;
+import org.processmining.specpp.prom.mvc.AbstractStagePanel;
 
-public class ResultPanel extends JPanel {
+import javax.swing.*;
+import java.awt.*;
+
+public class ResultPanel extends AbstractStagePanel<ResultController> {
+    public ResultPanel(ResultController controller) {
+        super(controller);
+    }
+
+    public ResultPanel(ResultController controller, LayoutManager layout) {
+        super(controller, layout);
+    }
 }

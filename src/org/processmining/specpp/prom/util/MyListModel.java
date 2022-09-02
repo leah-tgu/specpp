@@ -1,11 +1,9 @@
 package org.processmining.specpp.prom.util;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-public class MyListModel<T> extends AbstractListModel<T> {
+public class MyListModel<T> extends AbstractListModel<T> implements Iterable<T> {
 
     private final List<T> internal;
 
@@ -51,4 +49,13 @@ public class MyListModel<T> extends AbstractListModel<T> {
         fireIntervalRemoved(this, 0, index);
     }
 
+    public void remove(int index) {
+        internal.remove(index);
+        fireIntervalRemoved(this, index, index);
+    }
+
+    @Override
+    public ListIterator<T> iterator() {
+        return internal.listIterator();
+    }
 }

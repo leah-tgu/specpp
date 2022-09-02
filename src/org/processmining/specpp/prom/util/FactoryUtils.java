@@ -1,14 +1,9 @@
 package org.processmining.specpp.prom.util;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
-import org.processmining.framework.util.ui.widgets.ProMCheckBoxWithTextField;
 import org.processmining.framework.util.ui.widgets.ProMComboBox;
-import org.processmining.framework.util.ui.widgets.ProMComboBoxWithTextField;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 @SuppressWarnings("unchecked")
 public class FactoryUtils {
@@ -21,17 +16,20 @@ public class FactoryUtils {
         return new ProMComboBox<>(values);
     }
 
-    public static <T> ProMComboBoxWithTextField labeledPromComboBox(String label, T[] values) {
-        return new ProMComboBoxWithTextField(values, label);
+    public static <T> LabeledComboBox<T> labeledComboBox(String label, T[] values) {
+        return new LabeledComboBox<>(label, values);
     }
 
-    public static ProMCheckBoxWithTextField labeledCheckBox(String label) {
+    public static JCheckBox labeledCheckBox(String label) {
         return labeledCheckBox(label, false);
     }
 
-    public static ProMCheckBoxWithTextField labeledCheckBox(String label, boolean checked) {
-        return new ProMCheckBoxWithTextField(checked, label);
+    public static JCheckBox labeledCheckBox(String label, boolean checked) {
+        return SlickerFactory.instance().createCheckBox(label, checked);
     }
 
 
+    public static JLabel createHeader(String s) {
+        return SlickerFactory.instance().createLabel("<html><h3>" + s + "</h3></html>");
+    }
 }

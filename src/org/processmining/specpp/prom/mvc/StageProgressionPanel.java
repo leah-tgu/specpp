@@ -1,10 +1,10 @@
 package org.processmining.specpp.prom.mvc;
 
+import com.fluxicon.slickerbox.components.SlickerButton;
 import org.processmining.specpp.prom.util.ColorScheme;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -18,35 +18,36 @@ public class StageProgressionPanel extends JPanel {
     public StageProgressionPanel(SPECppController parentController) {
         super(new GridBagLayout());
         this.parentController = parentController;
-        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         GridBagConstraints c = new GridBagConstraints();
         c.weightx = 1;
         c.weighty = 1;
         c.anchor = GridBagConstraints.NORTH;
-        c.fill = GridBagConstraints.HORIZONTAL;
+        c.fill = GridBagConstraints.NONE;
 
         stageButtons = new ArrayList<>();
         for (SPECppController.PluginStage stage : SPECppController.PLUGIN_STAGES) {
-            JButton jButton = new JButton(stage.name());
+            JButton jButton = new JButton(stage.name());//new SlickerButton(stage.name());
+            jButton.setOpaque(false);
             jButton.setBorder(createUnHighlightedBorder());
-            jButton.setMinimumSize(new Dimension(100, 30));
+            jButton.setMinimumSize(new Dimension(150, 50));
+            jButton.setPreferredSize(new Dimension(150, 50));
             jButton.addActionListener(e -> {
                 if (stage != currentStage) parentController.setPluginStage(stage);
             });
             stageButtons.add(jButton);
+            c.gridy = 0;
             add(jButton, c);
-            c.gridx++;
         }
 
     }
 
     private Border createHighlightedBorder() {
-        return BorderFactory.createSoftBevelBorder(EtchedBorder.RAISED, ColorScheme.lightPink, ColorScheme.lightBlue);
+        return BorderFactory.createLineBorder(ColorScheme.lightPink, 5, true);
     }
 
     private Border createUnHighlightedBorder() {
-        return BorderFactory.createSoftBevelBorder(EtchedBorder.LOWERED, ColorScheme.lightPink, ColorScheme.lightBlue);
+        return BorderFactory.createLineBorder(ColorScheme.lightBlue, 5, true);
     }
 
     public void updateCurrentStage(SPECppController.PluginStage stage) {
@@ -55,7 +56,7 @@ public class StageProgressionPanel extends JPanel {
             currentStage = stage;
             int ordinal = stage.ordinal();
             stageButtons.get(ordinal).setBorder(createHighlightedBorder());
-            for (int i = 0; i < ordinal; i++) {
+            for (int i = 0; i <= ordinal; i++) {
                 stageButtons.get(i).setEnabled(true);
             }
             for (int i = ordinal + 1; i < stageButtons.size(); i++) {

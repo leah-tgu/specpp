@@ -1,6 +1,9 @@
 package org.processmining.specpp.prom.mvc.discovery;
 
-import javax.swing.*;
+import org.processmining.specpp.prom.mvc.AbstractStagePanel;
 
-public class DiscoveryPanel extends JPanel {
+public class DiscoveryPanel extends AbstractStagePanel<DiscoveryController> {
+    public DiscoveryPanel(DiscoveryController discoveryController) {
+        super(discoveryController);
+    }
 }

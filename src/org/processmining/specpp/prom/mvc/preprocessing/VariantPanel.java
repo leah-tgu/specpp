@@ -5,11 +5,7 @@ import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.log.impls.IndexedVariant;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.Iterator;
 
@@ -38,14 +34,9 @@ public class VariantPanel extends JPanel {
                 }
             }
         };
-        DefaultTableColumnModel columnModel = new DefaultTableColumnModel();
-        TableColumn idColumn = new TableColumn(0, 50, new DefaultTableCellRenderer(), null);
-        TableColumn freqColumn = new TableColumn(0, 50, new DefaultTableCellRenderer(), null);
-        TableColumn variantColumn = new TableColumn(0, 250, new DefaultTableCellRenderer(), null);
-        columnModel.addColumn(idColumn);
-        columnModel.addColumn(freqColumn);
-        columnModel.addColumn(variantColumn);
-        ProMTable proMTable = new ProMTable(tableModel, columnModel);
+        ProMTable proMTable = new ProMTable(tableModel);
+        proMTable.getColumnModel().getColumn(2).setMinWidth(300);
+        proMTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         proMTable.setAutoCreateRowSorter(true);
         add(proMTable, BorderLayout.CENTER);
     }

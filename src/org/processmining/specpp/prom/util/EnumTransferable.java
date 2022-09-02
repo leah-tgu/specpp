@@ -16,9 +16,11 @@ public class EnumTransferable<E extends Enum<E>> implements Transferable {
 
     @Override
     public DataFlavor[] getTransferDataFlavors() {
-        myFlavor = new DataFlavor(Enum.class, "false");
-        return new DataFlavor[]{myFlavor};
+        return new DataFlavor[]{myFlave};
     }
+
+    public static DataFlavor myFlave = new DataFlavor(Enum.class, "false");
+
 
     @Override
     public boolean isDataFlavorSupported(DataFlavor flavor) {

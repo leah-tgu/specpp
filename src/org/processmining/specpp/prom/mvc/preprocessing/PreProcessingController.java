@@ -16,16 +16,15 @@ import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.preprocessing.XLogBasedInputDataBundle;
 import org.processmining.specpp.preprocessing.orderings.ActivityOrderingBuilder;
+import org.processmining.specpp.prom.mvc.AbstractStageController;
 import org.processmining.specpp.prom.mvc.SPECppController;
-import org.processmining.specpp.prom.mvc.StageController;
 
 import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-public class PreProcessingController implements StageController {
+public class PreProcessingController extends AbstractStageController {
 
-    private final SPECppController parentController;
     private final XLog rawLog;
     private ParametersPanel parametersPanel;
     private PreviewPanel previewPanel;
@@ -34,7 +33,7 @@ public class PreProcessingController implements StageController {
     private SwingWorker<InputDataBundle, Void> applicationWorker;
 
     public PreProcessingController(SPECppController parentController) {
-        this.parentController = parentController;
+        super(parentController);
         this.rawLog = parentController.getRawLog();
     }
 
@@ -42,7 +41,7 @@ public class PreProcessingController implements StageController {
         variantPanel = createVariantVisualizationPanel();
         parametersPanel = createParametersPanel();
         previewPanel = createPreviewPanel();
-        return new PreProcessingPanel(variantPanel, parametersPanel, previewPanel);
+        return new PreProcessingPanel(this, variantPanel, parametersPanel, previewPanel);
     }
 
     public VariantPanel createVariantVisualizationPanel() {

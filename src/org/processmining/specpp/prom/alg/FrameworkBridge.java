@@ -1,8 +1,11 @@
 package org.processmining.specpp.prom.alg;
 
+import org.processmining.specpp.base.IdentityPostProcessor;
 import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.specpp.config.SimpleBuilder;
+import org.processmining.specpp.datastructures.petri.PetriNet;
+import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.tree.base.HeuristicStrategy;
 import org.processmining.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.specpp.datastructures.tree.heuristic.HeuristicUtils;
@@ -28,9 +31,7 @@ public class FrameworkBridge {
     public static final List<BridgedPostProcessors> POST_PROCESSORS = Arrays.asList(BridgedPostProcessors.values());
 
     public enum BridgedHeuristics {
-        PlaceInterestingness(new BridgedTreeHeuristic("Place Interestingness", () -> InterestingnessHeuristic::new)),
-        BFS_Emulation(new BridgedTreeHeuristic("BFS Emulation", () -> HeuristicUtils::bfs)),
-        DFS_Emulation(new BridgedTreeHeuristic("DFS Emulation", () -> HeuristicUtils::dfs));
+        PlaceInterestingness(new BridgedTreeHeuristic("Place Interestingness", () -> InterestingnessHeuristic::new)), BFS_Emulation(new BridgedTreeHeuristic("BFS Emulation", () -> HeuristicUtils::bfs)), DFS_Emulation(new BridgedTreeHeuristic("DFS Emulation", () -> HeuristicUtils::dfs));
 
         private final BridgedTreeHeuristic bth;
 
@@ -49,9 +50,7 @@ public class FrameworkBridge {
     }
 
     public enum BridgedPostProcessors {
-        ReplayBasedImplicitPlaceRemoval(new BridgedPostProcessor("Replay-Based Implicit Place Removal", ReplayBasedImplicitnessPostProcessing.Builder::new)),
-        SelfLoopPlacesMerging(new BridgedPostProcessor("Merging Self Loop Places", () -> SelfLoopPlaceMerger::new)),
-        ProMPetrinetConversion(new BridgedPostProcessor("ProM Petri net Conversion", () -> ProMConverter::new));
+        Identity(new BridgedPostProcessor("Identity", PetriNet.class, PetriNet.class, () -> IdentityPostProcessor::new)), ReplayBasedImplicitPlaceRemoval(new BridgedPostProcessor("Replay-Based Implicit Place Removal", PetriNet.class, PetriNet.class, ReplayBasedImplicitnessPostProcessing.Builder::new)), SelfLoopPlacesMerging(new BridgedPostProcessor("Merging Self Loop Places", PetriNet.class, PetriNet.class, () -> SelfLoopPlaceMerger::new)), ProMPetrinetConversion(new BridgedPostProcessor("ProM Petri net Conversion", PetriNet.class, ProMPetrinetWrapper.class, () -> ProMConverter::new));
         private final BridgedPostProcessor bpp;
 
         BridgedPostProcessors(BridgedPostProcessor bpp) {
@@ -70,9 +69,7 @@ public class FrameworkBridge {
     }
 
     public enum BridgedEvaluators {
-        BaseFitness(new BridgedEvaluator("Base Fitness Evaluator", () -> AbsolutelyNoFrillsFitnessEvaluator::new)),
-        ForkJoinFitness(new BridgedEvaluator("Concurrent Fitness Evaluator", () -> ForkJoinFitnessEvaluator::new)),
-        MarkingHistory(new BridgedEvaluator("Marking History Computer", () -> LogHistoryMaker::new));
+        BaseFitness(new BridgedEvaluator("Base Fitness Evaluator", () -> AbsolutelyNoFrillsFitnessEvaluator::new)), ForkJoinFitness(new BridgedEvaluator("Concurrent Fitness Evaluator", () -> ForkJoinFitnessEvaluator::new)), MarkingHistory(new BridgedEvaluator("Marking History Computer", () -> LogHistoryMaker::new));
 
         private final BridgedEvaluator be;
 
@@ -146,10 +143,27 @@ public class FrameworkBridge {
 
     public static class BridgedPostProcessor extends Bridged<PostProcessor<?, ?>> {
 
-        BridgedPostProcessor(String printableName, Supplier<SimpleBuilder<? extends PostProcessor<?, ?>>> simpleBuilderSupplier) {
+        private final Class<?> inType;
+        private final Class<?> outType;
+
+        BridgedPostProcessor(String printableName, Class<?> inType, Class<?> outType, Supplier<SimpleBuilder<? extends PostProcessor<?, ?>>> simpleBuilderSupplier) {
             super(printableName, simpleBuilderSupplier);
+            this.inType = inType;
+            this.outType = outType;
         }
 
+        public Class<?> getInType() {
+            return inType;
+        }
+
+        public Class<?> getOutType() {
+            return outType;
+        }
+
+        @Override
+        public String toString() {
+            return "[" + getInType().getSimpleName() + " => " + getOutType().getSimpleName() + "]" + " " + super.toString();
+        }
     }
 
 
