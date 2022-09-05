@@ -1,6 +1,9 @@
 package org.processmining.specpp.base.impls;
 
-import org.processmining.specpp.base.*;
+import org.processmining.specpp.base.Candidate;
+import org.processmining.specpp.base.Composer;
+import org.processmining.specpp.base.Proposer;
+import org.processmining.specpp.base.Result;
 import org.processmining.specpp.componenting.data.DataRequirements;
 import org.processmining.specpp.componenting.data.StaticDataSource;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
@@ -18,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> extends AbstractBaseClass implements StartStoppable {
 
@@ -27,22 +31,25 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     private final List<Supervisor> supervisors;
     private final ProposerComponent<C> proposer;
     private final ComposerComponent<C, I, R> composer;
-    private final PostProcessor<R, F> postProcessor;
+    private final PostProcessingPipeline<R, F> postProcessor;
 
     private final Configuration configuration;
     private int cycleCount = 0;
+    private C lastCandidate;
     private boolean computationCancelled;
     private R result;
 
     private F finalResult;
 
 
-    public SPECpp(GlobalComponentRepository cr, List<Supervisor> supervisors, ProposerComponent<C> proposer, ComposerComponent<C, I, R> composer, PostProcessor<R, F> postProcessor) {
+    public SPECpp(GlobalComponentRepository cr, List<Supervisor> supervisors, ProposerComponent<C> proposer, ComposerComponent<C, I, R> composer, PostProcessingPipeline<R, F> postProcessor) {
         this.cr = cr;
         this.supervisors = supervisors;
         this.proposer = proposer;
         this.composer = composer;
         this.postProcessor = postProcessor;
+        cycleCount = 0;
+        lastCandidate = null;
         computationCancelled = false;
         configuration = new Configuration(cr);
 
@@ -104,6 +111,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
             return true;
         }
         composer.accept(c);
+        lastCandidate = c;
         return false;
     }
 
@@ -119,15 +127,25 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         result = composer.generateResult();
     }
 
-    protected void postProcess() {
+    public final R executeDiscovery() {
+        executeAllPECCycles();
+        generateResult();
+        return result;
+    }
+
+    public final F executePostProcessing() {
         finalResult = postProcessor.postProcess(result);
+        return finalResult;
+    }
+
+    public final F executePostProcessing(Consumer<Result> intermediateResultCallback) {
+        finalResult = postProcessor.postProcess(result, intermediateResultCallback);
+        return finalResult;
     }
 
     public F executeAll() {
-        executeAllPECCycles();
-        generateResult();
-        postProcess();
-        return finalResult;
+        executeDiscovery();
+        return executePostProcessing();
     }
 
     public CompletableFuture<F> future(Executor executor) {
@@ -142,8 +160,12 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         return composer;
     }
 
-    public int stepCount() {
+    public int currentStepCount() {
         return cycleCount;
+    }
+
+    public C lastCandidate() {
+        return lastCandidate;
     }
 
     @Override
@@ -165,4 +187,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     }
 
 
+    public PostProcessingPipeline<R, F> getPostProcessor() {
+        return postProcessor;
+    }
 }

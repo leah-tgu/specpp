@@ -1,8 +1,6 @@
 package org.processmining.specpp.datastructures.petri;
 
 import com.google.common.collect.ImmutableSet;
-import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
-import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetFactory;
 import org.processmining.models.graphbased.AttributeMap;
 import org.processmining.models.graphbased.directed.petrinet.Petrinet;
 import org.processmining.models.graphbased.directed.petrinet.elements.Transition;
@@ -61,7 +59,7 @@ public class ProMPetrinetBuilder {
             }
         }
 
-        AcceptingPetriNet acceptingPetriNet = AcceptingPetriNetFactory.createAcceptingPetriNet(net, initialMarking, finalMarking);
+        // AcceptingPetriNet acceptingPetriNet = AcceptingPetriNetFactory.createAcceptingPetriNet(net, initialMarking, finalMarking);
         return new ProMPetrinetWrapper(net, initialMarking, finalMarking);
     }
 }

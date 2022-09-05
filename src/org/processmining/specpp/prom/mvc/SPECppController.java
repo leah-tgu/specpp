@@ -3,6 +3,7 @@ package org.processmining.specpp.prom.mvc;
 import com.google.common.collect.ImmutableList;
 import org.deckfour.xes.model.XLog;
 import org.processmining.contexts.uitopia.UIPluginContext;
+import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.orchestra.SPECppConfigBundle;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.prom.mvc.config.ConfigurationController;
@@ -27,6 +28,7 @@ public class SPECppController {
     private StageController currentStageController;
     private SPECppPanel myPanel;
     private SPECppConfigBundle configBundle;
+    private ProMPetrinetWrapper result;
 
     public SPECppController(UIPluginContext context, SPECppSession specppSession) {
         this.context = context;
@@ -48,8 +50,8 @@ public class SPECppController {
             return Reflection.instance(controllerClass, parentController);
         }
 
-    }
 
+    }
     public UIPluginContext getPluginContext() {
         return context;
     }
@@ -72,16 +74,24 @@ public class SPECppController {
         return PLUGIN_STAGES.get(currentPluginStageIndex);
     }
 
-    public void preprocessingCompleted(InputDataBundle bundle) {
-        dataBundle = bundle;
+    private void advanceStage() {
         currentPluginStageIndex++;
         updatePluginStage();
     }
 
+    public void preprocessingCompleted(InputDataBundle bundle) {
+        dataBundle = bundle;
+        advanceStage();
+    }
+
     public void configCompleted(SPECppConfigBundle configBundle) {
         this.configBundle = configBundle;
-        currentPluginStageIndex++;
-        updatePluginStage();
+        advanceStage();
+    }
+
+    public void discoveryCompleted(ProMPetrinetWrapper result) {
+        this.result = result;
+        advanceStage();
     }
 
     protected void updatePluginStage() {
@@ -97,5 +107,13 @@ public class SPECppController {
 
     public XLog getRawLog() {
         return rawLog;
+    }
+
+    public InputDataBundle getDataBundle() {
+        return dataBundle;
+    }
+
+    public SPECppConfigBundle getConfigBundle() {
+        return configBundle;
     }
 }

@@ -36,7 +36,7 @@ public class PostSpecOps {
     static void postExecution(SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowPrinting, boolean allowVisualOutput, boolean allowSaving) {
         if (allowPrinting) {
             System.out.println("// ========================================= //");
-            System.out.println("Executed " + specPP.stepCount() + " ProposalEvaluationComposition cycles.");
+            System.out.println("Executed " + specPP.currentStepCount() + " ProposalEvaluationComposition cycles.");
         }
 
         ProMPetrinetWrapper finalResult = specPP.getPostProcessedResult();

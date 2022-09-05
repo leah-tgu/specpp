@@ -3,6 +3,7 @@ package org.processmining.specpp.supervision.instrumentators;
 import org.processmining.specpp.base.Candidate;
 import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.base.Result;
+import org.processmining.specpp.base.impls.PostProcessingPipeline;
 import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
@@ -24,7 +25,7 @@ public class InstrumentedSPECpp<C extends Candidate, I extends CompositionCompon
     private final TimeStopper timeStopper = new TimeStopper();
 
 
-    public InstrumentedSPECpp(GlobalComponentRepository cr, List<Supervisor> supervisors, ProposerComponent<C> proposer, ComposerComponent<C, I, R> composer, PostProcessor<R, F> postProcessor) {
+    public InstrumentedSPECpp(GlobalComponentRepository cr, List<Supervisor> supervisors, ProposerComponent<C> proposer, ComposerComponent<C, I, R> composer, PostProcessingPipeline<R, F> postProcessor) {
         super(cr, supervisors, proposer, composer, postProcessor);
         globalComponentSystem().provide(SupervisionRequirements.observable("pec.performance", PerformanceEvent.class, timeStopper));
     }

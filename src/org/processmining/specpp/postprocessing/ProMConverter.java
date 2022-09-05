@@ -9,7 +9,6 @@ import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 public class ProMConverter implements PostProcessor<PetriNet, ProMPetrinetWrapper> {
     @Override
     public ProMPetrinetWrapper postProcess(PetriNet result) {
-        PnmlExportNetToPNML e = new PnmlExportNetToPNML();
         ProMPetrinetBuilder builder = new ProMPetrinetBuilder(result.getPlaces());
         return builder.build();
     }

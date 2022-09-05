@@ -3,13 +3,37 @@ package org.processmining.specpp.prom.mvc.config;
 import com.fluxicon.slickerbox.factory.SlickerFactory;
 import com.google.common.collect.ImmutableList;
 import org.processmining.specpp.base.AdvancedComposition;
+import org.processmining.specpp.base.IdentityPostProcessor;
 import org.processmining.specpp.base.impls.*;
+import org.processmining.specpp.componenting.data.ParameterRequirements;
+import org.processmining.specpp.componenting.data.StaticDataSource;
+import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
+import org.processmining.specpp.componenting.system.AbstractGlobalComponentSystemUser;
+import org.processmining.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.specpp.composition.ConstrainingPlaceCollection;
 import org.processmining.specpp.composition.PlaceCollection;
-import org.processmining.specpp.config.ProposerComposerConfiguration;
-import org.processmining.specpp.config.SupervisionConfiguration;
+import org.processmining.specpp.config.*;
+import org.processmining.specpp.config.parameters.DeltaParameters;
+import org.processmining.specpp.config.parameters.PlaceGeneratorParameters;
+import org.processmining.specpp.config.parameters.SupervisionParameters;
+import org.processmining.specpp.config.parameters.TauFitnessThresholds;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
+import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.specpp.datastructures.tree.base.impls.EnumeratingTree;
+import org.processmining.specpp.datastructures.tree.base.impls.EventingEnumeratingTree;
+import org.processmining.specpp.datastructures.tree.base.impls.VariableExpansion;
+import org.processmining.specpp.datastructures.tree.heuristic.DoubleScore;
+import org.processmining.specpp.datastructures.tree.heuristic.EventingHeuristicTreeExpansion;
+import org.processmining.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
+import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
+import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
+import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
+import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
+import org.processmining.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
+import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
+import org.processmining.specpp.orchestra.AdaptedAlgorithmParameterConfig;
+import org.processmining.specpp.postprocessing.ProMConverter;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 import org.processmining.specpp.prom.mvc.AbstractStagePanel;
 import org.processmining.specpp.prom.util.*;
@@ -113,7 +137,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         LabeledComboBox<TreeExpansionSetting> candidate_enumeration = FactoryUtils.labeledComboBox("Candidate Enumeration", TreeExpansionSetting.values());
         enumerationStrategyComboBox = candidate_enumeration.getComboBox();
         proposal.append(candidate_enumeration);
-        bridgedHeuristicsLabeledComboBox = FactoryUtils.labeledComboBox("Heuristic", FrameworkBridge.BridgedHeuristics.values());
+        bridgedHeuristicsLabeledComboBox = FactoryUtils.labeledComboBox("Heuristic", FrameworkBridge.HEURISTICS.toArray(new FrameworkBridge.BridgedHeuristics[0]));
         heuristicComboBox = bridgedHeuristicsLabeledComboBox.getComboBox();
         heuristicComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedProposalSettings();
@@ -138,7 +162,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         fittingSublogCheckBox = FactoryUtils.labeledCheckBox("restrict replay to fitting sub log for implicit place removal");
         fittingSublogCheckBox.addChangeListener(e -> updatedEvaluationSettings());
         evaluation.append(fittingSublogCheckBox);
-        deltaAdaptationLabeledComboBox = FactoryUtils.labeledComboBox("Delta Adaptation Function", FrameworkBridge.BridgedDeltaAdaptationFunctions.values());
+        deltaAdaptationLabeledComboBox = FactoryUtils.labeledComboBox("Delta Adaptation Function", FrameworkBridge.DELTA_FUNCTIONS.toArray(new FrameworkBridge.BridgedDeltaAdaptationFunctions[0]));
         deltaAdaptationFunctionComboBox = deltaAdaptationLabeledComboBox.getComboBox();
         deltaAdaptationFunctionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedEvaluationSettings();
@@ -390,16 +414,15 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
 
     }
 
-    public Object collectConfig() {
+    public ConfigsCollection collectConfig() {
         SupervisionSetting lod = (SupervisionSetting) supervisionComboBox.getSelectedItem();
-        boolean trackCandidateTree = trackCandidateTreeCheckBox.isSelected();
         TreeExpansionSetting treeExpansionSetting = (TreeExpansionSetting) enumerationStrategyComboBox.getSelectedItem();
         boolean permitWiring = permitWiringCheckBox.isSelected();
         boolean permitRestart = permitRestartCheckBox.isSelected();
         FrameworkBridge.BridgedHeuristics bridgedHeuristics = (FrameworkBridge.BridgedHeuristics) heuristicComboBox.getSelectedItem();
         boolean concurrentReplay = concurrentReplayCheckBox.isSelected();
         boolean restrictToFittingSubLog = fittingSublogCheckBox.isSelected();
-        FrameworkBridge.BridgedDeltaAdaptationFunctions adaptationFunctions = (FrameworkBridge.BridgedDeltaAdaptationFunctions) deltaAdaptationFunctionComboBox.getSelectedItem();
+        FrameworkBridge.BridgedDeltaAdaptationFunctions bridgedDelta = (FrameworkBridge.BridgedDeltaAdaptationFunctions) deltaAdaptationFunctionComboBox.getSelectedItem();
         CompositionStrategy compositionStrategy = (CompositionStrategy) compositionVariantComboBox.getSelectedItem();
         boolean applyCIPR = ciprCheckBox.isSelected();
         if (!validatePostProcessingPipeline()) return null;
@@ -414,26 +437,35 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         Duration duration = Duration.parse(timeField.getText());
 
         // COLLECTION COMPLETE
+
+        // VALIDATING COMPLETENESS
+
+        boolean incomplete = false;
+        incomplete |= lod == null | treeExpansionSetting == null | compositionStrategy == null;
+        incomplete |= treeExpansionSetting == TreeExpansionSetting.Heuristic && bridgedHeuristics == null;
+        incomplete |= compositionStrategy == CompositionStrategy.TauDelta && bridgedDelta == null;
+        if (incomplete) return null;
+
         // BUILDING CONFIGURATORS
 
         // ** SUPERVISION ** //
 
-        SupervisionConfiguration.Configurator supCfg = new SupervisionConfiguration.Configurator();
-        supCfg.supervisor(BaseSupervisor::new);
+        SupervisionConfiguration.Configurator svCfg = new SupervisionConfiguration.Configurator();
+        svCfg.supervisor(BaseSupervisor::new);
         switch (lod) {
             case Lightweight:
                 break;
             case PerformanceOnly:
-                supCfg.supervisor(PerformanceSupervisor::new);
+                svCfg.supervisor(PerformanceSupervisor::new);
                 break;
             case Full:
-                supCfg.supervisor(PerformanceSupervisor::new);
-                supCfg.supervisor(AltEventCountsSupervisor::new);
+                svCfg.supervisor(PerformanceSupervisor::new);
+                svCfg.supervisor(AltEventCountsSupervisor::new);
                 break;
         }
-        supCfg.supervisor(TerminalSupervisor::new);
+        svCfg.supervisor(TerminalSupervisor::new);
 
-        // ** PROPOSAL ** //
+        // ** PROPOSAL, COMPOSITION ** //
         ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, PetriNet> pcCfg = new ProposerComposerConfiguration.Configurator<>();
         if (permitRestart) pcCfg.proposer(new RestartablePlaceProposer.Builder());
         else pcCfg.proposer(new ConstrainablePlaceProposer.Builder());
@@ -441,22 +473,74 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         else if (compositionStrategy == CompositionStrategy.TauDelta || applyCIPR)
             pcCfg.composition(PlaceCollection::new);
         else pcCfg.composition(LightweightPlaceCollection::new);
-        if (applyCIPR) pcCfg.terminalComposer(PlaceComposerWithCIPR::new);
+        if (applyCIPR)
+            pcCfg.terminalComposer(lod == SupervisionSetting.Full ? EventingPlaceComposerWithCIPR::new : PlaceComposerWithCIPR::new);
         else pcCfg.terminalComposer(PlaceAccepter::new);
         switch (compositionStrategy) {
             case Standard:
-                pcCfg.composerChain(PlaceFitnessFilter::new);
+                pcCfg.composerChain(lod == SupervisionSetting.Full ? EventingPlaceFitnessFilter::new : PlaceFitnessFilter::new);
                 break;
             case TauDelta:
-                pcCfg.composerChain(PlaceFitnessFilter::new, QueueingDeltaComposer::new);
+                pcCfg.composerChain(lod == SupervisionSetting.Full ? EventingPlaceFitnessFilter::new : PlaceFitnessFilter::new, QueueingDeltaComposer::new);
                 break;
             case Uniwired:
-                pcCfg.composerChain(PlaceFitnessFilter::new, UniwiredComposer::new);
+                pcCfg.composerChain(lod == SupervisionSetting.Full ? EventingPlaceFitnessFilter::new : PlaceFitnessFilter::new, UniwiredComposer::new);
                 break;
         }
-        // TODO cont'd.
 
-        return "true";
+        // ** EVALUATION ** //
+
+        EvaluatorConfiguration.Configurator evCfg = new EvaluatorConfiguration.Configurator();
+        evCfg.evaluatorProvider(LogHistoryMaker::new);
+        evCfg.evaluatorProvider(concurrentReplay ? ForkJoinFitnessEvaluator::new : AbsolutelyNoFrillsFitnessEvaluator::new);
+        if (bridgedDelta != null) evCfg.evaluatorProvider(bridgedDelta.getBridge().getBuilder());
+
+        EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg;
+        if (treeExpansionSetting == TreeExpansionSetting.Heuristic) {
+            HeuristicTreeConfiguration.Configurator<Place, PlaceState, PlaceNode, DoubleScore> htCfg = new HeuristicTreeConfiguration.Configurator<>();
+            htCfg.heuristic(bridgedHeuristics.getBridge().getBuilder());
+            htCfg.heuristicExpansion(lod == SupervisionSetting.Full ? EventingHeuristicTreeExpansion::new : HeuristicTreeExpansion::new);
+            htCfg.tree(lod == SupervisionSetting.Full ? EventingEnumeratingTree::new : EnumeratingTree::new);
+            htCfg.childGenerationLogic(new MonotonousPlaceGenerationLogic.Builder());
+            etCfg = htCfg;
+        } else {
+            etCfg = new EfficientTreeConfiguration.Configurator<>();
+            etCfg.tree(lod == SupervisionSetting.Full ? EventingEnumeratingTree::new : EnumeratingTree::new);
+            etCfg.expansionStrategy(treeExpansionSetting == TreeExpansionSetting.BFS ? VariableExpansion::bfs : VariableExpansion::dfs);
+            etCfg.childGenerationLogic(new MonotonousPlaceGenerationLogic.Builder());
+        }
+
+        // ** Post Processing ** //
+
+        PostProcessingConfiguration.Configurator<PetriNet, PetriNet> configurator = new PostProcessingConfiguration.Configurator<>(IdentityPostProcessor::new);
+        for (FrameworkBridge.BridgedPostProcessors bridgedPostProcessors : pipeline) {
+            FrameworkBridge.BridgedPostProcessor next = bridgedPostProcessors.getBridge();
+            configurator.processor((SimpleBuilder) next.getBuilder());
+        }
+        PostProcessingConfiguration.Configurator<PetriNet, ProMPetrinetWrapper> ppCfg = configurator.processor(ProMConverter::new);
+
+
+        // ** PARAMETERS ** //
+
+        ProvidesParameters parameters = makeAlgorithmParameterClass(tau, delta, depth, permitWiring, lod != SupervisionSetting.Lightweight);
+        AdaptedAlgorithmParameterConfig parCfg = new AdaptedAlgorithmParameterConfig(parameters);
+
+        return new ConfigsCollection(svCfg, pcCfg, evCfg, etCfg, ppCfg, parCfg);
+    }
+
+    private ProvidesParameters makeAlgorithmParameterClass(double tau, double delta, int maxDepth, boolean permitWiring, boolean shouldInstrument) {
+
+        class CustomParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
+            public CustomParameters() {
+                globalComponentSystem().provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWith(StaticDataSource.of(shouldInstrument ? SupervisionParameters.instrumentAll(false) : SupervisionParameters.instrumentNone(false))))
+                                       .provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWith(StaticDataSource.of(TauFitnessThresholds.tau(tau))))
+                                       .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWith(StaticDataSource.of(new PlaceGeneratorParameters(maxDepth, true, permitWiring, false, false))));
+
+                globalComponentSystem().provide(ParameterRequirements.DELTA_PARAMETERS.fulfilWith(StaticDataSource.of(new DeltaParameters(delta))));
+            }
+        }
+
+        return new CustomParameters();
     }
 
     private void tryRun() {

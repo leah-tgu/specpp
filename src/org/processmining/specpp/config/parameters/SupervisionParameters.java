@@ -16,18 +16,31 @@ public class SupervisionParameters implements Parameters {
         classesToInstrument = new HashSet<>();
     }
 
+    public SupervisionParameters(boolean useConsole, Set<Class<?>> classesToInstrument) {
+        this.useConsole = useConsole;
+        this.classesToInstrument = classesToInstrument;
+    }
+
+
+    public static SupervisionParameters instrumentNone(boolean useConsole) {
+        return new SupervisionParameters(useConsole);
+    }
+
+    public static SupervisionParameters instrumentAll(boolean useConsole) {
+        HashSet<Class<?>> s = new HashSet<>();
+        s.add(ProposerComponent.class);
+        s.add(ComposerComponent.class);
+        s.add(CompositionComponent.class);
+        s.add(PostProcessorComponent.class);
+        s.add(ExpansionStrategyComponent.class);
+        s.add(EfficientTreeComponent.class);
+        s.add(ChildGenerationLogicComponent.class);
+        s.add(SPECpp.class);
+        return new SupervisionParameters(true, s);
+    }
 
     public static SupervisionParameters getDefault() {
-        SupervisionParameters p = new SupervisionParameters(true);
-        p.classesToInstrument.add(ProposerComponent.class);
-        p.classesToInstrument.add(ComposerComponent.class);
-        p.classesToInstrument.add(CompositionComponent.class);
-        p.classesToInstrument.add(PostProcessorComponent.class);
-        p.classesToInstrument.add(ExpansionStrategyComponent.class);
-        p.classesToInstrument.add(EfficientTreeComponent.class);
-        p.classesToInstrument.add(ChildGenerationLogicComponent.class);
-        p.classesToInstrument.add(SPECpp.class);
-        return p;
+        return instrumentAll(true);
     }
 
     public Set<Class<?>> getClassesToInstrument() {
@@ -54,9 +67,6 @@ public class SupervisionParameters implements Parameters {
 
     @Override
     public String toString() {
-        return "SupervisionParameters{" +
-                "useConsole=" + useConsole +
-                ", classesToInstrument=" + classesToInstrument +
-                '}';
+        return "SupervisionParameters{" + "useConsole=" + useConsole + ", classesToInstrument=" + classesToInstrument + '}';
     }
 }

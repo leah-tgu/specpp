@@ -28,7 +28,7 @@ public class FrameworkBridge {
     public static final List<BridgedHeuristics> HEURISTICS = Arrays.asList(BridgedHeuristics.values());
     public static final List<BridgedEvaluators> EVALUATORS = Arrays.asList(BridgedEvaluators.values());
     public static final List<BridgedDeltaAdaptationFunctions> DELTA_FUNCTIONS = Arrays.asList(BridgedDeltaAdaptationFunctions.values());
-    public static final List<BridgedPostProcessors> POST_PROCESSORS = Arrays.asList(BridgedPostProcessors.values());
+    public static final List<BridgedPostProcessors> POST_PROCESSORS = Arrays.asList(BridgedPostProcessors.ReplayBasedImplicitPlaceRemoval, BridgedPostProcessors.SelfLoopPlacesMerging);
 
     public enum BridgedHeuristics {
         PlaceInterestingness(new BridgedTreeHeuristic("Place Interestingness", () -> InterestingnessHeuristic::new)), BFS_Emulation(new BridgedTreeHeuristic("BFS Emulation", () -> HeuristicUtils::bfs)), DFS_Emulation(new BridgedTreeHeuristic("DFS Emulation", () -> HeuristicUtils::dfs));
