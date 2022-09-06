@@ -1,4 +1,4 @@
-package org.processmining.specpp.prom.events;
+package org.processmining.specpp.prom.computations;
 
 import org.processmining.specpp.supervision.observations.Observation;
 

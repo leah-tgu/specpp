@@ -7,6 +7,7 @@ import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetBuilder;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.prom.util.ColorScheme;
+import org.processmining.specpp.prom.util.Destructible;
 import org.processmining.specpp.prom.util.FactoryUtils;
 import org.processmining.specpp.prom.util.LabeledComboBox;
 
@@ -16,7 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.concurrent.ExecutionException;
 
-public class LiveCompositionPanel extends JPanel {
+public class LiveCompositionPanel extends JPanel implements Destructible {
 
     private final AdvancedComposition<Place> composition;
     private final JPanel content;
@@ -48,12 +49,12 @@ public class LiveCompositionPanel extends JPanel {
 
     private void setRefreshRate(double rate) {
         int millis = (int) (1000 / rate);
-        if (updateTimer == null) updateTimer = new Timer(millis, this::updateVisualization);
+        if (updateTimer == null) updateTimer = new Timer(millis, e-> updateVisualization());
         else updateTimer.setDelay(millis);
         updateTimer.restart();
     }
 
-    private void updateVisualization(ActionEvent actionEvent) {
+    private void updateVisualization() {
         if (updateWorker != null && !updateWorker.isDone()) updateWorker.cancel(true);
         updateWorker = new SwingWorker<DotPanel, Void>() {
 
@@ -77,6 +78,7 @@ public class LiveCompositionPanel extends JPanel {
                 }
             }
         };
+
         updateWorker.execute();
     }
 
@@ -86,4 +88,8 @@ public class LiveCompositionPanel extends JPanel {
         content.add(dotPanel, BorderLayout.CENTER);
     }
 
+    @Override
+    public void destroy() {
+        updateTimer.stop();
+    }
 }

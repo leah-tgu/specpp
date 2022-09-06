@@ -5,14 +5,17 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 import javax.swing.*;
 import java.awt.*;
 
-public class LabeledTextField extends JPanel {
+public class LabeledCheckboxedTextField extends JPanel {
 
     protected final JTextField field;
+    protected final JCheckBox checkBox;
 
-    public LabeledTextField(String label) {
+    public LabeledCheckboxedTextField(String label, boolean enabledByDefault) {
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 
-        add(SlickerFactory.instance().createLabel(label));
+        checkBox = SlickerFactory.instance().createCheckBox(label, enabledByDefault);
+        checkBox.addActionListener(e -> updateTextFieldState());
+        add(checkBox);
         JPanel sep = new JPanel();
         sep.setMinimumSize(new Dimension(25, 10));
         add(sep);
@@ -20,6 +23,16 @@ public class LabeledTextField extends JPanel {
         field.setMinimumSize(new Dimension(150, 15));
         //field.setPreferredSize(new Dimension(150, 15));
         add(field);
+
+        updateTextFieldState();
+    }
+
+    private void updateTextFieldState() {
+        field.setEnabled(checkBox.isEnabled());
+    }
+
+    public JCheckBox getCheckBox() {
+        return checkBox;
     }
 
     public JTextField getTextField() {
@@ -27,7 +40,7 @@ public class LabeledTextField extends JPanel {
     }
 
     public String getText() {
-        return field.getText();
+        return checkBox.isEnabled() ? field.getText() : null;
     }
 
 }

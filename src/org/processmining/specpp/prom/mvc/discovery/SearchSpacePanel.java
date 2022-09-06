@@ -10,11 +10,12 @@ import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.petri.Transition;
+import org.processmining.specpp.prom.util.Destructible;
 
 import javax.swing.*;
 import java.math.BigInteger;
 
-public class SearchSpacePanel extends JPanel {
+public class SearchSpacePanel extends JPanel implements Destructible {
 
     private final SPECpp<Place, AdvancedComposition<Place>, PetriNet, ProMPetrinetWrapper> specpp;
     private final int maxTreeDepth;
@@ -58,12 +59,6 @@ public class SearchSpacePanel extends JPanel {
         updateTimer.start();
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        updateTimer.stop();
-        super.finalize();
-    }
-
     private String createTraversedCandidatesString() {
         double count = specpp.currentStepCount();
         return "#Traversed Candidate Places: " + count + "/" + maxCandidates + String.format("%.2f%%", count / maxCandidates.doubleValue());
@@ -80,4 +75,8 @@ public class SearchSpacePanel extends JPanel {
     }
 
 
+    @Override
+    public void destroy() {
+        updateTimer.stop();
+    }
 }

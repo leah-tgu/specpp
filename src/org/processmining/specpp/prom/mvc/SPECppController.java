@@ -11,6 +11,7 @@ import org.processmining.specpp.prom.mvc.discovery.DiscoveryController;
 import org.processmining.specpp.prom.mvc.preprocessing.PreProcessingController;
 import org.processmining.specpp.prom.mvc.result.ResultController;
 import org.processmining.specpp.prom.plugins.SPECppSession;
+import org.processmining.specpp.prom.util.Destructible;
 import org.processmining.specpp.util.Reflection;
 
 import javax.swing.*;
@@ -52,13 +53,14 @@ public class SPECppController {
 
 
     }
+
     public UIPluginContext getPluginContext() {
         return context;
     }
 
     public SPECppPanel createPanel() {
         myPanel = new SPECppPanel(this);
-        updatePluginStage();
+        initCurrentPluginStage();
         return myPanel;
     }
 
@@ -75,8 +77,23 @@ public class SPECppController {
     }
 
     private void advanceStage() {
+        destroyCurrentPluginStage();
+        advanceStageIndex();
+        initCurrentPluginStage();
+    }
+
+    private void resetStage() {
+        destroyCurrentPluginStage();
+        initCurrentPluginStage();
+    }
+
+    private void destroyCurrentPluginStage() {
+        if (currentStagePanel instanceof Destructible) ((Destructible) currentStagePanel).destroy();
+        if (currentStageController instanceof Destructible) ((Destructible) currentStageController).destroy();
+    }
+
+    private void advanceStageIndex() {
         currentPluginStageIndex++;
-        updatePluginStage();
     }
 
     public void preprocessingCompleted(InputDataBundle bundle) {
@@ -94,7 +111,7 @@ public class SPECppController {
         advanceStage();
     }
 
-    protected void updatePluginStage() {
+    protected void initCurrentPluginStage() {
         currentStageController = createCurrentStageController();
         currentStagePanel = createCurrentStagePanel();
         myPanel.updatePluginStage(currentPluginStage(), currentStagePanel);
@@ -102,7 +119,7 @@ public class SPECppController {
 
     protected void setPluginStage(PluginStage stage) {
         currentPluginStageIndex = PLUGIN_STAGES.indexOf(stage);
-        updatePluginStage();
+        initCurrentPluginStage();
     }
 
     public XLog getRawLog() {

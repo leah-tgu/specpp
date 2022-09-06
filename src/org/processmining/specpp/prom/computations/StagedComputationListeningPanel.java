@@ -1,12 +1,11 @@
-package org.processmining.specpp.prom.events;
+package org.processmining.specpp.prom.computations;
 
 import org.processmining.specpp.prom.mvc.discovery.ComputationListeningPanel;
-import org.processmining.specpp.prom.mvc.discovery.DiscoveryController;
 
 import javax.swing.*;
 
-public class StagedComputationListeningPanel<T extends DiscoveryController.OngoingStagedComputation> extends ComputationListeningPanel<DiscoveryController.OngoingStagedComputation> {
-    public StagedComputationListeningPanel(String label, DiscoveryController.OngoingStagedComputation ongoingComputation) {
+public class StagedComputationListeningPanel<T extends OngoingStagedComputation> extends ComputationListeningPanel<OngoingStagedComputation> {
+    public StagedComputationListeningPanel(String label, OngoingStagedComputation ongoingComputation) {
         super(label, ongoingComputation);
     }
 

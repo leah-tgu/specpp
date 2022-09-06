@@ -1,4 +1,4 @@
-package org.processmining.specpp.prom.events;
+package org.processmining.specpp.prom.computations;
 
 public class ComputationStageCompleted extends ComputationEvent {
     private final int completedStage;

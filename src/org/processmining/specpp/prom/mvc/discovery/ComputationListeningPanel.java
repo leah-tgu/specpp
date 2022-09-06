@@ -1,15 +1,16 @@
 package org.processmining.specpp.prom.mvc.discovery;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
-import org.processmining.specpp.prom.events.ComputationEnded;
-import org.processmining.specpp.prom.events.ComputationEvent;
-import org.processmining.specpp.prom.events.ComputationStarted;
+import org.processmining.specpp.prom.computations.ComputationEnded;
+import org.processmining.specpp.prom.computations.ComputationEvent;
+import org.processmining.specpp.prom.computations.ComputationStarted;
+import org.processmining.specpp.prom.computations.OngoingComputation;
 
 import javax.swing.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-public class ComputationListeningPanel<T extends DiscoveryController.OngoingComputation> extends JPanel {
+public class ComputationListeningPanel<T extends OngoingComputation> extends JPanel {
 
     protected final String label;
     protected final T ongoingComputation;

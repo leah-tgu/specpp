@@ -1,7 +1,10 @@
 package org.processmining.specpp.prom.util;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.ListIterator;
 
 public class MyListModel<T> extends AbstractListModel<T> implements Iterable<T> {
 
@@ -44,6 +47,7 @@ public class MyListModel<T> extends AbstractListModel<T> implements Iterable<T> 
     }
 
     public void clear() {
+        if (internal.isEmpty()) return;
         int index = internal.size() - 1;
         internal.clear();
         fireIntervalRemoved(this, 0, index);

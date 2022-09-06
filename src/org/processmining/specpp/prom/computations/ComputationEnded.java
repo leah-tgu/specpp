@@ -1,11 +1,11 @@
-package org.processmining.specpp.prom.events;
+package org.processmining.specpp.prom.computations;
 
 import java.time.LocalDateTime;
 
 public class ComputationEnded extends ComputationEvent {
     private final LocalDateTime end;
 
-    private ComputationEnded(LocalDateTime end) {
+    public ComputationEnded(LocalDateTime end) {
         this.end = end;
     }
 

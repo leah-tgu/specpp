@@ -1,6 +1,7 @@
 package org.processmining.specpp.prom.alg;
 
 import org.processmining.specpp.base.ConstraintEvent;
+import org.processmining.specpp.supervision.monitoring.EventCounterMonitor;
 import org.processmining.specpp.supervision.monitoring.KeepLastMonitor;
 import org.processmining.specpp.supervision.observations.Event;
 import org.processmining.specpp.supervision.observations.EventCountStatistics;
@@ -26,6 +27,7 @@ public class LiveEvents extends MonitoringSupervisor {
                                .require(observable(regex(".*constraints.*"), ConstraintEvent.class), observeResults(eventConcurrencyBridge));
         monitor = new KeepLastMonitor<>();
         createMonitor("events", monitor);
+        new EventCounterMonitor();
     }
 
     @Override
@@ -35,7 +37,7 @@ public class LiveEvents extends MonitoringSupervisor {
                      .pipe(PipeWorks.summarizingBuffer(Transformers.eventCounter()))
                      .schedule(REFRESH_INTERVAL)
                      .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
-                     .sink(PipeWorks.loggingSink("event.count", EventCountStatistics::toPrettyString, fileLogger))
+                     .sink(PipeWorks.loggingSink("events.count", EventCountStatistics::toPrettyString, fileLogger))
                      .sink(getMonitor("events"))
                      .apply();
     }

@@ -15,22 +15,23 @@ import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.specpp.orchestra.*;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 
-public class ConfigsCollection implements SPECppConfigBundle, SPECppComponentConfig, AlgorithmParameterConfig, DataExtractionConfig {
+public class ConfiguratorCollection implements SPECppConfigBundle, SPECppComponentConfig, AlgorithmParameterConfig, DataExtractionConfig {
     private final SupervisionConfiguration.Configurator svCfg;
     private final ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, PetriNet> pcCfg;
     private final EvaluatorConfiguration.Configurator evCfg;
     private final EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg;
     private final PostProcessingConfiguration.Configurator<PetriNet, ProMPetrinetWrapper> ppCfg;
     private final AdaptedAlgorithmParameterConfig parCfg;
-    private BaseDataExtractionConfig deCfg = new BaseDataExtractionConfig();
+    private BaseDataExtractionConfig deCfg;
 
-    public ConfigsCollection(SupervisionConfiguration.Configurator svCfg, ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, PetriNet> pcCfg, EvaluatorConfiguration.Configurator evCfg, EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg, PostProcessingConfiguration.Configurator<PetriNet, ProMPetrinetWrapper> ppCfg, AdaptedAlgorithmParameterConfig parCfg) {
+    public ConfiguratorCollection(SupervisionConfiguration.Configurator svCfg, ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, PetriNet> pcCfg, EvaluatorConfiguration.Configurator evCfg, EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg, PostProcessingConfiguration.Configurator<PetriNet, ProMPetrinetWrapper> ppCfg, AdaptedAlgorithmParameterConfig parCfg) {
         this.svCfg = svCfg;
         this.pcCfg = pcCfg;
         this.evCfg = evCfg;
         this.etCfg = etCfg;
         this.ppCfg = ppCfg;
         this.parCfg = parCfg;
+        deCfg = new BaseDataExtractionConfig();
     }
 
     @Override

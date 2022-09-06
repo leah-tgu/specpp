@@ -10,6 +10,8 @@ public class ParameterRequirements {
     public static final ParameterRequirement<DeltaParameters> DELTA_PARAMETERS = parameters("base_delta", DeltaParameters.class);
     public static final ParameterRequirement<SupervisionParameters> SUPERVISION_PARAMETERS = parameters("supervision.parameters", SupervisionParameters.class);
 
+    public static final ParameterRequirement<ExecutionParameters> EXECUTION_PARAMETERS = parameters("execution.parameters", ExecutionParameters.class);
+
     public static <P extends Parameters> ParameterRequirement<P> parameters(String label, Class<P> type) {
         return new ParameterRequirement<>(label, type);
     }
