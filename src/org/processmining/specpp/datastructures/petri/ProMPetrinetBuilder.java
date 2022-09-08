@@ -7,19 +7,16 @@ import org.processmining.models.graphbased.directed.petrinet.elements.Transition
 import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactory;
 import org.processmining.models.semantics.petrinet.Marking;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ProMPetrinetBuilder {
 
-    private final Set<Place> places;
+    private final Collection<Place> places;
     private final Map<org.processmining.specpp.datastructures.petri.Transition, Transition> transitionMap;
     private final Map<Place, org.processmining.models.graphbased.directed.petrinet.elements.Place> placeMap;
     private final Petrinet net;
 
-    public ProMPetrinetBuilder(Set<Place> places) {
+    public ProMPetrinetBuilder(Collection<Place> places) {
         this.places = places;
         transitionMap = new HashMap<>();
         placeMap = new HashMap<>();

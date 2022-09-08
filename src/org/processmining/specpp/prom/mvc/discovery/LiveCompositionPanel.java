@@ -1,80 +1,129 @@
 package org.processmining.specpp.prom.mvc.discovery;
 
-import org.processmining.graphvisualizers.algorithms.GraphVisualizerAlgorithm;
-import org.processmining.plugins.graphviz.visualisation.DotPanel;
+import com.fluxicon.slickerbox.factory.SlickerFactory;
 import org.processmining.specpp.base.AdvancedComposition;
 import org.processmining.specpp.datastructures.petri.Place;
-import org.processmining.specpp.datastructures.petri.ProMPetrinetBuilder;
-import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
-import org.processmining.specpp.prom.util.ColorScheme;
+import org.processmining.specpp.prom.computations.ComputationEnded;
+import org.processmining.specpp.prom.computations.ComputationEvent;
+import org.processmining.specpp.prom.computations.OngoingComputation;
+import org.processmining.specpp.prom.mvc.swing.LabeledComboBox;
+import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import org.processmining.specpp.prom.util.Destructible;
-import org.processmining.specpp.prom.util.FactoryUtils;
-import org.processmining.specpp.prom.util.LabeledComboBox;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class LiveCompositionPanel extends JPanel implements Destructible {
 
+    private static final int PLACE_LIMIT = 100;
     private final AdvancedComposition<Place> composition;
-    private final JPanel content;
+    private final OngoingComputation ongoingDiscoveryComputation;
+    private final JPanel contentPanel;
+    private final LabeledComboBox<VisualizationOption> visualizationOptionComboBox;
+    private final LivePlacesGraph livePlacesGraph;
+    private final LivePlacesList livePlacesList;
     private Timer updateTimer;
-    private DotPanel dotPanel;
-    private SwingWorker<DotPanel, Void> updateWorker;
+    private SwingWorker<JComponent, Void> updateWorker;
+    private JComponent currentContent;
 
-    public LiveCompositionPanel(AdvancedComposition<Place> composition) {
-        super(new BorderLayout());
+    public LiveCompositionPanel(AdvancedComposition<Place> composition, OngoingComputation ongoingDiscoveryComputation) {
+        super(new GridBagLayout());
         this.composition = composition;
+        this.ongoingDiscoveryComputation = ongoingDiscoveryComputation;
+
+        livePlacesGraph = new LivePlacesGraph();
+        livePlacesList = new LivePlacesList();
+
         setBorder(BorderFactory.createRaisedSoftBevelBorder());
-        JPanel header = new JPanel(new BorderLayout());
-        header.setOpaque(true);
-        header.setBackground(ColorScheme.lightBlue);
-        header.add(FactoryUtils.createHeader("Intermediate Result"), BorderLayout.WEST);
-        LabeledComboBox<Double> rfRate = FactoryUtils.labeledComboBox("refresh rate", new Double[]{0.25, 0.5, 0.75, 1d, 2d, 3d, 5d, 10d});
-        header.add(rfRate, BorderLayout.EAST);
-        rfRate.getComboBox().addItemListener(e -> {
-            if (e.getItem() != null && e.getStateChange() == ItemEvent.SELECTED) setRefreshRate((Double) e.getItem());
+
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
+        //header.setOpaque(true);
+        //header.setBackground(ColorScheme.lightBlue);
+        header.add(SwingFactory.createHeader("Intermediate Result"));
+
+        visualizationOptionComboBox = SwingFactory.labeledComboBox("Visualization", VisualizationOption.values());
+        visualizationOptionComboBox.getComboBox().setSelectedItem(VisualizationOption.List);
+        visualizationOptionComboBox.getComboBox().addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) updateVisualization();
         });
 
-        add(header, BorderLayout.NORTH);
-        content = new JPanel();
-        content.setDoubleBuffered(true);
-        add(content, BorderLayout.CENTER);
+        header.add(visualizationOptionComboBox);
 
-        rfRate.getComboBox().setSelectedItem(1.0);
+        LabeledComboBox<Integer> rfInterval = SwingFactory.labeledComboBox("Refresh Interval [s]", new Integer[]{1, 2, 5, 7, 10});
+        header.add(rfInterval);
+        rfInterval.getComboBox().addItemListener(e -> {
+            if (e.getItem() != null && e.getStateChange() == ItemEvent.SELECTED) setRefreshRate((Integer) e.getItem());
+        });
+
+        contentPanel = new JPanel(true);
+        contentPanel.add(Box.createVerticalGlue());
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 1;
+        c.weighty = 0;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(header, c);
+        c.fill = GridBagConstraints.BOTH;
+        c.weighty = 1;
+        c.gridy++;
+        add(contentPanel, c);
+
+        rfInterval.getComboBox().setSelectedItem(5);
+        ongoingDiscoveryComputation.addObserver(this::receive);
     }
 
-    private void setRefreshRate(double rate) {
-        int millis = (int) (1000 / rate);
-        if (updateTimer == null) updateTimer = new Timer(millis, e-> updateVisualization());
+    public void receive(ComputationEvent e) {
+        if (e instanceof ComputationEnded) {
+            updateTimer.stop();
+            updateVisualization();
+        }
+    }
+
+    private void setRefreshRate(int interval) {
+        int millis = interval * 1000;
+        if (updateTimer == null) updateTimer = new Timer(millis, e -> updateVisualization());
         else updateTimer.setDelay(millis);
         updateTimer.restart();
     }
 
     private void updateVisualization() {
         if (updateWorker != null && !updateWorker.isDone()) updateWorker.cancel(true);
-        updateWorker = new SwingWorker<DotPanel, Void>() {
+        updateWorker = new SwingWorker<JComponent, Void>() {
 
             @Override
-            protected DotPanel doInBackground() throws Exception {
+            protected JComponent doInBackground() throws Exception {
+                List<Place> places = composition.toList();
 
-                ProMPetrinetBuilder pnb = new ProMPetrinetBuilder(composition.toSet());
-                ProMPetrinetWrapper wrapper = pnb.build();
-                GraphVisualizerAlgorithm alg = new GraphVisualizerAlgorithm();
-                JComponent apply = alg.apply(null, wrapper.getNet());
-                return (DotPanel) apply;
+
+                VisualizationOption option = (VisualizationOption) visualizationOptionComboBox.getComboBox()
+                                                                                              .getSelectedItem();
+                if (option == null) option = VisualizationOption.List;
+                switch (option) {
+                    case Graph:
+                        if (places.size() > PLACE_LIMIT) return SlickerFactory.instance()
+                                                                              .createLabel(String.format("Model is too large to draw: %d places > %d.", places.size(), PLACE_LIMIT));
+                        livePlacesGraph.update(places);
+                        return livePlacesGraph.getComponent();
+                    case List:
+                        livePlacesList.update(places);
+                        return livePlacesList.getComponent();
+                }
+                return SlickerFactory.instance().createLabel("Visualization failed.");
             }
 
             @Override
             protected void done() {
                 try {
-                    DotPanel panel = get();
-                    if (!isCancelled()) setDotPanel(panel);
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
+                    JComponent jComponent = get();
+                    if (!isCancelled()) setContent(jComponent);
+                } catch (InterruptedException | ExecutionException ignored) {
+                    ignored.printStackTrace();
                 }
             }
         };
@@ -82,14 +131,21 @@ public class LiveCompositionPanel extends JPanel implements Destructible {
         updateWorker.execute();
     }
 
-    private void setDotPanel(DotPanel panel) {
-        dotPanel = panel;
-        content.removeAll();
-        content.add(dotPanel, BorderLayout.CENTER);
+    private void setContent(JComponent jComponent) {
+        if (jComponent != currentContent) {
+            contentPanel.removeAll();
+            contentPanel.add(jComponent);
+        }
+        currentContent = jComponent;
+        contentPanel.revalidate();
     }
 
     @Override
     public void destroy() {
         updateTimer.stop();
+    }
+
+    public enum VisualizationOption {
+        Graph, List
     }
 }

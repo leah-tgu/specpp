@@ -3,6 +3,7 @@ package org.processmining.specpp.prom.mvc.preprocessing;
 import org.processmining.framework.util.ui.widgets.ProMTable;
 import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.log.impls.IndexedVariant;
+import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -34,9 +35,9 @@ public class VariantPanel extends JPanel {
                 }
             }
         };
-        ProMTable proMTable = new ProMTable(tableModel);
-        proMTable.getColumnModel().getColumn(2).setMinWidth(300);
-        proMTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        ProMTable proMTable = SwingFactory.proMTable(tableModel);
+        proMTable.getColumnModel().getColumn(0).setMaxWidth(100);
+        proMTable.getColumnModel().getColumn(1).setMaxWidth(200);
         proMTable.setAutoCreateRowSorter(true);
         add(proMTable, BorderLayout.CENTER);
     }

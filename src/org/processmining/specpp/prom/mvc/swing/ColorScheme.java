@@ -1,4 +1,4 @@
-package org.processmining.specpp.prom.util;
+package org.processmining.specpp.prom.mvc.swing;
 
 import java.awt.*;
 

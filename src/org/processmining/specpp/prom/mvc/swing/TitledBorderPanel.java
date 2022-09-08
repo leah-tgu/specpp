@@ -1,4 +1,4 @@
-package org.processmining.specpp.prom.util;
+package org.processmining.specpp.prom.mvc.swing;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -10,16 +10,24 @@ public class TitledBorderPanel extends JPanel {
 
     public TitledBorderPanel(String title, LayoutManager layout) {
         super(layout);
-        setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), title));
+        makeBorder(title);
     }
 
     public TitledBorderPanel(String title) {
         super(new GridBagLayout());
         c = new GridBagConstraints();
-        c.anchor = GridBagConstraints.NORTHWEST;
+        c.anchor = GridBagConstraints.WEST;
         c.gridx = 0;
         c.gridy = 0;
+        makeBorder(title);
+    }
+
+    private void makeBorder(String title) {
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), title, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, getFont().deriveFont(18f)));
+    }
+
+    public GridBagConstraints getGridBagConstraints() {
+        return c;
     }
 
     public void append(JComponent component) {
@@ -28,7 +36,12 @@ public class TitledBorderPanel extends JPanel {
     }
 
     public void completeWithWhitespace() {
+        c.weighty = 1;
+        c.weightx = 1;
         add(Box.createVerticalGlue(), c);
+        c.gridx++;
+        add(Box.createHorizontalGlue(), c);
     }
+
 
 }

@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableList;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.preprocessing.orderings.ActivityOrderingBuilder;
-import org.processmining.specpp.prom.util.FactoryUtils;
-import org.processmining.specpp.prom.util.LabeledComboBox;
+import org.processmining.specpp.prom.mvc.swing.SwingFactory;
+import org.processmining.specpp.prom.mvc.swing.LabeledComboBox;
 import org.processmining.specpp.supervision.observations.ClassKey;
 import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 
@@ -32,7 +32,7 @@ public class ParametersPanel extends JPanel {
         PreProcessingParameters defaultParameters = PreProcessingParameters.getDefault();
 
         availableEventClassifiers = ImmutableList.copyOf(eventClassifiers);
-        LabeledComboBox<XEventClassifier> eventClassifierBox = FactoryUtils.labeledComboBox("Event Classifier", availableEventClassifiers.toArray(new XEventClassifier[0]));
+        LabeledComboBox<XEventClassifier> eventClassifierBox = SwingFactory.labeledComboBox("Event Classifier", availableEventClassifiers.toArray(new XEventClassifier[0]));
         classifierComboBox = eventClassifierBox.getComboBox();
         classifierComboBox.setMinimumSize(new Dimension(175, 25));
         classifierComboBox.setSelectedItem(defaultParameters.getEventClassifier());
@@ -50,7 +50,7 @@ public class ParametersPanel extends JPanel {
         ClassKey<? extends ActivityOrderingBuilder> selected = new ClassKey<>(defaultParameters.getTransitionEncodingsBuilderClass());
 
 
-        LabeledComboBox<ClassKey<? extends ActivityOrderingBuilder>> orderingStrategyBox = FactoryUtils.labeledComboBox("Ordering Strategy", tebOptions);
+        LabeledComboBox<ClassKey<? extends ActivityOrderingBuilder>> orderingStrategyBox = SwingFactory.labeledComboBox("Ordering Strategy", tebOptions);
         orderingComboBox = orderingStrategyBox.getComboBox();
         orderingComboBox.setMinimumSize(new Dimension(250, 25));
         orderingComboBox.setSelectedItem(selected);

@@ -1,7 +1,6 @@
 package org.processmining.specpp.prom.mvc;
 
-import com.fluxicon.slickerbox.components.SlickerButton;
-import org.processmining.specpp.prom.util.ColorScheme;
+import org.processmining.specpp.prom.mvc.swing.ColorScheme;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -18,6 +17,8 @@ public class StageProgressionPanel extends JPanel {
     public StageProgressionPanel(SPECppController parentController) {
         super(new GridBagLayout());
         this.parentController = parentController;
+
+        setBorder(BorderFactory.createRaisedBevelBorder());
 
         GridBagConstraints c = new GridBagConstraints();
         c.weightx = 1;
@@ -65,5 +66,8 @@ public class StageProgressionPanel extends JPanel {
         });
     }
 
+    public void unlockStageButton(SPECppController.PluginStage stage) {
+        SwingUtilities.invokeLater(() -> stageButtons.get(stage.ordinal()).setEnabled(true));
+    }
 
 }

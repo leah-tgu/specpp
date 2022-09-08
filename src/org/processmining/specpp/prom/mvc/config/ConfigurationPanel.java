@@ -4,7 +4,9 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 import com.google.common.collect.ImmutableList;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 import org.processmining.specpp.prom.mvc.AbstractStagePanel;
-import org.processmining.specpp.prom.util.*;
+import org.processmining.specpp.prom.mvc.swing.*;
+import org.processmining.specpp.prom.util.EnumTransferable;
+import org.processmining.specpp.prom.util.Iconic;
 
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
@@ -86,6 +88,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     private final ActivatableTextBasedInputField<Duration> discoveryTimeLimitInput;
     private final ActivatableTextBasedInputField<Duration> totalTimeLimitInput;
     private final TextBasedInputField<Double> tauInput;
+    private final JButton runButton;
 
     public ConfigurationPanel(ConfigurationController controller) {
         super(controller, new GridBagLayout());
@@ -93,19 +96,19 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         // ** SUPERVISION ** //
 
         TitledBorderPanel supervision = new TitledBorderPanel("Supervision");
-        LabeledComboBox<Preset> presetLabeledComboBox = FactoryUtils.labeledComboBox("Preset", Preset.values());
+        LabeledComboBox<Preset> presetLabeledComboBox = SwingFactory.labeledComboBox("Preset", Preset.values());
         presetComboBox = presetLabeledComboBox.getComboBox();
         presetComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedPreset();
         });
         supervision.append(presetLabeledComboBox);
-        LabeledComboBox<SupervisionSetting> supervisionSettingLabeledComboBox = FactoryUtils.labeledComboBox("Level of Detail", SupervisionSetting.values());
+        LabeledComboBox<SupervisionSetting> supervisionSettingLabeledComboBox = SwingFactory.labeledComboBox("Level of Detail", SupervisionSetting.values());
         supervisionComboBox = supervisionSettingLabeledComboBox.getComboBox();
         supervisionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedSupervisionSettings();
         });
         supervision.append(supervisionSettingLabeledComboBox);
-        trackCandidateTreeCheckBox = FactoryUtils.labeledCheckBox("track candidate tree");
+        trackCandidateTreeCheckBox = SwingFactory.labeledCheckBox("track candidate tree");
         trackCandidateTreeCheckBox.addChangeListener(e -> updatedSupervisionSettings());
         supervision.append(trackCandidateTreeCheckBox);
         supervision.completeWithWhitespace();
@@ -113,20 +116,20 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         // ** PROPOSAL ** //
 
         TitledBorderPanel proposal = new TitledBorderPanel("Proposal");
-        LabeledComboBox<TreeExpansionSetting> candidate_enumeration = FactoryUtils.labeledComboBox("Candidate Enumeration", TreeExpansionSetting.values());
+        LabeledComboBox<TreeExpansionSetting> candidate_enumeration = SwingFactory.labeledComboBox("Candidate Enumeration", TreeExpansionSetting.values());
         expansionStrategyComboBox = candidate_enumeration.getComboBox();
         proposal.append(candidate_enumeration);
-        bridgedHeuristicsLabeledComboBox = FactoryUtils.labeledComboBox("Heuristic", FrameworkBridge.HEURISTICS.toArray(new FrameworkBridge.BridgedHeuristics[0]));
+        bridgedHeuristicsLabeledComboBox = SwingFactory.labeledComboBox("Heuristic", FrameworkBridge.HEURISTICS.toArray(new FrameworkBridge.BridgedHeuristics[0]));
         heuristicComboBox = bridgedHeuristicsLabeledComboBox.getComboBox();
         heuristicComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedProposalSettings();
         });
         bridgedHeuristicsLabeledComboBox.setVisible(false);
         proposal.append(bridgedHeuristicsLabeledComboBox);
-        permitWiringCheckBox = FactoryUtils.labeledCheckBox("Permit Wiring Constraints");
+        permitWiringCheckBox = SwingFactory.labeledCheckBox("Permit Wiring Constraints");
         permitWiringCheckBox.addChangeListener(e -> updatedProposalSettings());
         proposal.append(permitWiringCheckBox);
-        permitRestartCheckBox = FactoryUtils.labeledCheckBox("Permit Restart");
+        permitRestartCheckBox = SwingFactory.labeledCheckBox("Permit Restart");
         permitRestartCheckBox.addChangeListener(e -> updatedProposalSettings());
         proposal.append(permitRestartCheckBox);
         proposal.completeWithWhitespace();
@@ -134,14 +137,14 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         // ** EVALUATION ** //
 
         TitledBorderPanel evaluation = new TitledBorderPanel("Evaluation");
-        concurrentReplayCheckBox = FactoryUtils.labeledCheckBox("use concurrent replay implementation");
+        concurrentReplayCheckBox = SwingFactory.labeledCheckBox("use concurrent replay implementation");
         concurrentReplayCheckBox.addChangeListener(e -> updatedEvaluationSettings());
         evaluation.append(concurrentReplayCheckBox);
 
-        restrictToFittingSubLogCheckBox = FactoryUtils.labeledCheckBox("restrict replay to fitting sub log for implicit place removal");
+        restrictToFittingSubLogCheckBox = SwingFactory.labeledCheckBox("restrict replay to fitting sub log for implicit place removal");
         restrictToFittingSubLogCheckBox.addChangeListener(e -> updatedEvaluationSettings());
         evaluation.append(restrictToFittingSubLogCheckBox);
-        deltaAdaptationLabeledComboBox = FactoryUtils.labeledComboBox("Delta Adaptation Function", FrameworkBridge.DELTA_FUNCTIONS.toArray(new FrameworkBridge.BridgedDeltaAdaptationFunctions[0]));
+        deltaAdaptationLabeledComboBox = SwingFactory.labeledComboBox("Delta Adaptation Function", FrameworkBridge.DELTA_FUNCTIONS.toArray(new FrameworkBridge.BridgedDeltaAdaptationFunctions[0]));
         deltaAdaptationFunctionComboBox = deltaAdaptationLabeledComboBox.getComboBox();
         deltaAdaptationFunctionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedEvaluationSettings();
@@ -153,15 +156,16 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         // ** COMPOSITION ** //
 
         TitledBorderPanel composition = new TitledBorderPanel("Composition");
-        LabeledComboBox<CompositionStrategy> compositionStrategyLabeledComboBox = FactoryUtils.labeledComboBox("Variant", CompositionStrategy.values());
+        LabeledComboBox<CompositionStrategy> compositionStrategyLabeledComboBox = SwingFactory.labeledComboBox("Variant", CompositionStrategy.values());
         compositionStrategyComboBox = compositionStrategyLabeledComboBox.getComboBox();
         compositionStrategyComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedCompositionSettings();
         });
         composition.append(compositionStrategyLabeledComboBox);
-        applyCIPRCheckBox = FactoryUtils.labeledCheckBox("apply replay-based concurrent implicit place removal");
+        applyCIPRCheckBox = SwingFactory.labeledCheckBox("apply replay-based concurrent implicit place removal");
         applyCIPRCheckBox.addChangeListener(e -> updatedCompositionSettings());
         composition.append(applyCIPRCheckBox);
+        composition.completeWithWhitespace();
 
         // ** POST PROCESSING ** //
 
@@ -189,7 +193,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         ppc.fill = GridBagConstraints.BOTH;
         ppc.weightx = 1;
         ppc.weighty = 0;
-        postProcessing.add(FactoryUtils.createHeader("Available Post Processors"), ppc);
+        postProcessing.add(SwingFactory.createHeader("Available Post Processors"), ppc);
         ppc.weighty = 1;
         ppc.gridy++;
         postProcessing.add(new JScrollPane(outList), ppc);
@@ -267,7 +271,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         ppc.gridx = 1;
         ppc.gridy = 0;
         ppc.weighty = 0;
-        postProcessing.add(FactoryUtils.createHeader("Post Processing Pipeline"), ppc);
+        postProcessing.add(SwingFactory.createHeader("Post Processing Pipeline"), ppc);
         ppc.weighty = 1;
         ppc.gridy++;
         postProcessing.add(new JScrollPane(inList), ppc);
@@ -309,14 +313,14 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         // ** PARAMETERS ** //
 
         TitledBorderPanel parameters = new TitledBorderPanel("Parameters");
-        tauInput = FactoryUtils.textBasedInputField("tau", zeroOneDoubleFunc);
+        tauInput = SwingFactory.textBasedInputField("tau", zeroOneDoubleFunc, 10);
         tauField = tauInput.getTextField();
         parameters.append(tauInput);
-        deltaInput = FactoryUtils.textBasedInputField("delta", zeroOneDoubleFunc);
+        deltaInput = SwingFactory.textBasedInputField("delta", zeroOneDoubleFunc, 10);
         deltaField = deltaInput.getTextField();
         deltaInput.setVisible(false);
         parameters.append(deltaInput);
-        depthInput = FactoryUtils.activatableTextBasedInputField("max depth", false, posIntFunc);
+        depthInput = SwingFactory.activatableTextBasedInputField("max depth", false, posIntFunc, 10);
         depthField = depthInput.getTextField();
         parameters.append(depthInput);
         parameters.completeWithWhitespace();
@@ -324,19 +328,19 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         // ** EXECUTION ** //
 
         TitledBorderPanel execution = new TitledBorderPanel("Execution");
-        discoveryTimeLimitInput = FactoryUtils.activatableTextBasedInputField("discovery time limit", false, durationFunc);
+        discoveryTimeLimitInput = SwingFactory.activatableTextBasedInputField("discovery time limit", false, durationFunc, 25);
         discoveryTimeLimitInput.getTextField()
                                .setToolTipText("<html>ISO-8601 format: P<it>x</it>DT<it>x</it>H<it>x</it>M<it>x</it>.<it>x</it>S</html>");
         execution.append(discoveryTimeLimitInput);
-        totalTimeLimitInput = FactoryUtils.activatableTextBasedInputField("total time limit", false, durationFunc);
+        totalTimeLimitInput = SwingFactory.activatableTextBasedInputField("total time limit", false, durationFunc, 25);
         totalTimeLimitInput.getTextField()
                            .setToolTipText("<html>ISO-8601 format: P<it>x</it>DT<it>x</it>H<it>x</it>M<it>x</it>.<it>x</it>S</html>");
         execution.append(totalTimeLimitInput);
 
-        JButton run = SlickerFactory.instance().createButton("run");
-        run.addActionListener(e -> tryRun());
-        execution.append(run);
-        evaluation.completeWithWhitespace();
+        runButton = SlickerFactory.instance().createButton("run");
+        runButton.addActionListener(e -> tryRun());
+        execution.append(runButton);
+        execution.completeWithWhitespace();
 
         GridBagConstraints c = new GridBagConstraints();
         c.anchor = GridBagConstraints.NORTHWEST;
@@ -495,29 +499,43 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     private void updatedParameters() {
-
+        updateReadinessState();
     }
 
     private void updatedCompositionSettings() {
         deltaAdaptationLabeledComboBox.setVisible(compositionStrategyComboBox.getSelectedItem() == CompositionStrategy.TauDelta);
+        deltaAdaptationFunctionComboBox.revalidate();
         deltaInput.setVisible(compositionStrategyComboBox.getSelectedItem() == CompositionStrategy.TauDelta);
+        deltaInput.revalidate();
+        updateReadinessState();
     }
 
     private void updatedEvaluationSettings() {
-
+        updateReadinessState();
     }
 
     private void updatedProposalSettings() {
         bridgedHeuristicsLabeledComboBox.setVisible(expansionStrategyComboBox.getSelectedItem() == TreeExpansionSetting.Heuristic);
+        bridgedHeuristicsLabeledComboBox.revalidate();
+        updateReadinessState();
     }
 
     private void updatedPreset() {
         Preset preset = (Preset) presetComboBox.getSelectedItem();
         if (preset != null) initializeFromProMConfig(preset.getConfig());
+        updateReadinessState();
     }
 
     private void updatedSupervisionSettings() {
+        updateReadinessState();
+    }
 
+    private void updateReadinessState() {
+        SwingUtilities.invokeLater(() -> {
+            ProMConfig pc = collectConfig();
+            System.out.println("ConfigurationPanel.updateReadinessState: " + pc != null);
+            //runButton.setEnabled(pc != null);
+        });
     }
 
     public enum SupervisionSetting {

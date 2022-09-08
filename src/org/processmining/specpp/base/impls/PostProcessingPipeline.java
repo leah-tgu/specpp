@@ -48,6 +48,7 @@ public class PostProcessingPipeline<R extends Result, F extends Result> implemen
     @SuppressWarnings({"unchecked", "rawtypes"})
     public F postProcess(R result, Consumer<Result> callback) {
         Result r = result;
+        callback.accept(r);
         for (PostProcessor postProcessor : line) {
             r = postProcessor.postProcess(r);
             callback.accept(r);

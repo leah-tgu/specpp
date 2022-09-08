@@ -25,15 +25,13 @@ public class PreviewPanel extends AbstractStagePanel<PreProcessingController> {
 
     public PreviewPanel(PreProcessingController controller) {
         super(controller, new GridBagLayout());
-
-        presetList = new ProMList<>("Preset Activities");
-        postsetList = new ProMList<>("Postset Activities");
-        presetList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        postsetList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         presetListModel = new DefaultListModel<>();
         postsetListModel = new DefaultListModel<>();
-        presetList.getList().setModel(presetListModel);
-        postsetList.getList().setModel(postsetListModel);
+
+        presetList = new ProMList<>("Preset Activities", presetListModel);
+        postsetList = new ProMList<>("Postset Activities", postsetListModel);
+        presetList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        postsetList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         presetList.setPreferredSize(new Dimension(200, 200));
         postsetList.setPreferredSize(new Dimension(200, 200));
 
@@ -52,17 +50,18 @@ public class PreviewPanel extends AbstractStagePanel<PreProcessingController> {
         add(presetList, c);
         c.gridx = 1;
         add(postsetList, c);
-        c.fill = GridBagConstraints.HORIZONTAL;
+        c.fill = GridBagConstraints.NONE;
         c.gridx = 0;
         c.gridy = 1;
         c.weightx = 0;
-        c.weighty = .2;
+        c.weighty = 0.2;
         c.gridwidth = 2;
         add(applyButton, c);
     }
 
 
     public Pair<Set<Activity>> collectSelectedActivities() {
+        // TODO this can be called before the update method below, yielding empty selections.. !
         return new ImmutablePair<>(new HashSet<>(presetList.getSelectedValuesList()), new HashSet<>(postsetList.getSelectedValuesList()));
     }
 

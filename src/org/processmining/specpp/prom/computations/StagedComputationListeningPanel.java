@@ -19,5 +19,7 @@ public class StagedComputationListeningPanel<T extends OngoingStagedComputation>
     protected void updateProgress(ComputationEvent event) {
         if (event instanceof ComputationStageCompleted)
             SwingUtilities.invokeLater(() -> progressBar.setValue(((ComputationStageCompleted) event).getCompletedStage()));
+        else if (event instanceof ComputationEnded) SwingUtilities.invokeLater(() -> stopButton.setEnabled(false));
+
     }
 }

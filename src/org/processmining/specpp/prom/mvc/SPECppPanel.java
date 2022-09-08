@@ -32,11 +32,15 @@ public class SPECppPanel extends JPanel {
 
     }
 
-    public void updatePluginStage(SPECppController.PluginStage stage, JPanel panel) {
+    public void unlockStage(SPECppController.PluginStage stage) {
+        stageProgressionPanel.unlockStageButton(stage);
+    }
+
+    public void updatePluginStage(SPECppController.PluginStage stage, JPanel stagePanel) {
         stageProgressionPanel.updateCurrentStage(stage);
         SwingUtilities.invokeLater(() -> {
             if (mainContent != null) mainContentPanel.removeAll();
-            mainContent = panel;
+            mainContent = stagePanel;
             mainContentPanel.add(mainContent, BorderLayout.CENTER);
             revalidate();
         });

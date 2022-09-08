@@ -50,7 +50,7 @@ public class FrameworkBridge {
     }
 
     public enum BridgedPostProcessors {
-        Identity(new BridgedPostProcessor("Identity", PetriNet.class, PetriNet.class, () -> IdentityPostProcessor::new)), ReplayBasedImplicitPlaceRemoval(new BridgedPostProcessor("Replay-Based Implicit Place Removal", PetriNet.class, PetriNet.class, ReplayBasedImplicitnessPostProcessing.Builder::new)), SelfLoopPlacesMerging(new BridgedPostProcessor("Merging Self Loop Places", PetriNet.class, PetriNet.class, () -> SelfLoopPlaceMerger::new)), ProMPetrinetConversion(new BridgedPostProcessor("ProM Petri net Conversion", PetriNet.class, ProMPetrinetWrapper.class, () -> ProMConverter::new));
+        Identity(new BridgedPostProcessor("Identity", PetriNet.class, PetriNet.class, () -> IdentityPostProcessor::new)), ReplayBasedImplicitPlaceRemoval(new BridgedPostProcessor("Replay-Based Implicit Place Removal", PetriNet.class, PetriNet.class, ReplayBasedImplicitnessPostProcessing.Builder::new)), SelfLoopPlacesMerging(new BridgedPostProcessor("Self-Loop Places Merging", PetriNet.class, PetriNet.class, () -> SelfLoopPlaceMerger::new)), ProMPetrinetConversion(new BridgedPostProcessor("ProM Petri net Conversion", PetriNet.class, ProMPetrinetWrapper.class, () -> ProMConverter::new));
         private final BridgedPostProcessor bpp;
 
         BridgedPostProcessors(BridgedPostProcessor bpp) {

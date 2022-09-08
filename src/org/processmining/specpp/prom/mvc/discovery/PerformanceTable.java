@@ -1,7 +1,8 @@
 package org.processmining.specpp.prom.mvc.discovery;
 
-import org.processmining.framework.util.ui.widgets.ProMTableWithoutPanel;
+import org.processmining.framework.util.ui.widgets.ProMTable;
 import org.processmining.specpp.prom.alg.LivePerformance;
+import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import org.processmining.specpp.prom.util.Destructible;
 import org.processmining.specpp.supervision.monitoring.PerformanceStatisticsMonitor;
 import org.processmining.specpp.supervision.observations.Statistics;
@@ -9,22 +10,22 @@ import org.processmining.specpp.supervision.observations.performance.Performance
 import org.processmining.specpp.supervision.observations.performance.TaskDescription;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Optional;
 
 public class PerformanceTable extends JPanel implements Destructible {
 
     private final DefaultTableModel model;
-    private final ProMTableWithoutPanel table;
     private PerformanceStatisticsMonitor monitor;
 
-    public PerformanceTable(Optional<LivePerformance> livePerformance) {
+    public PerformanceTable(LivePerformance livePerformance) {
         setLayout(new BorderLayout());
 
-        model = new DefaultTableModel(new String[]{"Task Description", "avg", "min", "max", "sum", "count", "it/s"}, 0) {
+        model = new DefaultTableModel(new String[]{"Task Description", "avg", "min", "max", "sum", "#measurements", "it/s"}, 0) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 switch (columnIndex) {
@@ -42,12 +43,31 @@ public class PerformanceTable extends JPanel implements Destructible {
                         return String.class;
                 }
             }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
-        table = new ProMTableWithoutPanel(model);
+        ProMTable table = SwingFactory.proMTable(model);
+        table.setAutoCreateRowSorter(true);
+        table.getTable().setDefaultRenderer(Duration.class, new DefaultTableCellRenderer() {
+
+            @Override
+            protected void setValue(Object value) {
+                Duration duration = (Duration) value;
+                String s;
+                if (duration == null) s = "";
+                else if (Duration.ofSeconds(10).compareTo(duration) > 0)
+                    s = PerformanceStatistic.durationToString((Duration) value) + "ms";
+                else s = duration.toString().substring(2);
+                setText(s);
+            }
+        });
         add(table, BorderLayout.CENTER);
 
-        if (livePerformance.isPresent()) {
-            monitor = livePerformance.get().getMonitor("performance", PerformanceStatisticsMonitor.class);
+        if (livePerformance != null) {
+            monitor = livePerformance.getMonitor("performance", PerformanceStatisticsMonitor.class);
             updateTimer = new Timer(200, e -> updateTable());
             updateTimer.start();
         }

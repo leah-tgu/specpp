@@ -8,7 +8,7 @@ public class OngoingStagedComputation extends OngoingComputation {
 
     public OngoingStagedComputation(int stages) {
         this.stages = stages;
-        lastCompletedStage = new AtomicInteger(0);
+        lastCompletedStage = new AtomicInteger(-1);
     }
 
     public int getStageCount() {

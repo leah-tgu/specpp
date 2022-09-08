@@ -1,8 +1,10 @@
 package org.processmining.specpp.prom.mvc.discovery;
 
-import com.google.common.util.concurrent.ListenableFutureTask;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.processmining.specpp.base.AdvancedComposition;
+import org.processmining.specpp.base.Result;
 import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.base.impls.SPECppBuilder;
 import org.processmining.specpp.componenting.data.DataRequirements;
@@ -26,7 +28,7 @@ import javax.swing.*;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class DiscoveryController extends AbstractStageController implements Destructible {
 
@@ -36,14 +38,15 @@ public class DiscoveryController extends AbstractStageController implements Dest
     private final OngoingStagedComputation ongoingPostProcessingComputation;
     private final ExecutionParameters.ExecutionTimeLimits timeLimits;
     private LocalDateTime startTime;
-    private ListenableFutureTask<ProMPetrinetWrapper> postProcessingFutureTask;
     private List<Timer> startedTimers = new LinkedList<>();
+    private final ListeningExecutorService executorService;
+    private List<Result> intermediateResults;
 
     public DiscoveryController(SPECppController parentController) {
         super(parentController);
+        executorService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
         InputDataBundle dataBundle = parentController.getDataBundle();
         SPECppConfigBundle configBundle = parentController.getConfigBundle();
-
 
         GlobalComponentRepository gcr = new GlobalComponentRepository();
         gracefulCancellationDelegate = new DelegatingDataSource<>();
@@ -60,8 +63,11 @@ public class DiscoveryController extends AbstractStageController implements Dest
         specpp.init();
 
         ongoingDiscoveryComputation = new OngoingComputation();
+        ongoingDiscoveryComputation.setCancellationCallback(this::cancelDiscoveryComputation);
         ongoingPostProcessingComputation = new OngoingStagedComputation(specpp.getPostProcessor().getPipelineLength());
+        ongoingPostProcessingComputation.setCancellationCallback(this::cancelPostProcessingComputation);
         startDiscovery();
+
     }
 
     public SPECpp<Place, AdvancedComposition<Place>, PetriNet, ProMPetrinetWrapper> getSpecpp() {
@@ -79,9 +85,11 @@ public class DiscoveryController extends AbstractStageController implements Dest
         else if (timeLimits.hasTotalTimeLimit())
             ongoingDiscoveryComputation.setTimeLimit(timeLimits.getTotalTimeLimit());
         ongoingDiscoveryComputation.setStart(startTime);
-        ListenableFutureTask<PetriNet> discoveryFutureTask = ListenableFutureTask.create(specpp::executeDiscovery);
-        discoveryFutureTask.addListener(this::discoveryFinished, MoreExecutors.sameThreadExecutor());
-        getExecutor().execute(discoveryFutureTask);
+
+        ListenableFuture<PetriNet> future = getExecutor().submit(specpp::executeDiscovery);
+        ongoingDiscoveryComputation.setComputationFuture(future);
+        future.addListener(this::discoveryFinished, MoreExecutors.directExecutor());
+
         if (timeLimits.hasDiscoveryTimeLimit()) {
             Timer cancellationTimer = new Timer((int) timeLimits.getDiscoveryTimeLimit()
                                                                 .toMillis(), e -> cancelDiscoveryComputation());
@@ -114,9 +122,13 @@ public class DiscoveryController extends AbstractStageController implements Dest
     private void startPostProcessing() {
         if (ongoingPostProcessingComputation.isCancelled()) return;
         ongoingPostProcessingComputation.setStart(LocalDateTime.now());
-        postProcessingFutureTask = ListenableFutureTask.create(() -> specpp.executePostProcessing(e -> ongoingPostProcessingComputation.incStage()));
-        postProcessingFutureTask.addListener(this::postProcessingFinished, MoreExecutors.sameThreadExecutor());
-        getExecutor().execute(postProcessingFutureTask);
+        intermediateResults = new LinkedList<>();
+        ListenableFuture<ProMPetrinetWrapper> postProcessingFuture = getExecutor().submit(() -> specpp.executePostProcessing(e -> {
+            intermediateResults.add(e);
+            ongoingPostProcessingComputation.incStage();
+        }));
+        ongoingPostProcessingComputation.setComputationFuture(postProcessingFuture);
+        postProcessingFuture.addListener(this::postProcessingFinished, MoreExecutors.directExecutor());
 
         if (timeLimits.hasPostProcessingTimeLimit()) {
             Timer cancellationTimer = new Timer(((int) timeLimits.getPostProcessingTimeLimit()
@@ -127,34 +139,37 @@ public class DiscoveryController extends AbstractStageController implements Dest
         }
     }
 
-    private Executor getExecutor() {
-        return parentController.getPluginContext().getExecutor();
+    private ListeningExecutorService getExecutor() {
+        return executorService;
     }
 
     private void postProcessingFinished() {
         ongoingPostProcessingComputation.setEnd(LocalDateTime.now());
         specpp.stop();
         if (!ongoingPostProcessingComputation.isCancelled()) {
-            parentController.discoveryCompleted(specpp.getPostProcessedResult());
-            System.out.println("DiscoveryController.postProcessingFinished.success");
-        } else System.out.println("DiscoveryController.postProcessingFinished.cancellation");
+            parentController.discoveryCompleted(specpp.getPostProcessedResult(), intermediateResults);
+        }
     }
 
     public void cancelDiscoveryComputation() {
-        gracefulCancellationDelegate.getData().run();
-        ongoingDiscoveryComputation.setGracefullyCancelled();
+        if (ongoingDiscoveryComputation.isRunning()) {
+            gracefulCancellationDelegate.getData().run();
+            ongoingDiscoveryComputation.markGracefullyCancelled();
+        }
     }
 
     public void cancelPostProcessingComputation() {
-        System.out.println("DiscoveryController.cancelPostProcessingComputation");
-        if (postProcessingFutureTask != null && !postProcessingFutureTask.isDone())
-            postProcessingFutureTask.cancel(true);
-        ongoingPostProcessingComputation.setForciblyCancelled();
+        if (ongoingPostProcessingComputation.isRunning()) {
+            ListenableFuture<?> future = ongoingPostProcessingComputation.getComputationFuture();
+            if (future != null && !future.isDone()) future.cancel(true);
+            ongoingPostProcessingComputation.markForciblyCancelled();
+        }
     }
 
     private void cancelEverything() {
         cancelDiscoveryComputation();
         cancelPostProcessingComputation();
+        if (specpp.isStarted()) specpp.stop();
     }
 
     @Override

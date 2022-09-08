@@ -34,9 +34,9 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     private final PostProcessingPipeline<R, F> postProcessor;
 
     private final Configuration configuration;
-    private int cycleCount = 0;
+    private int cycleCount;
     private C lastCandidate;
-    private boolean computationCancelled;
+    private boolean started, computationCancelled;
     private R result;
 
     private F finalResult;
@@ -99,6 +99,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
 
     @Override
     public void start() {
+        started = true;
         supervisors.forEach(Supervisor::start);
     }
 
@@ -180,6 +181,11 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
                 }
             }
         }
+        started = false;
+    }
+
+    public boolean isStarted() {
+        return started;
     }
 
     public Collection<Supervisor> getSupervisors() {

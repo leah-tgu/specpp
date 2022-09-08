@@ -3,6 +3,7 @@ package org.processmining.specpp.prom.mvc;
 import com.google.common.collect.ImmutableList;
 import org.deckfour.xes.model.XLog;
 import org.processmining.contexts.uitopia.UIPluginContext;
+import org.processmining.specpp.base.Result;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.orchestra.SPECppConfigBundle;
 import org.processmining.specpp.preprocessing.InputDataBundle;
@@ -15,6 +16,7 @@ import org.processmining.specpp.prom.util.Destructible;
 import org.processmining.specpp.util.Reflection;
 
 import javax.swing.*;
+import java.util.List;
 
 public class SPECppController {
 
@@ -30,11 +32,20 @@ public class SPECppController {
     private SPECppPanel myPanel;
     private SPECppConfigBundle configBundle;
     private ProMPetrinetWrapper result;
+    private List<Result> intermediatePostProcessingResults;
 
     public SPECppController(UIPluginContext context, SPECppSession specppSession) {
         this.context = context;
         rawLog = specppSession.getEventLog();
         currentPluginStageIndex = 0;
+    }
+
+    public ProMPetrinetWrapper getResult() {
+        return result;
+    }
+
+    public List<Result> getIntermediatePostProcessingResults() {
+        return intermediatePostProcessingResults;
     }
 
     public enum PluginStage {
@@ -106,9 +117,10 @@ public class SPECppController {
         advanceStage();
     }
 
-    public void discoveryCompleted(ProMPetrinetWrapper result) {
+    public void discoveryCompleted(ProMPetrinetWrapper result, List<Result> intermediatePostProcessingResults) {
         this.result = result;
-        advanceStage();
+        this.intermediatePostProcessingResults = intermediatePostProcessingResults;
+        myPanel.unlockStage(PluginStage.Result);
     }
 
     protected void initCurrentPluginStage() {

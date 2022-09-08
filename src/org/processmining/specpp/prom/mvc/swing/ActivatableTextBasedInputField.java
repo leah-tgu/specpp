@@ -1,22 +1,24 @@
-package org.processmining.specpp.prom.util;
+package org.processmining.specpp.prom.mvc.swing;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.util.HashSet;
 import java.util.function.Function;
-
-import static org.processmining.specpp.prom.util.TextBasedInputField.HIGHLIGHT_COLOR;
 
 public class ActivatableTextBasedInputField<T> extends LabeledCheckboxedTextField {
     private final Function<String, T> parseInput;
-    private final Color ogBackground;
     private final InputVerifier iv;
+    private final Border ogBorder;
     private boolean isActivated;
 
-    public ActivatableTextBasedInputField(String label, boolean activatedByDefault, Function<String, T> parseInput) {
-        super(label, activatedByDefault);
+    public ActivatableTextBasedInputField(String label, Function<String, T> parseInput, boolean activatedByDefault, int inputTextColumns) {
+        super(label, activatedByDefault, inputTextColumns);
         this.parseInput = parseInput;
 
-        ogBackground = field.getBackground();
+        ogBorder =
+                field.getBorder();
 
         iv = new InputVerifier() {
             @Override
@@ -34,13 +36,17 @@ public class ActivatableTextBasedInputField<T> extends LabeledCheckboxedTextFiel
         };
 
         field.setInputVerifier(iv);
+        HashSet<AWTKeyStroke> awtKeyStrokes = new HashSet<>(KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                                                                                .getDefaultFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+        awtKeyStrokes.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_ENTER, 0));
+        field.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, awtKeyStrokes);
 
         checkBox.addChangeListener(c -> setInternalActivationStatus(checkBox.isSelected()));
         if (isActivated) showVerificationStatus();
     }
 
     public void showVerificationStatus() {
-        field.setBackground(iv.verify(field) ? ogBackground : HIGHLIGHT_COLOR);
+        field.setBorder(iv.verify(field) ? ogBorder : BorderFactory.createLineBorder(Color.red, 2, false));
     }
 
     private boolean permittedToBeWrong() {
@@ -56,13 +62,15 @@ public class ActivatableTextBasedInputField<T> extends LabeledCheckboxedTextFiel
     }
 
     public T getInput() {
-        showVerificationStatus();
+        SwingUtilities.invokeLater(this::showVerificationStatus);
         return tryParse();
     }
 
     public void setText(String text) {
-        field.setText(text);
-        showVerificationStatus();
+        SwingUtilities.invokeLater(() -> {
+            field.setText(text);
+            showVerificationStatus();
+        });
     }
 
     private void setInternalActivationStatus(boolean newState) {
@@ -71,11 +79,11 @@ public class ActivatableTextBasedInputField<T> extends LabeledCheckboxedTextFiel
     }
 
     public void activate() {
-        checkBox.setSelected(true);
+        SwingUtilities.invokeLater(() -> checkBox.setSelected(true));
     }
 
     public void deactivate() {
-        checkBox.setSelected(false);
+        SwingUtilities.invokeLater(() -> checkBox.setSelected(false));
     }
 
 }

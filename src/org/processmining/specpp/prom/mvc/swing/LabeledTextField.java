@@ -1,4 +1,4 @@
-package org.processmining.specpp.prom.util;
+package org.processmining.specpp.prom.mvc.swing;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
 
@@ -9,16 +9,12 @@ public class LabeledTextField extends JPanel {
 
     protected final JTextField field;
 
-    public LabeledTextField(String label) {
+    public LabeledTextField(String label, int inputTextColumns) {
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 
         add(SlickerFactory.instance().createLabel(label));
-        JPanel sep = new JPanel();
-        sep.setMinimumSize(new Dimension(25, 10));
-        add(sep);
-        field = new JTextField(30);
-        field.setMinimumSize(new Dimension(150, 15));
-        //field.setPreferredSize(new Dimension(150, 15));
+        add(Box.createHorizontalStrut(20));
+        field = new JTextField(inputTextColumns);
         add(field);
     }
 

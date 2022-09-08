@@ -11,21 +11,18 @@ import org.processmining.specpp.prom.computations.OngoingComputation;
 import org.processmining.specpp.prom.computations.OngoingStagedComputation;
 import org.processmining.specpp.prom.computations.StagedComputationListeningPanel;
 import org.processmining.specpp.prom.mvc.AbstractStagePanel;
-import org.processmining.specpp.prom.util.TitledBorderPanel;
+import org.processmining.specpp.prom.mvc.swing.TitledBorderPanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Optional;
 
 public class DiscoveryPanel extends AbstractStagePanel<DiscoveryController> {
 
     private final SPECpp<Place, AdvancedComposition<Place>, PetriNet, ProMPetrinetWrapper> specpp;
 
     public DiscoveryPanel(DiscoveryController discoveryController) {
-        super(discoveryController, new GridBagLayout());
+        super(discoveryController, new BorderLayout());
         specpp = discoveryController.getSpecpp();
-
-        AdvancedComposition<Place> ir = specpp.getComposer().getIntermediateResult();
 
         TitledBorderPanel executionPanel = new TitledBorderPanel("Execution");
         ComputationListeningPanel<OngoingComputation> discoveryListeningPanel = new ComputationListeningPanel<>("Discovery", discoveryController.getOngoingDiscoveryComputation());
@@ -33,48 +30,57 @@ public class DiscoveryPanel extends AbstractStagePanel<DiscoveryController> {
 
         executionPanel.append(discoveryListeningPanel);
         executionPanel.append(postProcessingListeningPanel);
+        executionPanel.completeWithWhitespace();
 
-        LiveCompositionPanel liveCompositionPanel = new LiveCompositionPanel(ir);
+        LiveCompositionPanel liveCompositionPanel = new LiveCompositionPanel(specpp.getComposer()
+                                                                                   .getIntermediateResult(), discoveryController.getOngoingDiscoveryComputation());
 
-        TitledBorderPanel searchSpacePanel = new TitledBorderPanel("Search Space");
-        searchSpacePanel.append(new SearchSpacePanel(specpp));
+        TitledBorderPanel searchSpacePanel = new TitledBorderPanel("Search Space", new BorderLayout());
+        searchSpacePanel.add(new SearchSpacePanel(specpp), BorderLayout.CENTER);
 
-        TitledBorderPanel performancePanel = new TitledBorderPanel("Performance");
-        Optional<LivePerformance> livePerf = specpp.getSupervisors()
-                                                   .stream()
-                                                   .filter(s -> s instanceof LivePerformance)
-                                                   .map(s -> (LivePerformance) s)
-                                                   .findFirst();
-        performancePanel.append(new PerformanceTable(livePerf));
+        TitledBorderPanel performancePanel = new TitledBorderPanel("Performance", new BorderLayout());
+        LivePerformance livePerf = specpp.getSupervisors()
+                                         .stream()
+                                         .filter(s -> s instanceof LivePerformance)
+                                         .map(s -> (LivePerformance) s)
+                                         .findFirst()
+                                         .orElse(null);
+        performancePanel.add(new PerformanceTable(livePerf), BorderLayout.CENTER);
 
-        TitledBorderPanel eventsPanel = new TitledBorderPanel("Events");
-        Optional<LiveEvents> liveEvents = specpp.getSupervisors()
-                                                .stream()
-                                                .filter(s -> s instanceof LiveEvents)
-                                                .map(s -> (LiveEvents) s)
-                                                .findFirst();
-        eventsPanel.append(new EventTable(liveEvents));
+        TitledBorderPanel eventsPanel = new TitledBorderPanel("Events", new BorderLayout());
+        LiveEvents liveEvents = specpp.getSupervisors()
+                                      .stream()
+                                      .filter(s -> s instanceof LiveEvents)
+                                      .map(s -> (LiveEvents) s)
+                                      .findFirst()
+                                      .orElse(null);
+        eventsPanel.add(new EventTable(liveEvents), BorderLayout.CENTER);
 
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+
+        liveCompositionPanel.setMinimumSize(new Dimension(600, 400));
+        splitPane.setLeftComponent(liveCompositionPanel);
+        JPanel right = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
         c.gridy = 0;
         c.gridx = 0;
-        add(executionPanel, c);
-        c.weighty = 1;
         c.weightx = 1;
-        c.fill = GridBagConstraints.VERTICAL;
-        c.gridheight = 3;
+        right.add(searchSpacePanel, c);
         c.gridy++;
-        add(liveCompositionPanel, c);
-        c.gridx = 1;
-        c.gridy = 0;
-        add(searchSpacePanel, c);
+        right.add(executionPanel, c);
+        c.weighty = 1;
         c.gridy++;
-        add(performancePanel, c);
+        right.add(performancePanel, c);
         c.gridy++;
-        add(eventsPanel, c);
+        right.add(eventsPanel, c);
         c.gridy++;
-        add(Box.createVerticalGlue(), c);
+        c.weighty = 0;
+        right.add(Box.createHorizontalStrut(300), c);
 
+        splitPane.setRightComponent(right);
+        splitPane.setDividerLocation(0.6);
+        add(splitPane, BorderLayout.CENTER);
     }
 
 

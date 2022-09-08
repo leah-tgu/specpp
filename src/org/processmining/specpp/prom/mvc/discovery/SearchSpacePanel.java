@@ -39,7 +39,9 @@ public class SearchSpacePanel extends JPanel implements Destructible {
         BigInteger possiblePlaces = combinations.subtract(BigInteger.valueOf(1 + postSize));
         maxCandidates = possiblePlaces;
         add(SlickerFactory.instance()
-                          .createLabel("#Possible Combinations: 2^(#Preset Transitions) * 2^(#Postset Transitions) = " + combinationString + ", #Candidate Places: #Possible Combinations - 1 - #Postset Transitions = " + possiblePlaces));
+                          .createLabel("#Possible Combinations: 2^(#Preset Transitions) * 2^(#Postset Transitions) = " + combinationString));
+        add(SlickerFactory.instance()
+                          .createLabel("#Candidate Places: #Possible Combinations - 1 - #Postset Transitions = " + possiblePlaces));
         maxTreeDepth = Math.min(specpp.getGlobalComponentRepository()
                                       .parameters()
                                       .askForData(ParameterRequirements.PLACE_GENERATOR_PARAMETERS)
@@ -48,20 +50,27 @@ public class SearchSpacePanel extends JPanel implements Destructible {
         add(traversedCandidatesLabel);
         JLabel treeDepthLabel = SlickerFactory.instance().createLabel(createDepthString());
         add(treeDepthLabel);
-        JLabel lastCandidateLabel = SlickerFactory.instance().createLabel(createLastCandidateString());
+        JLabel lastCandidateLabel = SlickerFactory.instance().createLabel("");
+        updateLastCandidateLabel(lastCandidateLabel);
         add(lastCandidateLabel);
 
         updateTimer = new Timer(100, e -> {
             traversedCandidatesLabel.setText(createTraversedCandidatesString());
             treeDepthLabel.setText(createDepthString());
-            lastCandidateLabel.setText(createLastCandidateString());
+            updateLastCandidateLabel(lastCandidateLabel);
         });
         updateTimer.start();
     }
 
+    private void updateLastCandidateLabel(JLabel label) {
+        String s = createLastCandidateString();
+        label.setText(s.length() > 50 ? s.substring(0, 50) + "..." : s);
+        label.setToolTipText(s);
+    }
+
     private String createTraversedCandidatesString() {
-        double count = specpp.currentStepCount();
-        return "#Traversed Candidate Places: " + count + "/" + maxCandidates + String.format("%.2f%%", count / maxCandidates.doubleValue());
+        int count = specpp.currentStepCount();
+        return "#Traversed Candidate Places: " + count + "/" + maxCandidates + String.format(" (%.2f%%)", 100 * count / maxCandidates.doubleValue());
     }
 
     private String createDepthString() {
@@ -71,7 +80,7 @@ public class SearchSpacePanel extends JPanel implements Destructible {
 
     private String createLastCandidateString() {
         Place place = specpp.lastCandidate();
-        return "Last Candidate: " + (place != null ? place : "?");
+        return "Last Candidate: " + (place == null ? "?" : place);
     }
 
 
