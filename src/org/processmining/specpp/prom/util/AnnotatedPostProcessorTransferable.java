@@ -1,16 +1,18 @@
 package org.processmining.specpp.prom.util;
 
+import org.processmining.specpp.prom.alg.FrameworkBridge;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
-public class EnumTransferable<E extends Enum<E>> implements Transferable {
+public class AnnotatedPostProcessorTransferable implements Transferable {
 
-    private final E data;
+    private final FrameworkBridge.AnnotatedPostProcessor app;
 
-    public EnumTransferable(E data) {
-        this.data = data;
+    public AnnotatedPostProcessorTransferable(FrameworkBridge.AnnotatedPostProcessor app) {
+        this.app = app;
     }
 
     @Override
@@ -18,7 +20,7 @@ public class EnumTransferable<E extends Enum<E>> implements Transferable {
         return new DataFlavor[]{myFlave};
     }
 
-    public static DataFlavor myFlave = new DataFlavor(Enum.class, "false");
+    public static DataFlavor myFlave = new DataFlavor(FrameworkBridge.AnnotatedPostProcessor.class, "false");
 
 
     @Override
@@ -28,7 +30,7 @@ public class EnumTransferable<E extends Enum<E>> implements Transferable {
 
     @Override
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        return data;
+        return app;
     }
 
 }

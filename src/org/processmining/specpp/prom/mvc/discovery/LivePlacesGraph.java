@@ -4,6 +4,7 @@ import org.processmining.graphvisualizers.algorithms.GraphVisualizerAlgorithm;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetBuilder;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.specpp.util.VizUtils;
 
 import javax.swing.*;
 import java.util.List;
@@ -32,5 +33,6 @@ public class LivePlacesGraph implements LivePlacesVisualizer {
 
     public void update(ProMPetrinetWrapper petrinet) {
         jComponent = alg.apply(null, petrinet.getNet());
+        VizUtils.showJComponent("bdf", jComponent, false);
     }
 }

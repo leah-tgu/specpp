@@ -28,7 +28,6 @@ import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEval
 import org.processmining.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.orchestra.AdaptedAlgorithmParameterConfig;
-import org.processmining.specpp.postprocessing.ProMConverter;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 import org.processmining.specpp.prom.alg.LiveEvents;
 import org.processmining.specpp.prom.alg.LivePerformance;
@@ -98,7 +97,8 @@ public class ConfigurationController extends AbstractStageController {
         EvaluatorConfiguration.Configurator evCfg = new EvaluatorConfiguration.Configurator();
         evCfg.evaluatorProvider(LogHistoryMaker::new);
         evCfg.evaluatorProvider(pc.concurrentReplay ? ForkJoinFitnessEvaluator::new : AbsolutelyNoFrillsFitnessEvaluator::new);
-        if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta) evCfg.evaluatorProvider(pc.bridgedDelta.getBridge().getBuilder());
+        if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta)
+            evCfg.evaluatorProvider(pc.bridgedDelta.getBridge().getBuilder());
 
         EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg;
         if (pc.treeExpansionSetting == ConfigurationPanel.TreeExpansionSetting.Heuristic) {
@@ -117,12 +117,11 @@ public class ConfigurationController extends AbstractStageController {
 
         // ** Post Processing ** //
 
-        PostProcessingConfiguration.Configurator<PetriNet, PetriNet> configurator = new PostProcessingConfiguration.Configurator<>(IdentityPostProcessor::new);
-        for (FrameworkBridge.BridgedPostProcessors bridgedPostProcessors : pc.ppPipeline) {
-            FrameworkBridge.BridgedPostProcessor next = bridgedPostProcessors.getBridge();
-            configurator.processor((SimpleBuilder) next.getBuilder());
+        PostProcessingConfiguration.Configurator configurator = new PostProcessingConfiguration.Configurator<PetriNet, PetriNet>(IdentityPostProcessor::new);
+        for (FrameworkBridge.AnnotatedPostProcessor annotatedPostProcessor : pc.ppPipeline) {
+            configurator.processor(annotatedPostProcessor.getBuilder());
         }
-        PostProcessingConfiguration.Configurator<PetriNet, ProMPetrinetWrapper> ppCfg = configurator.processor(ProMConverter::new);
+        PostProcessingConfiguration.Configurator<PetriNet, ProMPetrinetWrapper> ppCfg = (PostProcessingConfiguration.Configurator<PetriNet, ProMPetrinetWrapper>) configurator;//;.processor(ProMConverter::new);
 
         // ** PARAMETERS ** //
 

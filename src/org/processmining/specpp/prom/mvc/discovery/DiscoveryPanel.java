@@ -58,7 +58,7 @@ public class DiscoveryPanel extends AbstractStagePanel<DiscoveryController> {
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-        liveCompositionPanel.setMinimumSize(new Dimension(600, 400));
+        //liveCompositionPanel.setMinimumSize(new Dimension(600, 400));
         splitPane.setLeftComponent(liveCompositionPanel);
         JPanel right = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -79,7 +79,7 @@ public class DiscoveryPanel extends AbstractStagePanel<DiscoveryController> {
         right.add(Box.createHorizontalStrut(300), c);
 
         splitPane.setRightComponent(right);
-        splitPane.setDividerLocation(0.6);
+        //splitPane.setDividerLocation(0.6);
         add(splitPane, BorderLayout.CENTER);
     }
 

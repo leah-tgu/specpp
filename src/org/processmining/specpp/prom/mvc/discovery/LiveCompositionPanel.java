@@ -44,7 +44,7 @@ public class LiveCompositionPanel extends JPanel implements Destructible {
         //header.setOpaque(true);
         //header.setBackground(ColorScheme.lightBlue);
         header.add(SwingFactory.createHeader("Intermediate Result"));
-
+        header.add(Box.createHorizontalStrut(150));
         visualizationOptionComboBox = SwingFactory.labeledComboBox("Visualization", VisualizationOption.values());
         visualizationOptionComboBox.getComboBox().setSelectedItem(VisualizationOption.List);
         visualizationOptionComboBox.getComboBox().addItemListener(e -> {
@@ -60,7 +60,8 @@ public class LiveCompositionPanel extends JPanel implements Destructible {
         });
 
         contentPanel = new JPanel(true);
-        contentPanel.add(Box.createVerticalGlue());
+        contentPanel.setLayout(new BorderLayout());
+        contentPanel.add(Box.createVerticalGlue(), BorderLayout.EAST);
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
@@ -134,7 +135,7 @@ public class LiveCompositionPanel extends JPanel implements Destructible {
     private void setContent(JComponent jComponent) {
         if (jComponent != currentContent) {
             contentPanel.removeAll();
-            contentPanel.add(jComponent);
+            contentPanel.add(jComponent, BorderLayout.CENTER);
         }
         currentContent = jComponent;
         contentPanel.revalidate();

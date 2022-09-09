@@ -1,5 +1,7 @@
 package org.processmining.specpp.datastructures.petri;
 
+import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
+import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetFactory;
 import org.processmining.models.graphbased.AttributeMap;
 import org.processmining.models.graphbased.directed.DirectedGraph;
 import org.processmining.models.graphbased.directed.DirectedGraphEdge;
@@ -23,6 +25,10 @@ public class ProMPetrinetWrapper implements Result {
     private final Marking initialMarking;
     private final Marking finalMarking;
 
+    public ProMPetrinetWrapper(AcceptingPetriNet apn) {
+        this(apn.getNet(), apn.getInitialMarking(), apn.getFinalMarkings().toArray(new Marking[0])[0]);
+    }
+
     public Marking getInitialMarking() {
         return initialMarking;
     }
@@ -39,6 +45,10 @@ public class ProMPetrinetWrapper implements Result {
 
     public Petrinet getNet() {
         return net;
+    }
+
+    public AcceptingPetriNet asAcceptingPetrinet() {
+        return AcceptingPetriNetFactory.createAcceptingPetriNet(net, initialMarking, finalMarking);
     }
 
     public String getLabel() {

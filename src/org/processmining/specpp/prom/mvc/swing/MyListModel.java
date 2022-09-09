@@ -54,6 +54,7 @@ public class MyListModel<T> extends AbstractListModel<T> implements Iterable<T> 
     }
 
     public void remove(int index) {
+        if (index < 0 || index >= internal.size()) return;
         internal.remove(index);
         fireIntervalRemoved(this, index, index);
     }

@@ -33,11 +33,11 @@ public class ComputationListeningPanel<T extends OngoingComputation> extends JPa
         stopButton.addActionListener(e -> ongoingComputation.getCancellationCallback().run());
 
         GridBagConstraints c = new GridBagConstraints();
-        c.ipadx = 10;
+        c.ipadx = 15;
         c.ipady = 10;
         c.gridx = 0;
         c.gridy = 0;
-        c.anchor = GridBagConstraints.CENTER;
+        c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.NONE;
         c.gridwidth = 3;
         add(timingLabel, c);

@@ -28,7 +28,7 @@ public class FrameworkBridge {
     public static final List<BridgedHeuristics> HEURISTICS = Arrays.asList(BridgedHeuristics.values());
     public static final List<BridgedEvaluators> EVALUATORS = Arrays.asList(BridgedEvaluators.values());
     public static final List<BridgedDeltaAdaptationFunctions> DELTA_FUNCTIONS = Arrays.asList(BridgedDeltaAdaptationFunctions.values());
-    public static final List<BridgedPostProcessors> POST_PROCESSORS = Arrays.asList(BridgedPostProcessors.ReplayBasedImplicitPlaceRemoval, BridgedPostProcessors.SelfLoopPlacesMerging);
+    public static final List<AnnotatedPostProcessor> POST_PROCESSORS = Arrays.asList(BridgedPostProcessors.ReplayBasedImplicitPlaceRemoval.getBridge(), BridgedPostProcessors.SelfLoopPlacesMerging.getBridge(), BridgedPostProcessors.ProMPetrinetConversion.getBridge());
 
     public enum BridgedHeuristics {
         PlaceInterestingness(new BridgedTreeHeuristic("Place Interestingness", () -> InterestingnessHeuristic::new)), BFS_Emulation(new BridgedTreeHeuristic("BFS Emulation", () -> HeuristicUtils::bfs)), DFS_Emulation(new BridgedTreeHeuristic("DFS Emulation", () -> HeuristicUtils::dfs));
@@ -50,14 +50,14 @@ public class FrameworkBridge {
     }
 
     public enum BridgedPostProcessors {
-        Identity(new BridgedPostProcessor("Identity", PetriNet.class, PetriNet.class, () -> IdentityPostProcessor::new)), ReplayBasedImplicitPlaceRemoval(new BridgedPostProcessor("Replay-Based Implicit Place Removal", PetriNet.class, PetriNet.class, ReplayBasedImplicitnessPostProcessing.Builder::new)), SelfLoopPlacesMerging(new BridgedPostProcessor("Self-Loop Places Merging", PetriNet.class, PetriNet.class, () -> SelfLoopPlaceMerger::new)), ProMPetrinetConversion(new BridgedPostProcessor("ProM Petri net Conversion", PetriNet.class, ProMPetrinetWrapper.class, () -> ProMConverter::new));
-        private final BridgedPostProcessor bpp;
+        Identity(new AnnotatedPostProcessor("Identity", PetriNet.class, PetriNet.class, () -> IdentityPostProcessor::new)), ReplayBasedImplicitPlaceRemoval(new AnnotatedPostProcessor("Replay-Based Implicit Place Removal", PetriNet.class, PetriNet.class, ReplayBasedImplicitnessPostProcessing.Builder::new)), SelfLoopPlacesMerging(new AnnotatedPostProcessor("Self-Loop Places Merging", PetriNet.class, PetriNet.class, () -> SelfLoopPlaceMerger::new)), ProMPetrinetConversion(new AnnotatedPostProcessor("ProM Petri net Conversion", PetriNet.class, ProMPetrinetWrapper.class, () -> ProMConverter::new));
+        private final AnnotatedPostProcessor bpp;
 
-        BridgedPostProcessors(BridgedPostProcessor bpp) {
+        BridgedPostProcessors(AnnotatedPostProcessor bpp) {
             this.bpp = bpp;
         }
 
-        public BridgedPostProcessor getBridge() {
+        public AnnotatedPostProcessor getBridge() {
             return bpp;
         }
 
@@ -141,12 +141,12 @@ public class FrameworkBridge {
         }
     }
 
-    public static class BridgedPostProcessor extends Bridged<PostProcessor<?, ?>> {
+    public static class AnnotatedPostProcessor extends Bridged<PostProcessor<?, ?>> {
 
         private final Class<?> inType;
         private final Class<?> outType;
 
-        BridgedPostProcessor(String printableName, Class<?> inType, Class<?> outType, Supplier<SimpleBuilder<? extends PostProcessor<?, ?>>> simpleBuilderSupplier) {
+        AnnotatedPostProcessor(String printableName, Class<?> inType, Class<?> outType, Supplier<SimpleBuilder<? extends PostProcessor<?, ?>>> simpleBuilderSupplier) {
             super(printableName, simpleBuilderSupplier);
             this.inType = inType;
             this.outType = outType;

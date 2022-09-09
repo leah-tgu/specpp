@@ -1,0 +1,194 @@
+package org.processmining.specpp.prom.alg;
+
+import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
+import org.processmining.framework.plugin.PluginContext;
+import org.processmining.framework.plugin.PluginDescriptor;
+import org.processmining.framework.plugin.PluginExecutionResult;
+import org.processmining.framework.plugin.PluginParameterBinding;
+import org.processmining.framework.plugin.annotations.Plugin;
+import org.processmining.framework.util.Pair;
+import org.processmining.framework.util.ui.widgets.ProMTable;
+import org.processmining.models.graphbased.directed.petrinet.Petrinet;
+import org.processmining.specpp.base.PostProcessor;
+import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.specpp.prom.mvc.swing.SwingFactory;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.regex.PatternSyntaxException;
+
+public class ProMPostProcessor {
+
+
+    public static Pair<Set<Pair<Integer, PluginParameterBinding>>, Set<Pair<Integer, PluginParameterBinding>>> searchPlugins(PluginContext pc) {
+        Set<Pair<Integer, PluginParameterBinding>> pnTransformers = pc.getPluginManager()
+                                                                      .find(Plugin.class, Petrinet.class, pc.getClass(), true, true, false, Petrinet.class);
+        Set<Pair<Integer, PluginParameterBinding>> apnTransformers = pc.getPluginManager()
+                                                                       .find(Plugin.class, AcceptingPetriNet.class, pc.getClass(), true, true, false, AcceptingPetriNet.class);
+
+        return new Pair<>(pnTransformers, apnTransformers);
+    }
+
+
+    public static void createPluginFinderWindow(PluginContext pc, Consumer<FrameworkBridge.AnnotatedPostProcessor> consumer) {
+        Pair<Set<Pair<Integer, PluginParameterBinding>>, Set<Pair<Integer, PluginParameterBinding>>> plugins = searchPlugins(pc);
+        List<Pair<Integer, PluginParameterBinding>> pnTransformers = new ArrayList<>(plugins.getFirst());
+        List<Pair<Integer, PluginParameterBinding>> apnTransformers = new ArrayList<>(plugins.getSecond());
+
+        print(pnTransformers);
+        print(apnTransformers);
+
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        ArrayList<Pair<Integer, PluginParameterBinding>> combined = new ArrayList<>(pnTransformers);
+        combined.addAll(apnTransformers);
+        for (Pair<Integer, PluginParameterBinding> pair : combined) {
+            PluginDescriptor plugin = pair.getSecond().getPlugin();
+            model.addRow(new Object[]{plugin.getName(), plugin.getHelp(), plugin.getParameterNames().toString(), plugin.getReturnNames().toString()});
+        }
+
+        JFrame jf = new JFrame("ProM (accepting) Petri net transforming plugin search");
+        ProMTable table = SwingFactory.proMTable(model);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    int row = table.getSelectedRow();
+                    if (row >= 0) consumer.accept(wrapPlugin(pc, pnTransformers, apnTransformers, row));
+                }
+            }
+        });
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = table.rowAtPoint(e.getPoint());
+                if (row >= 0 && e.getClickCount() == 2) {
+                    consumer.accept(wrapPlugin(pc, pnTransformers, apnTransformers, row));
+                }
+            }
+        });
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
+        JTextField field = new JTextField();
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filter();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filter();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+
+            private void filter() {
+                try {
+                    RowFilter<Object, Object> rf = RowFilter.regexFilter(field.getText(), 0);
+                    sorter.setRowFilter(rf);
+                } catch (PatternSyntaxException ignored) {
+                }
+            }
+        });
+        jf.getContentPane().add(table, BorderLayout.CENTER);
+        jf.getContentPane().add(field, BorderLayout.PAGE_END);
+        jf.pack();
+        jf.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        jf.setVisible(true);
+    }
+
+    private static FrameworkBridge.AnnotatedPostProcessor wrapPlugin(PluginContext pc, List<Pair<Integer, PluginParameterBinding>> pnTransformers, List<Pair<Integer, PluginParameterBinding>> apnTransformers, int row) {
+
+
+        PluginParameterBinding binding;
+        Function<ProMPetrinetWrapper, ProMPetrinetWrapper> invoker;
+
+        // TODO the initial & final markings are going to break in both variants
+        if (row < pnTransformers.size()) {
+            binding = pnTransformers.get(row).getSecond();
+            invoker = (ProMPetrinetWrapper pnw) -> {
+                PluginExecutionResult invoke = binding.invoke(pc, pnw.getNet());
+                Optional<Petrinet> first = Arrays.stream(invoke.getResults())
+                                                 .filter(r -> r instanceof Petrinet)
+                                                 .map(r -> (Petrinet) r)
+                                                 .findFirst();
+                if (!first.isPresent()) return null;
+                Petrinet net = first.get();
+                return new ProMPetrinetWrapper(net, pnw.getInitialMarking(), pnw.getFinalMarking());
+            };
+        } else if (row - pnTransformers.size() < apnTransformers.size()) {
+            binding = apnTransformers.get(row - pnTransformers.size()).getSecond();
+            invoker = (ProMPetrinetWrapper pnw) -> {
+                PluginExecutionResult invoke = binding.invoke(pc, pnw);
+                Optional<AcceptingPetriNet> first = Arrays.stream(invoke.getResults())
+                                                          .filter(r -> r instanceof AcceptingPetriNet)
+                                                          .map(r -> (AcceptingPetriNet) r)
+                                                          .findFirst();
+                if (!first.isPresent()) return null;
+                AcceptingPetriNet apn = first.get();
+                return new ProMPetrinetWrapper(apn);
+            };
+        } else return null;
+
+        PostProcessor<ProMPetrinetWrapper, ProMPetrinetWrapper> pp = new PostProcessor<ProMPetrinetWrapper, ProMPetrinetWrapper>() {
+
+            @Override
+            public ProMPetrinetWrapper postProcess(ProMPetrinetWrapper result) {
+                return invoker.apply(result);
+            }
+
+            @Override
+            public Class<ProMPetrinetWrapper> getInputClass() {
+                return ProMPetrinetWrapper.class;
+            }
+
+            @Override
+            public Class<ProMPetrinetWrapper> getOutputClass() {
+                return ProMPetrinetWrapper.class;
+            }
+        };
+
+        return new FrameworkBridge.AnnotatedPostProcessor(binding.getPlugin()
+                                                                 .getName(), ProMPetrinetWrapper.class, ProMPetrinetWrapper.class, () -> (() -> pp));
+    }
+
+
+    private static void filterModel(DefaultListModel<String> model, String text, List<String> entireList) {
+        for (String s : entireList) {
+            if (s.contains(text) && !model.contains(s)) model.addElement(s);
+            else if (!s.contains(text) && model.contains(s)) model.removeElement(s);
+        }
+    }
+
+    private static void print(List<Pair<Integer, PluginParameterBinding>> pairs) {
+        System.out.println("#Results: " + pairs.size());
+        for (Pair<Integer, PluginParameterBinding> pair : pairs) {
+            PluginDescriptor plugin = pair.getSecond().getPlugin();
+            String name = plugin.getName();
+            String desc = plugin.getHelp();
+            System.out.println(String.format("\t[%d] ", pair.getFirst()) + name + " :: " + desc + " - " + plugin.getParameterNames() + " => " + plugin.getReturnNames());
+        }
+    }
+
+}

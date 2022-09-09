@@ -8,5 +8,10 @@ public class Iconic {
 
     public static final Icon checkmark = new ImageIcon(ImageLoader.load("checkmark.png"));
     public static final Icon cross = new ImageIcon(ImageLoader.load("cross.png"));
+    public static final Icon drag_and_drop = new ImageIcon(ImageLoader.load("drag-and-drop.png"));
+    public static final Icon hand = new ImageIcon(ImageLoader.load("hand.png"));
+    public static final Icon right_arrow = new ImageIcon(ImageLoader.load("right_arrow.png"));
+    public static final Icon tiny_hand = new ImageIcon(ImageLoader.load("tiny_hand.png"));
+    public static final Icon tiny_right_arrow = new ImageIcon(ImageLoader.load("tiny_right_arrow.png"));
 
 }

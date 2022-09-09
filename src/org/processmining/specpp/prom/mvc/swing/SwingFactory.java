@@ -57,6 +57,8 @@ public class SwingFactory {
                 int rowIndex = rowAtPoint(p);
                 int colIndex = columnAtPoint(p);
 
+                if (rowIndex < 0 || colIndex < 0) return null;
+
                 try {
                     tip = getValueAt(rowIndex, colIndex).toString();
                 } catch (RuntimeException ignored) {
@@ -69,6 +71,10 @@ public class SwingFactory {
 
     public static JLabel createHeader(String s) {
         return SlickerFactory.instance().createLabel("<html><h3>" + s + "</h3></html>");
+    }
+
+    public static JLabel createHeaderWithSubtitle(String s, String sub) {
+        return SlickerFactory.instance().createLabel("<html><h3>" + s + "</h3><br>" + sub + "</html>");
     }
 
 }

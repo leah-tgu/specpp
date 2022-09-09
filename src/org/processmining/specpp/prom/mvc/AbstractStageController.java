@@ -1,6 +1,6 @@
 package org.processmining.specpp.prom.mvc;
 
-import javax.swing.*;
+import org.processmining.framework.plugin.PluginContext;
 
 public abstract class AbstractStageController implements StageController {
 
@@ -10,5 +10,9 @@ public abstract class AbstractStageController implements StageController {
         this.parentController = parentController;
     }
 
+
+    public PluginContext getContext() {
+        return parentController.getPluginContext();
+    }
 
 }

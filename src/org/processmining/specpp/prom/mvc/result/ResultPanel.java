@@ -34,6 +34,7 @@ public class ResultPanel extends AbstractStagePanel<ResultController> {
                                                                                           .collect(Collectors.toList());
         petriNet = intermediatePetriNets.get(intermediatePetriNets.size() - 1);
 
+
         SlickerTabbedPane tabbedPane = SlickerFactory.instance().createTabbedPane("Result");
         ResultEvaluationPanel resultEvaluationPanel = new ResultEvaluationPanel(proMPetrinetWrapper, petriNet);
 
@@ -55,7 +56,7 @@ public class ResultPanel extends AbstractStagePanel<ResultController> {
         add(resultEvaluationPanel, c);
 
        startVisualizationWorkers();
-
+       tabbedPane.selectTab("List");
     }
 
     private void startVisualizationWorkers() {
@@ -73,10 +74,11 @@ public class ResultPanel extends AbstractStagePanel<ResultController> {
                 try {
                     JComponent jComponent = get();
                     graphPanel.add(jComponent);
+                    jComponent.revalidate();
                 } catch (ExecutionException | InterruptedException e) {
                     graphPanel.add(new MessagePanel("Graph Visualizer failed.\n" + e.getMessage()));
+                    graphPanel.revalidate();
                 }
-                graphPanel.revalidate();
             }
         }.execute();
 
@@ -94,10 +96,11 @@ public class ResultPanel extends AbstractStagePanel<ResultController> {
                 try {
                     JComponent jComponent = get();
                     listPanel.add(jComponent);
+                    jComponent.revalidate();
                 } catch (ExecutionException | InterruptedException e) {
                     listPanel.add(new MessagePanel("List Visualizer failed.\n" + e.getMessage()));
+                    listPanel.revalidate();
                 }
-                listPanel.revalidate();
             }
         }.execute();
     }

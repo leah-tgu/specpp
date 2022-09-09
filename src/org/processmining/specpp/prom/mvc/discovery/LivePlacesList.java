@@ -1,6 +1,5 @@
 package org.processmining.specpp.prom.mvc.discovery;
 
-import org.processmining.framework.util.ui.widgets.ProMList;
 import org.processmining.framework.util.ui.widgets.ProMTable;
 import org.processmining.specpp.datastructures.petri.Place;
 
@@ -14,7 +13,12 @@ public class LivePlacesList implements LivePlacesVisualizer {
     private final ProMTable table;
 
     public LivePlacesList() {
-        tableModel = new DefaultTableModel(new String[]{"Preset", "Postset"}, 0);
+        tableModel = new DefaultTableModel(new String[]{"Preset", "Postset"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         table = new ProMTable(tableModel);
     }
 

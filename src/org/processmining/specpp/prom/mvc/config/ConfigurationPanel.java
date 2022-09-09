@@ -2,22 +2,14 @@ package org.processmining.specpp.prom.mvc.config;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
 import com.google.common.collect.ImmutableList;
+import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 import org.processmining.specpp.prom.mvc.AbstractStagePanel;
 import org.processmining.specpp.prom.mvc.swing.*;
-import org.processmining.specpp.prom.util.EnumTransferable;
-import org.processmining.specpp.prom.util.Iconic;
 
 import javax.swing.*;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import java.awt.*;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ItemEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.IOException;
+import java.awt.event.*;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -40,7 +32,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     private final JComboBox<FrameworkBridge.BridgedDeltaAdaptationFunctions> deltaAdaptationFunctionComboBox;
     private final JComboBox<CompositionStrategy> compositionStrategyComboBox;
     private final JCheckBox applyCIPRCheckBox;
-    private final MyListModel<FrameworkBridge.BridgedPostProcessors> ppPipelineModel;
+    private final MyListModel<FrameworkBridge.AnnotatedPostProcessor> ppPipelineModel;
     private final JTextField tauField;
     private final JTextField deltaField;
     private final JTextField depthField;
@@ -89,6 +81,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     private final ActivatableTextBasedInputField<Duration> totalTimeLimitInput;
     private final TextBasedInputField<Double> tauInput;
     private final JButton runButton;
+    private final JCheckBox permitSubtreeCutoffCheckBox;
 
     public ConfigurationPanel(ConfigurationController controller) {
         super(controller, new GridBagLayout());
@@ -126,6 +119,8 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         });
         bridgedHeuristicsLabeledComboBox.setVisible(false);
         proposal.append(bridgedHeuristicsLabeledComboBox);
+        permitSubtreeCutoffCheckBox = SwingFactory.labeledCheckBox("Permit over/underfed subtree cutoff");
+        permitSubtreeCutoffCheckBox.addChangeListener(e -> updatedProposalSettings());
         permitWiringCheckBox = SwingFactory.labeledCheckBox("Permit Wiring Constraints");
         permitWiringCheckBox.addChangeListener(e -> updatedProposalSettings());
         proposal.append(permitWiringCheckBox);
@@ -169,147 +164,9 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
 
         // ** POST PROCESSING ** //
 
-        TitledBorderPanel postProcessing = new TitledBorderPanel("Post Processing");
-        JList<FrameworkBridge.BridgedPostProcessors> outList = new JList<>(new MyListModel<>(FrameworkBridge.POST_PROCESSORS));
-        outList.setDragEnabled(true);
-        outList.setDropMode(DropMode.INSERT);
-        outList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        outList.setTransferHandler(new TransferHandler() {
-            @Override
-            protected Transferable createTransferable(JComponent c) {
-                return new EnumTransferable<>(outList.getSelectedValue());
-            }
-
-            @Override
-            public int getSourceActions(JComponent c) {
-                return COPY;
-            }
-
-        });
-        GridBagConstraints ppc = new GridBagConstraints();
-        ppc.insets = new Insets(10, 15, 10, 15);
-        ppc.gridx = 0;
-        ppc.gridy = 0;
-        ppc.fill = GridBagConstraints.BOTH;
-        ppc.weightx = 1;
-        ppc.weighty = 0;
-        postProcessing.add(SwingFactory.createHeader("Available Post Processors"), ppc);
-        ppc.weighty = 1;
-        ppc.gridy++;
-        postProcessing.add(new JScrollPane(outList), ppc);
-
+        TitledBorderPanel postProcessing = new TitledBorderPanel("Post Processing", new BorderLayout());
         ppPipelineModel = new MyListModel<>();
-        JList<FrameworkBridge.BridgedPostProcessors> inList = new JList<>(ppPipelineModel);
-        inList.setDragEnabled(true);
-        inList.setDropMode(DropMode.INSERT);
-        inList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        inList.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-                    int i = inList.getSelectedIndex();
-                    if (i >= 0) ppPipelineModel.remove(i);
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-
-            }
-        });
-        inList.setTransferHandler(new TransferHandler() {
-
-            private int importedIndex;
-            private int exportedIndex;
-
-            @Override
-            protected Transferable createTransferable(JComponent c) {
-                Object selectedValue = inList.getSelectedValue();
-                exportedIndex = inList.getSelectedIndex();
-                return new EnumTransferable<>((FrameworkBridge.BridgedPostProcessors) selectedValue);
-            }
-
-            @Override
-            public int getSourceActions(JComponent c) {
-                return MOVE;
-            }
-
-            @Override
-            public boolean canImport(TransferSupport support) {
-                return support.isDrop() && support.isDataFlavorSupported(EnumTransferable.myFlave);
-            }
-
-            @Override
-            protected void exportDone(JComponent source, Transferable data, int action) {
-                if (action == MOVE) {
-                    ppPipelineModel.remove(importedIndex < exportedIndex ? exportedIndex + 1 : exportedIndex);
-                }
-            }
-
-            @Override
-            public boolean importData(TransferSupport support) {
-                try {
-                    FrameworkBridge.BridgedPostProcessors transferData = (FrameworkBridge.BridgedPostProcessors) support.getTransferable()
-                                                                                                                        .getTransferData(EnumTransferable.myFlave);
-                    JList.DropLocation dl = (JList.DropLocation) support.getDropLocation();
-                    int index = dl.getIndex();
-                    importedIndex = index;
-                    ppPipelineModel.insert(transferData, index);
-                    return true;
-                } catch (UnsupportedFlavorException | IOException | ClassCastException ignored) {
-                }
-                return false;
-            }
-
-        });
-
-        ppc.gridx = 1;
-        ppc.gridy = 0;
-        ppc.weighty = 0;
-        postProcessing.add(SwingFactory.createHeader("Post Processing Pipeline"), ppc);
-        ppc.weighty = 1;
-        ppc.gridy++;
-        postProcessing.add(new JScrollPane(inList), ppc);
-        JLabel ppTypesOkay = SlickerFactory.instance().createLabel("are types ok?");
-        ppc.weighty = 0.1;
-        ppc.gridx = 0;
-        ppc.gridy = 2;
-        ppc.gridwidth = 2;
-        ppc.anchor = GridBagConstraints.CENTER;
-        postProcessing.add(ppTypesOkay, ppc);
-        ppPipelineModel.addListDataListener(new ListDataListener() {
-
-            private void updateValidationStatus() {
-                if (validatePostProcessingPipeline()) {
-                    ppTypesOkay.setText("input & output types match");
-                    ppTypesOkay.setIcon(Iconic.checkmark);
-                } else {
-                    ppTypesOkay.setText("input & output types are incompatible");
-                    ppTypesOkay.setIcon(Iconic.cross);
-                }
-            }
-
-            @Override
-            public void intervalAdded(ListDataEvent e) {
-                updateValidationStatus();
-            }
-
-            @Override
-            public void intervalRemoved(ListDataEvent e) {
-                updateValidationStatus();
-            }
-
-            @Override
-            public void contentsChanged(ListDataEvent e) {
-                updateValidationStatus();
-            }
-        });
-
+        postProcessing.add(new PostProcessingConfigPanel(controller.getContext(), ppPipelineModel));
         // ** PARAMETERS ** //
 
         TitledBorderPanel parameters = new TitledBorderPanel("Parameters");
@@ -369,16 +226,16 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         initializeFromProMConfig(ProMConfig.getDefault());
     }
 
-    public boolean validatePostProcessingPipeline() {
-        ListIterator<FrameworkBridge.BridgedPostProcessors> it = ppPipelineModel.iterator();
-        if (!it.hasNext()) return true;
-        FrameworkBridge.BridgedPostProcessor prev = FrameworkBridge.BridgedPostProcessors.Identity.getBridge();
+    public static boolean validatePostProcessingPipeline(MyListModel<FrameworkBridge.AnnotatedPostProcessor> ppPipelineModel) {
+        ListIterator<FrameworkBridge.AnnotatedPostProcessor> it = ppPipelineModel.iterator();
+        if (!it.hasNext()) return false;
+        FrameworkBridge.AnnotatedPostProcessor prev = FrameworkBridge.BridgedPostProcessors.Identity.getBridge();
         while (it.hasNext()) {
-            FrameworkBridge.BridgedPostProcessor next = it.next().getBridge();
+            FrameworkBridge.AnnotatedPostProcessor next = it.next();
             if (!next.getInType().isAssignableFrom(prev.getOutType())) return false;
             prev = next;
         }
-        return true;
+        return ProMPetrinetWrapper.class.isAssignableFrom(prev.getOutType());
     }
 
     private void initializeFromProMConfig(ProMConfig pc) {
@@ -416,7 +273,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         FrameworkBridge.BridgedDeltaAdaptationFunctions bridgedDelta;
         CompositionStrategy compositionStrategy;
         boolean applyCIPR;
-        List<FrameworkBridge.BridgedPostProcessors> ppPipeline;
+        List<FrameworkBridge.AnnotatedPostProcessor> ppPipeline;
         double tau, delta;
         int depth;
         Duration discoveryTimeLimit, totalTimeLimit;
@@ -433,7 +290,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
             pc.bridgedDelta = FrameworkBridge.BridgedDeltaAdaptationFunctions.Static;
             pc.compositionStrategy = CompositionStrategy.Standard;
             pc.applyCIPR = true;
-            pc.ppPipeline = ImmutableList.of(FrameworkBridge.BridgedPostProcessors.ReplayBasedImplicitPlaceRemoval, FrameworkBridge.BridgedPostProcessors.SelfLoopPlacesMerging);
+            pc.ppPipeline = ImmutableList.of(FrameworkBridge.BridgedPostProcessors.ReplayBasedImplicitPlaceRemoval.getBridge(), FrameworkBridge.BridgedPostProcessors.SelfLoopPlacesMerging.getBridge(), FrameworkBridge.BridgedPostProcessors.ProMPetrinetConversion.getBridge());
             pc.tau = 1.0;
             pc.delta = -1.0;
             pc.depth = -1;
@@ -473,7 +330,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         pc.bridgedDelta = (FrameworkBridge.BridgedDeltaAdaptationFunctions) deltaAdaptationFunctionComboBox.getSelectedItem();
         pc.compositionStrategy = (CompositionStrategy) compositionStrategyComboBox.getSelectedItem();
         pc.applyCIPR = applyCIPRCheckBox.isSelected();
-        if (!validatePostProcessingPipeline()) return null;
+        if (!validatePostProcessingPipeline(ppPipelineModel)) return null;
         pc.ppPipeline = ImmutableList.copyOf(ppPipelineModel.iterator());
         Double rawTau = tauInput.getInput();
         pc.tau = rawTau != null ? rawTau : -1;
@@ -533,8 +390,8 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     private void updateReadinessState() {
         SwingUtilities.invokeLater(() -> {
             ProMConfig pc = collectConfig();
-            System.out.println("ConfigurationPanel.updateReadinessState: " + pc != null);
-            //runButton.setEnabled(pc != null);
+            //System.out.println("ConfigurationPanel.updateReadinessState: " + pc != null);
+            runButton.setEnabled(pc != null);
         });
     }
 
