@@ -22,7 +22,7 @@ public class ConfiguratorCollection implements SPECppConfigBundle, SPECppCompone
     private final EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg;
     private final PostProcessingConfiguration.Configurator<PetriNet, ProMPetrinetWrapper> ppCfg;
     private final AdaptedAlgorithmParameterConfig parCfg;
-    private BaseDataExtractionConfig deCfg;
+    private final BaseDataExtractionConfig deCfg;
 
     public ConfiguratorCollection(SupervisionConfiguration.Configurator svCfg, ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, PetriNet> pcCfg, EvaluatorConfiguration.Configurator evCfg, EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg, PostProcessingConfiguration.Configurator<PetriNet, ProMPetrinetWrapper> ppCfg, AdaptedAlgorithmParameterConfig parCfg) {
         this.svCfg = svCfg;

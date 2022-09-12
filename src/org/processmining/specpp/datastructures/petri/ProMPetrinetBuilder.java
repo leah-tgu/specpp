@@ -1,23 +1,28 @@
 package org.processmining.specpp.datastructures.petri;
 
 import com.google.common.collect.ImmutableSet;
+import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
+import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetFactory;
 import org.processmining.models.graphbased.AttributeMap;
 import org.processmining.models.graphbased.directed.petrinet.Petrinet;
 import org.processmining.models.graphbased.directed.petrinet.elements.Transition;
 import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactory;
 import org.processmining.models.semantics.petrinet.Marking;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ProMPetrinetBuilder {
 
-    private final Collection<Place> places;
+    private final PetriNet petriNet;
     private final Map<org.processmining.specpp.datastructures.petri.Transition, Transition> transitionMap;
     private final Map<Place, org.processmining.models.graphbased.directed.petrinet.elements.Place> placeMap;
     private final Petrinet net;
 
-    public ProMPetrinetBuilder(Collection<Place> places) {
-        this.places = places;
+    public ProMPetrinetBuilder(PetriNet petriNet) {
+        this.petriNet = petriNet;
         transitionMap = new HashMap<>();
         placeMap = new HashMap<>();
         net = PetrinetFactory.newPetrinet("Model");
@@ -38,7 +43,7 @@ public class ProMPetrinetBuilder {
         uniqueEndPlace.getAttributeMap().put(AttributeMap.SHOWLABEL, "true");
         Marking initialMarking = new Marking(ImmutableSet.of(uniqueStartPlace)), finalMarking = new Marking(ImmutableSet.of(uniqueEndPlace));
         Set<org.processmining.specpp.datastructures.petri.Transition> alreadyConnected = new HashSet<>();
-        for (Place p : places) {
+        for (Place p : petriNet.getPlaces()) {
             org.processmining.models.graphbased.directed.petrinet.elements.Place correspondingPlace = net.addPlace(p.toString());
             for (org.processmining.specpp.datastructures.petri.Transition t : p.preset()) {
                 if (t instanceof InitialTransition && !alreadyConnected.contains(t)) {
@@ -56,7 +61,7 @@ public class ProMPetrinetBuilder {
             }
         }
 
-        // AcceptingPetriNet acceptingPetriNet = AcceptingPetriNetFactory.createAcceptingPetriNet(net, initialMarking, finalMarking);
-        return new ProMPetrinetWrapper(net, initialMarking, finalMarking);
+        AcceptingPetriNet acceptingPetriNet = AcceptingPetriNetFactory.createAcceptingPetriNet(net, initialMarking, finalMarking);
+        return new ProMPetrinetWrapper(acceptingPetriNet);
     }
 }

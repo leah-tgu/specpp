@@ -1,12 +1,15 @@
 package org.processmining.specpp.prom.mvc.swing;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
+import com.google.common.collect.Multimap;
 import org.processmining.framework.util.ui.widgets.ProMComboBox;
 import org.processmining.framework.util.ui.widgets.ProMTable;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
@@ -77,4 +80,32 @@ public class SwingFactory {
         return SlickerFactory.instance().createLabel("<html><h3>" + s + "</h3><br>" + sub + "</html>");
     }
 
+    public static DefaultTableModel readOnlyTableModel(String... columnNames) {
+        return new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+
+
+        };
+    }
+
+    public static DefaultTableModel readOnlyTableModel(String[] columnNames, Multimap<Class<?>, Integer> types) {
+        Class<?>[] columnClasses = new Class[columnNames.length];
+        Arrays.fill(columnClasses, Object.class);
+        types.forEach((c, i) -> columnClasses[i] = c);
+        return new DefaultTableModel(columnNames, 0) {
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                return columnClasses[columnIndex];
+            }
+        };
+    }
 }

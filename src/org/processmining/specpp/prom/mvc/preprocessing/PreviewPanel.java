@@ -39,7 +39,6 @@ public class PreviewPanel extends AbstractStagePanel<PreProcessingController> {
         applyButton.addActionListener(e -> {
             controller.applyWorker(collectSelectedActivities());
         });
-        applyButton.setEnabled(false);
 
         GridBagConstraints c = new GridBagConstraints();
         c.anchor = GridBagConstraints.CENTER;
@@ -66,8 +65,8 @@ public class PreviewPanel extends AbstractStagePanel<PreProcessingController> {
         return new ImmutablePair<>(new HashSet<>(presetList.getSelectedValuesList()), new HashSet<>(postsetList.getSelectedValuesList()));
     }
 
-    public void updateLists(Collection<Activity> activities, Pair<Comparator<Activity>> comparators) {
-        new SwingWorker<Pair<List<Activity>>, Void>() {
+    public SwingWorker<Pair<List<Activity>>, Void> updateLists(Collection<Activity> activities, Pair<Comparator<Activity>> comparators) {
+        SwingWorker<Pair<List<Activity>>, Void> w = new SwingWorker<Pair<List<Activity>>, Void>() {
 
             @Override
             protected Pair<List<Activity>> doInBackground() throws Exception {
@@ -92,11 +91,13 @@ public class PreviewPanel extends AbstractStagePanel<PreProcessingController> {
                     postsetList.setSelectedIndices(IntStream.range(0, postsetListModel.size()).toArray());
                 } catch (InterruptedException | ExecutionException ignored) {
 
-                }finally {
+                } finally {
                     applyButton.setEnabled(true);
                 }
             }
-        }.execute();
+        };
+        w.execute();
+        return w;
     }
 
 

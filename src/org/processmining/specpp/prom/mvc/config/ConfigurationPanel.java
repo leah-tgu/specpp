@@ -9,7 +9,7 @@ import org.processmining.specpp.prom.mvc.swing.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -103,7 +103,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         supervision.append(supervisionSettingLabeledComboBox);
         trackCandidateTreeCheckBox = SwingFactory.labeledCheckBox("track candidate tree");
         trackCandidateTreeCheckBox.addChangeListener(e -> updatedSupervisionSettings());
-        supervision.append(trackCandidateTreeCheckBox);
+        //supervision.append(trackCandidateTreeCheckBox);
         supervision.completeWithWhitespace();
 
         // ** PROPOSAL ** //
@@ -172,13 +172,17 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         TitledBorderPanel parameters = new TitledBorderPanel("Parameters");
         tauInput = SwingFactory.textBasedInputField("tau", zeroOneDoubleFunc, 10);
         tauField = tauInput.getTextField();
+
+        tauField.addActionListener(e -> updatedParameters());
         parameters.append(tauInput);
         deltaInput = SwingFactory.textBasedInputField("delta", zeroOneDoubleFunc, 10);
         deltaField = deltaInput.getTextField();
+        deltaField.addActionListener(e -> updatedParameters()); // TODO auto update is broken, again
         deltaInput.setVisible(false);
         parameters.append(deltaInput);
         depthInput = SwingFactory.activatableTextBasedInputField("max depth", false, posIntFunc, 10);
         depthField = depthInput.getTextField();
+        depthField.addActionListener(e -> updatedParameters());
         parameters.append(depthInput);
         parameters.completeWithWhitespace();
 
@@ -223,7 +227,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         c.gridy++;
         add(execution, c);
 
-        initializeFromProMConfig(ProMConfig.getDefault());
+        updatedPreset();
     }
 
     public static boolean validatePostProcessingPipeline(MyListModel<FrameworkBridge.AnnotatedPostProcessor> ppPipelineModel) {

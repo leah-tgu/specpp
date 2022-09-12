@@ -28,7 +28,7 @@ public class StageProgressionPanel extends JPanel {
 
         stageButtons = new ArrayList<>();
         for (SPECppController.PluginStage stage : SPECppController.PLUGIN_STAGES) {
-            JButton jButton = new JButton(stage.name());//new SlickerButton(stage.name());
+            JButton jButton = new JButton(stage.toString());
             jButton.setOpaque(false);
             jButton.setBorder(createUnHighlightedBorder());
             jButton.setMinimumSize(new Dimension(150, 50));

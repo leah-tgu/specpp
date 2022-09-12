@@ -6,12 +6,12 @@ import org.processmining.specpp.datastructures.petri.Transition;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class NaivePlacemaker extends Placemaker {
+public class NaivePlaceMaker extends PlaceMaker {
 
     private final Map<String, Transition> preLabels;
     private final Map<String, Transition> postLabels;
 
-    public NaivePlacemaker(IntEncodings<Transition> encodings) {
+    public NaivePlaceMaker(IntEncodings<Transition> encodings) {
         super(encodings);
         preLabels = encodings.pre().domain().collect(Collectors.toMap(Transition::toString, t -> t));
         postLabels = encodings.post().domain().collect(Collectors.toMap(Transition::toString, t -> t));

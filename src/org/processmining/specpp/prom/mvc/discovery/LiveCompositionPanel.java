@@ -138,7 +138,7 @@ public class LiveCompositionPanel extends JPanel implements Destructible {
             contentPanel.add(jComponent, BorderLayout.CENTER);
         }
         currentContent = jComponent;
-        contentPanel.revalidate();
+        currentContent.revalidate();
     }
 
     @Override

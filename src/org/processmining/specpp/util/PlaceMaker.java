@@ -6,10 +6,10 @@ import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.Transition;
 
-public class Placemaker {
+public class PlaceMaker {
     private final IntEncoding<Transition> preEnc, postEnc;
 
-    public Placemaker(IntEncodings<Transition> encodings) {
+    public PlaceMaker(IntEncodings<Transition> encodings) {
         this.preEnc = encodings.pre();
         this.postEnc = encodings.post();
     }

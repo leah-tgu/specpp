@@ -9,6 +9,8 @@ import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.util.Pair;
 import org.processmining.framework.util.ui.widgets.ProMTable;
 import org.processmining.models.graphbased.directed.petrinet.Petrinet;
+import org.processmining.models.graphbased.directed.petrinet.elements.Place;
+import org.processmining.models.semantics.petrinet.Marking;
 import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.prom.mvc.swing.SwingFactory;
@@ -29,6 +31,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 public class ProMPostProcessor {
 
@@ -48,15 +51,7 @@ public class ProMPostProcessor {
         List<Pair<Integer, PluginParameterBinding>> pnTransformers = new ArrayList<>(plugins.getFirst());
         List<Pair<Integer, PluginParameterBinding>> apnTransformers = new ArrayList<>(plugins.getSecond());
 
-        print(pnTransformers);
-        print(apnTransformers);
-
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        DefaultTableModel model = SwingFactory.readOnlyTableModel("Plugin Name", "Description", "Parameter Names", "Return Objects Names");
         ArrayList<Pair<Integer, PluginParameterBinding>> combined = new ArrayList<>(pnTransformers);
         combined.addAll(apnTransformers);
         for (Pair<Integer, PluginParameterBinding> pair : combined) {
@@ -72,7 +67,7 @@ public class ProMPostProcessor {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     int row = table.getSelectedRow();
-                    if (row >= 0) consumer.accept(wrapPlugin(pc, pnTransformers, apnTransformers, row));
+                    if (row >= 0) handleImport(pc, consumer, jf, pnTransformers, apnTransformers, row);
                 }
             }
         });
@@ -81,7 +76,10 @@ public class ProMPostProcessor {
             public void mouseClicked(MouseEvent e) {
                 int row = table.rowAtPoint(e.getPoint());
                 if (row >= 0 && e.getClickCount() == 2) {
-                    consumer.accept(wrapPlugin(pc, pnTransformers, apnTransformers, row));
+                    int i = table.getRowSorter().convertRowIndexToModel(row);
+                    System.out.println("ProMPostProcessor.mouseClicked");
+                    System.out.println("i = " + i);
+                    consumer.accept(wrapPlugin(pc, pnTransformers, apnTransformers, i));
                 }
             }
         });
@@ -118,29 +116,49 @@ public class ProMPostProcessor {
         jf.setVisible(true);
     }
 
+    private static void handleImport(PluginContext pc, Consumer<FrameworkBridge.AnnotatedPostProcessor> consumer, JFrame jf, List<Pair<Integer, PluginParameterBinding>> pnTransformers, List<Pair<Integer, PluginParameterBinding>> apnTransformers, int row) {
+        FrameworkBridge.AnnotatedPostProcessor wrapPlugin = wrapPlugin(pc, pnTransformers, apnTransformers, row);
+        if (wrapPlugin == null) return;
+        JOptionPane.showMessageDialog(jf, "Successfully imported " + wrapPlugin + ".", "Import", JOptionPane.INFORMATION_MESSAGE);
+        // jf.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+        consumer.accept(wrapPlugin);
+    }
+
     private static FrameworkBridge.AnnotatedPostProcessor wrapPlugin(PluginContext pc, List<Pair<Integer, PluginParameterBinding>> pnTransformers, List<Pair<Integer, PluginParameterBinding>> apnTransformers, int row) {
 
 
         PluginParameterBinding binding;
         Function<ProMPetrinetWrapper, ProMPetrinetWrapper> invoker;
+        PluginContext childContext = pc.createChildContext("post processsing child");
 
         // TODO the initial & final markings are going to break in both variants
         if (row < pnTransformers.size()) {
             binding = pnTransformers.get(row).getSecond();
             invoker = (ProMPetrinetWrapper pnw) -> {
-                PluginExecutionResult invoke = binding.invoke(pc, pnw.getNet());
+                PluginExecutionResult invoke = binding.invoke(childContext, pnw.getNet());
                 Optional<Petrinet> first = Arrays.stream(invoke.getResults())
                                                  .filter(r -> r instanceof Petrinet)
                                                  .map(r -> (Petrinet) r)
                                                  .findFirst();
                 if (!first.isPresent()) return null;
                 Petrinet net = first.get();
-                return new ProMPetrinetWrapper(net, pnw.getInitialMarking(), pnw.getFinalMarking());
+                Collection<Place> places = net.getPlaces();
+                Marking im = new Marking(pnw.getInitialMarking()
+                                            .stream()
+                                            .filter(places::contains)
+                                            .collect(Collectors.toList()));
+                Set<Marking> fms = pnw.getFinalMarkings()
+                                      .stream()
+                                      .map(Marking::stream)
+                                      .map(s -> s.filter(places::contains))
+                                      .map(s -> new Marking(s.collect(Collectors.toList())))
+                                      .collect(Collectors.toSet());
+                return ProMPetrinetWrapper.of(net, im, fms);
             };
         } else if (row - pnTransformers.size() < apnTransformers.size()) {
             binding = apnTransformers.get(row - pnTransformers.size()).getSecond();
             invoker = (ProMPetrinetWrapper pnw) -> {
-                PluginExecutionResult invoke = binding.invoke(pc, pnw);
+                PluginExecutionResult invoke = binding.invoke(childContext, pnw);
                 Optional<AcceptingPetriNet> first = Arrays.stream(invoke.getResults())
                                                           .filter(r -> r instanceof AcceptingPetriNet)
                                                           .map(r -> (AcceptingPetriNet) r)

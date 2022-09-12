@@ -7,7 +7,6 @@ import org.processmining.specpp.prom.alg.ProMPostProcessor;
 import org.processmining.specpp.prom.mvc.swing.MyListModel;
 import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import org.processmining.specpp.prom.util.AnnotatedPostProcessorTransferable;
-import org.processmining.specpp.prom.util.EnumTransferable;
 import org.processmining.specpp.prom.util.Iconic;
 
 import javax.swing.*;
@@ -39,6 +38,16 @@ public class PostProcessingConfigPanel extends JPanel {
             protected Transferable createTransferable(JComponent c) {
                 if (outList.getSelectedValue() == null) return null;
                 else return new AnnotatedPostProcessorTransferable(outList.getSelectedValue());
+            }
+
+            @Override
+            public boolean canImport(TransferSupport support) {
+                return support.isDrop() && support.isDataFlavorSupported(AnnotatedPostProcessorTransferable.myFlave);
+            }
+
+            @Override
+            public boolean importData(TransferSupport support) {
+                return canImport(support);
             }
 
             @Override
@@ -137,7 +146,7 @@ public class PostProcessingConfigPanel extends JPanel {
             public boolean importData(TransferSupport support) {
                 try {
                     FrameworkBridge.AnnotatedPostProcessor transferData = (FrameworkBridge.AnnotatedPostProcessor) support.getTransferable()
-                                                                                                                        .getTransferData(AnnotatedPostProcessorTransferable.myFlave);
+                                                                                                                          .getTransferData(AnnotatedPostProcessorTransferable.myFlave);
                     JList.DropLocation dl = (JList.DropLocation) support.getDropLocation();
                     int index = dl.getIndex();
                     importedIndex = index;

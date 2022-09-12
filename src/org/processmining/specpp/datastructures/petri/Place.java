@@ -24,7 +24,6 @@ import org.processmining.specpp.traits.ProperlyPrintable;
 public class Place implements Candidate, NodeProperties, ProperlyHashable, ProperlyPrintable, Copyable<Place>, NonMutatingSetOperations<Place>, SetQueries<Place> {
 
     private final BitEncodedSet<Transition> ingoingTransitions, outgoingTransitions;
-    private final int computedHash = -1;
 
     public Place(Pair<BitEncodedSet<Transition>> encodedSetPair) {
         this(encodedSetPair.first(), encodedSetPair.second());

@@ -47,6 +47,7 @@ public class ComputationListeningPanel<T extends OngoingComputation> extends JPa
         c.gridx++;
         add(progressBar, c);
         c.gridx++;
+        c.ipadx = 20;
         add(stopButton, c);
 
         ongoingComputation.addObserver(this::updateComputation);

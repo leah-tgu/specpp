@@ -196,7 +196,7 @@ public class Main {
         Transition tc = ts.get("c");
         Transition td = ts.get("d");
         Transition te = ts.get("e");
-        Placemaker maker = new Placemaker(encs);
+        PlaceMaker maker = new PlaceMaker(encs);
         Place p1 = maker.preset(ta).postset(tb).get();
         Place p2 = maker.preset(ta).postset(tc).get();
         Place p3 = maker.preset(tb).postset(te).get();
@@ -379,7 +379,7 @@ public class Main {
         InputDataBundle dummyInputBundle = HardcodedTestInput.getDummyInputBundle("a", "b", "c", "d");
 
 
-        NaivePlacemaker placemaker = new NaivePlacemaker(dummyInputBundle.getTransitionEncodings());
+        NaivePlaceMaker placemaker = new NaivePlaceMaker(dummyInputBundle.getTransitionEncodings());
         Place p1 = placemaker.preset("a", "b").postset("b", "c").get();
         Place p2 = placemaker.preset("a").postset("c").get();
         Place p3 = placemaker.preset("b").postset("b", "d").get();

@@ -10,8 +10,10 @@ import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.petri.Transition;
+import org.processmining.specpp.datastructures.util.ImmutablePair;
 import org.processmining.specpp.datastructures.util.Pair;
 import org.processmining.specpp.datastructures.util.Tuple2;
+import org.processmining.specpp.datastructures.util.Tuple3;
 import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.preprocessing.XLogBasedInputDataBundle;
@@ -30,7 +32,7 @@ public class PreProcessingController extends AbstractStageController {
     private PreviewPanel previewPanel;
     private VariantPanel variantPanel;
     private SwingWorker<Pair<Comparator<Activity>>, Void> preprocessingWorker;
-    private SwingWorker<InputDataBundle, Void> applicationWorker;
+    private SwingWorker<Tuple3<PreProcessingParameters, Pair<Set<Activity>>, InputDataBundle>, Void> applicationWorker;
 
     public PreProcessingController(SPECppController parentController) {
         super(parentController);
@@ -74,6 +76,8 @@ public class PreProcessingController extends AbstractStageController {
             @Override
             protected Pair<Comparator<Activity>> doInBackground() throws Exception {
                 parametersPanel.disableButton();
+                previewPanel.disableButton();
+
                 if (lastParameters == null || lastParameters.isAddStartEndTransitions() != collectedParameters.isAddStartEndTransitions() || !lastParameters.getEventClassifier()
                                                                                                                                                             .equals(collectedParameters.getEventClassifier())) {
                     lastDerivedLog = XLogBasedInputDataBundle.convertLog(rawLog, collectedParameters.getEventClassifier(), collectedParameters.isAddStartEndTransitions());
@@ -97,6 +101,7 @@ public class PreProcessingController extends AbstractStageController {
                     throw new RuntimeException(e);
                 } finally {
                     parametersPanel.enableButton();
+                    previewPanel.enableButton();
                 }
             }
         };
@@ -109,30 +114,38 @@ public class PreProcessingController extends AbstractStageController {
         applyWorker(selectedActivities);
     }
 
-    public SwingWorker<InputDataBundle, Void> applyWorker(Pair<Set<Activity>> selectedActivities) {
+    public SwingWorker<Tuple3<PreProcessingParameters, Pair<Set<Activity>>, InputDataBundle>, Void> applyWorker(Pair<Set<Activity>> selectedActivities) {
         if (applicationWorker != null && !applicationWorker.isDone()) applicationWorker.cancel(true);
-        applicationWorker = new SwingWorker<InputDataBundle, Void>() {
+        applicationWorker = new SwingWorker<Tuple3<PreProcessingParameters, Pair<Set<Activity>>, InputDataBundle>, Void>() {
 
             @Override
-            protected InputDataBundle doInBackground() throws Exception {
+            protected Tuple3<PreProcessingParameters, Pair<Set<Activity>>, InputDataBundle> doInBackground() throws Exception {
+                Pair<Set<Activity>> selection = selectedActivities;
+
                 previewPanel.disableButton();
-                SwingWorker<Pair<Comparator<Activity>>, Void> w = previewWorker(parametersPanel.collectParameters());
-                w.get();
-                if (w.isCancelled()) throw new RuntimeException("data dependency failed to compute");
+                PreProcessingParameters collectedParameters = parametersPanel.collectParameters();
+                if (lastParameters == null || !lastParameters.equals(collectedParameters)) {
+                    SwingWorker<Pair<Comparator<Activity>>, Void> w = previewWorker(collectedParameters);
+                    Pair<Comparator<Activity>> comparators = w.get();
+                    if (w.isCancelled()) throw new RuntimeException("data dependency failed to compute");
+                    Collection<Activity> activities = lastDerivedLog.getT2().values();
+                    SwingWorker<Pair<List<Activity>>, Void> lists = previewPanel.updateLists(activities, comparators);
+                    selection = ImmutablePair.map(lists.get(), HashSet::new);
+                }
 
                 BidiMap<Activity, Transition> transitionMapping = new DualHashBidiMap<>();
                 lastDerivedLog.getT2()
                               .forEach((label, activity) -> transitionMapping.put(activity, XLogBasedInputDataBundle.makeTransition(activity, label)));
-                IntEncodings<Transition> encodings = ActivityOrderingBuilder.createEncodings(selectedActivities, lastComparators, transitionMapping);
-                return new InputDataBundle(lastDerivedLog.getT1(), encodings, transitionMapping);
+                IntEncodings<Transition> encodings = ActivityOrderingBuilder.createEncodings(selection, lastComparators, transitionMapping);
+                return new Tuple3<>(lastParameters, selection, new InputDataBundle(lastDerivedLog.getT1(), encodings, transitionMapping));
             }
 
             @Override
             protected void done() {
                 try {
                     if (!isCancelled()) {
-                        InputDataBundle bundle = get();
-                        parentController.preprocessingCompleted(bundle);
+                        Tuple3<PreProcessingParameters, Pair<Set<Activity>>, InputDataBundle> tuple3 = get();
+                        parentController.preprocessingCompleted(tuple3.getT1(), tuple3.getT2(), tuple3.getT3());
                     }
                 } catch (ExecutionException | InterruptedException e) {
                     throw new RuntimeException(e);

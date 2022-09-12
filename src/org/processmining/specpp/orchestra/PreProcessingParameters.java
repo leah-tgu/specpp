@@ -7,6 +7,7 @@ import org.processmining.specpp.config.parameters.Parameters;
 import org.processmining.specpp.preprocessing.orderings.*;
 
 import java.util.List;
+import java.util.Objects;
 
 public class PreProcessingParameters implements Parameters {
 
@@ -26,6 +27,19 @@ public class PreProcessingParameters implements Parameters {
 
     public static List<Class<? extends ActivityOrderingBuilder>> getAvailableTransitionEncodingsBuilders() {
         return ImmutableList.of(AverageTracePositionOrdering.class, TraceFrequencyOrdering.class, ActivityFrequencyOrdering.class, LexicographicTransitionOrdering.class);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PreProcessingParameters that = (PreProcessingParameters) o;
+        return addStartEndTransitions == that.addStartEndTransitions && Objects.equals(eventClassifier, that.eventClassifier) && Objects.equals(transitionEncodingsBuilderClass, that.transitionEncodingsBuilderClass);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventClassifier, addStartEndTransitions, transitionEncodingsBuilderClass);
     }
 
     @Override

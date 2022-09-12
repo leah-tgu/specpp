@@ -21,7 +21,7 @@ import org.processmining.specpp.orchestra.SPECppConfigBundle;
 import org.processmining.specpp.orchestra.SPECppOperations;
 import org.processmining.specpp.preprocessing.InputData;
 import org.processmining.specpp.preprocessing.InputDataBundle;
-import org.processmining.specpp.util.NaivePlacemaker;
+import org.processmining.specpp.util.NaivePlaceMaker;
 import org.processmining.specpp.util.PublicPaths;
 
 import java.util.Arrays;
@@ -56,7 +56,7 @@ public class Playground {
     }
 
 
-    public static void playAround(GlobalComponentRepository cr, NaivePlacemaker placemaker, Evaluator<Place, VariantMarkingHistories> markingHistoriesEvaluator, Evaluator<Place, BasicFitnessEvaluation> basicFitnessFractionsEvaluator, Evaluator<Place, DetailedFitnessEvaluation> fullBasicFitnessEvaluator) {
+    public static void playAround(GlobalComponentRepository cr, NaivePlaceMaker placemaker, Evaluator<Place, VariantMarkingHistories> markingHistoriesEvaluator, Evaluator<Place, BasicFitnessEvaluation> basicFitnessFractionsEvaluator, Evaluator<Place, DetailedFitnessEvaluation> fullBasicFitnessEvaluator) {
 
         Log data = cr.dataSources().askForData(DataRequirements.RAW_LOG);
         System.out.println("Log");

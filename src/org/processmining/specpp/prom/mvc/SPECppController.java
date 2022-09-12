@@ -4,7 +4,10 @@ import com.google.common.collect.ImmutableList;
 import org.deckfour.xes.model.XLog;
 import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.specpp.base.Result;
+import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.specpp.datastructures.util.Pair;
+import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.orchestra.SPECppConfigBundle;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.prom.mvc.config.ConfigurationController;
@@ -17,6 +20,7 @@ import org.processmining.specpp.util.Reflection;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Set;
 
 public class SPECppController {
 
@@ -33,6 +37,8 @@ public class SPECppController {
     private SPECppConfigBundle configBundle;
     private ProMPetrinetWrapper result;
     private List<Result> intermediatePostProcessingResults;
+    private PreProcessingParameters preProcessingParameters;
+    private Pair<Set<Activity>> activitySelection;
 
     public SPECppController(UIPluginContext context, SPECppSession specppSession) {
         this.context = context;
@@ -48,13 +54,17 @@ public class SPECppController {
         return intermediatePostProcessingResults;
     }
 
-    public enum PluginStage {
-        PreProcessing(PreProcessingController.class), Config(ConfigurationController.class), Discovery(DiscoveryController.class), Result(ResultController.class);
 
+
+    public enum PluginStage {
+        PreProcessing("Pre Processing", PreProcessingController.class), Configuration("Configuration", ConfigurationController.class), Discovery("Discovery", DiscoveryController.class), Results("Results", ResultController.class);
+
+        private final String label;
         private final Class<? extends StageController> controllerClass;
 
 
-        PluginStage(Class<? extends StageController> controllerClass) {
+        PluginStage(String label, Class<? extends StageController> controllerClass) {
+            this.label = label;
             this.controllerClass = controllerClass;
         }
 
@@ -63,6 +73,10 @@ public class SPECppController {
         }
 
 
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 
     public UIPluginContext getPluginContext() {
@@ -107,8 +121,10 @@ public class SPECppController {
         currentPluginStageIndex++;
     }
 
-    public void preprocessingCompleted(InputDataBundle bundle) {
-        dataBundle = bundle;
+    public void preprocessingCompleted(PreProcessingParameters preProcessingParameters, Pair<Set<Activity>> activitySelection, InputDataBundle bundle) {
+        this.preProcessingParameters = preProcessingParameters;
+        this.activitySelection = activitySelection;
+        this.dataBundle = bundle;
         advanceStage();
     }
 
@@ -120,7 +136,7 @@ public class SPECppController {
     public void discoveryCompleted(ProMPetrinetWrapper result, List<Result> intermediatePostProcessingResults) {
         this.result = result;
         this.intermediatePostProcessingResults = intermediatePostProcessingResults;
-        myPanel.unlockStage(PluginStage.Result);
+        myPanel.unlockStage(PluginStage.Results);
     }
 
     protected void initCurrentPluginStage() {
@@ -140,6 +156,14 @@ public class SPECppController {
 
     public InputDataBundle getDataBundle() {
         return dataBundle;
+    }
+
+    public PreProcessingParameters getPreProcessingParameters() {
+        return preProcessingParameters;
+    }
+
+    public Pair<Set<Activity>> getActivitySelection() {
+        return activitySelection;
     }
 
     public SPECppConfigBundle getConfigBundle() {
