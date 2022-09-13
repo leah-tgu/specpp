@@ -11,6 +11,10 @@ public abstract class AbstractStageController implements StageController {
     }
 
 
+    public SPECppController getParentController() {
+        return parentController;
+    }
+
     public PluginContext getContext() {
         return parentController.getPluginContext();
     }

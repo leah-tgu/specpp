@@ -14,50 +14,44 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class ResultPanel extends AbstractStagePanel<ResultController> {
 
     private final List<String> tabTitles;
 
-    public ResultPanel(ResultController controller, ProMPetrinetWrapper proMPetrinetWrapper, List<Result> intermediatePostProcessingResults) {
+    public ResultPanel(ResultController controller, ProMPetrinetWrapper result, List<Result> intermediatePostProcessingResults) {
         super(controller, new GridBagLayout());
-
-
-        List<PetriNet> intermediatePetriNets = intermediatePostProcessingResults.stream()
-                                                                                .filter(r -> r instanceof PetriNet)
-                                                                                .map(r -> (PetriNet) r)
-                                                                                .collect(Collectors.toList());
-        List<ProMPetrinetWrapper> intermediateProMPetriNets = intermediatePostProcessingResults.stream()
-                                                                                               .filter(r -> r instanceof ProMPetrinetWrapper)
-                                                                                               .map(r -> (ProMPetrinetWrapper) r)
-                                                                                               .collect(Collectors.toList());
-
 
         SlickerTabbedPane tabbedPane = SlickerFactory.instance().createTabbedPane("Results");
 
         tabTitles = new ArrayList<>();
         int i = 1;
         int size = intermediatePostProcessingResults.size();
-        for (Result result : intermediatePostProcessingResults) {
+        for (Result r : intermediatePostProcessingResults) {
             JComponent comp;
-            if (result instanceof PetriNet) {
-                comp = new PetriNetResultPanel(((PetriNet) result), controller.getFitnessEvaluator(), controller.getVariantFrequencies());
-            } else if (result instanceof ProMPetrinetWrapper) {
-                comp = new ProMPetrinetResultPanel((ProMPetrinetWrapper) result);
+            if (r instanceof PetriNet) {
+                comp = new PetriNetResultPanel(((PetriNet) r), controller.getFitnessEvaluator(), controller.getVariantFrequencies());
+            } else if (r instanceof ProMPetrinetWrapper) {
+                comp = new ProMPetrinetResultPanel((ProMPetrinetWrapper) r);
             } else {
-                comp = new MessagePanel(Objects.toString(result));
+                comp = new MessagePanel(Objects.toString(r));
             }
-            String s = "PostProcessing Step " + i;
+            String s = "Post Processing Step " + i;
             if (i == size) s += " (final result)";
             tabbedPane.addTab(s, comp);
             tabTitles.add(s);
             i++;
         }
 
-        TitledBorderPanel bottomPanel = new TitledBorderPanel("Final Result Info", new BorderLayout());
-        ResultEvaluationPanel resultEvaluationPanel = new ResultEvaluationPanel(controller, proMPetrinetWrapper);
-        bottomPanel.add(resultEvaluationPanel);
+        TitledBorderPanel infoPanel = new TitledBorderPanel("Final Result Info");
+        ResultEvaluationPanel resultEvaluationPanel = new ResultEvaluationPanel(controller, result);
+        infoPanel.append(resultEvaluationPanel);
+        infoPanel.completeWithWhitespace();
+
+        TitledBorderPanel exportPanel = new TitledBorderPanel("Export Panel");
+        ResultExportPanel resultExportPanel = new ResultExportPanel(controller);
+        exportPanel.append(resultExportPanel);
+        exportPanel.completeWithWhitespace();
 
         GridBagConstraints c = new GridBagConstraints();
         c.weightx = 1;
@@ -65,11 +59,15 @@ public class ResultPanel extends AbstractStagePanel<ResultController> {
         c.gridx = 0;
         c.gridy = 0;
         c.fill = GridBagConstraints.BOTH;
+        c.gridwidth = 2;
         add(tabbedPane, c);
-        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridwidth = 1;
+        //c.fill = GridBagConstraints.HORIZONTAL;
         c.weighty = 0;
         c.gridy++;
-        add(bottomPanel, c);
+        add(infoPanel, c);
+        c.gridx++;
+        add(exportPanel, c);
 
         String last = tabTitles.get(tabTitles.size() - 1);
         tabbedPane.selectTab(last);

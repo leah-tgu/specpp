@@ -30,7 +30,7 @@ public class Configurators {
         return new EfficientTreeConfiguration.Configurator<>();
     }
 
-    public static <P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>, H extends HeuristicValue<H>> HeuristicTreeConfiguration.Configurator<P, S, N, H> heuristicTree() {
+    public static <P extends NodeProperties, S extends NodeState, N extends LocalNodeWithExternalizedLogic<P, S, N>, H extends HeuristicValue<? super H>> HeuristicTreeConfiguration.Configurator<P, S, N, H> heuristicTree() {
         return new HeuristicTreeConfiguration.Configurator<>();
     }
 

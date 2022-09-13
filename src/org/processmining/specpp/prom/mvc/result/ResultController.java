@@ -13,14 +13,16 @@ import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 import org.processmining.specpp.datastructures.vectorization.VariantMarkingHistories;
 import org.processmining.specpp.evaluation.fitness.DetailedFitnessEvaluation;
-import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.orchestra.SPECppConfigBundle;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.prom.mvc.AbstractStageController;
 import org.processmining.specpp.prom.mvc.SPECppController;
+import org.processmining.specpp.prom.mvc.config.ProMConfig;
 import org.processmining.specpp.util.PlaceMaker;
 
 import javax.swing.*;
+
+import static org.processmining.specpp.componenting.data.DataRequirements.dataSource;
 
 public class ResultController extends AbstractStageController {
 
@@ -34,8 +36,10 @@ public class ResultController extends AbstractStageController {
 
     public ResultController(SPECppController parentController) {
         super(parentController);
-        SPECppConfigBundle configBundle = parentController.getConfigBundle();
+        rawLog = parentController.cache().askForData(dataSource("raw_log", XLog.class));
         InputDataBundle dataBundle = parentController.getDataBundle();
+        SPECppConfigBundle configBundle = parentController.getConfigBundle();
+
         gcr = new GlobalComponentRepository();
         configBundle.instantiate(gcr, dataBundle);
         placeMaker = new PlaceMaker(dataBundle.getTransitionEncodings());
@@ -45,7 +49,6 @@ public class ResultController extends AbstractStageController {
         logHistoryMaker = gcr.evaluators().askForEvaluator(EvaluationRequirements.PLACE_MARKING_HISTORY);
         variantFrequencies = gcr.dataSources().askForData(DataRequirements.VARIANT_FREQUENCIES);
         log = dataBundle.getLog();
-        rawLog = parentController.getRawLog();
     }
 
 
@@ -54,7 +57,12 @@ public class ResultController extends AbstractStageController {
         return new ResultPanel(this, parentController.getResult(), parentController.getIntermediatePostProcessingResults());
     }
 
-    public ProMPetrinetWrapper getPetrinet() {
+    @Override
+    public void startup() {
+
+    }
+
+    public ProMPetrinetWrapper getResult() {
         return parentController.getResult();
     }
 
@@ -84,5 +92,9 @@ public class ResultController extends AbstractStageController {
 
     public XEventClassifier getEventClassifier() {
         return parentController.getPreProcessingParameters().getEventClassifier();
+    }
+
+    public ProMConfig getProMConfig() {
+        return parentController.getProMConfig();
     }
 }

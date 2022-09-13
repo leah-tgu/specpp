@@ -5,6 +5,7 @@ import org.processmining.specpp.supervision.monitoring.PerformanceStatisticsMoni
 import org.processmining.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.specpp.supervision.observations.performance.PerformanceStatistics;
 import org.processmining.specpp.supervision.piping.ConcurrencyBridge;
+import org.processmining.specpp.supervision.piping.LayingPipe;
 import org.processmining.specpp.supervision.piping.PipeWorks;
 import org.processmining.specpp.supervision.supervisors.MonitoringSupervisor;
 import org.processmining.specpp.supervision.transformers.Transformers;
@@ -27,15 +28,16 @@ public class LivePerformance extends MonitoringSupervisor {
     }
 
     @Override
-    protected void instantiateObservationHandlingFullySatisfied() {
-        beginLaying().source(performanceEventConcurrencyBridge)
-                     .giveBackgroundThread()
-                     .pipe(PipeWorks.summarizingBuffer(Transformers.lightweightPerformanceEventSummarizer()))
-                     .schedule(REFRESH_INTERVAL)
-                     .pipe(PipeWorks.accumulatingPipe(PerformanceStatistics::new))
-                     .sink(PipeWorks.loggingSink("performance", PerformanceStatistics::toPrettyString, fileLogger))
-                     .sink(getMonitor("performance"))
-                     .apply();
+    protected void instantiateObservationHandlingPartiallySatisfied() {
+        LayingPipe lp = beginLaying().source(performanceEventConcurrencyBridge)
+                                     .giveBackgroundThread()
+                                     .pipe(PipeWorks.summarizingBuffer(Transformers.lightweightPerformanceEventSummarizer()))
+                                     .schedule(REFRESH_INTERVAL)
+                                     .pipe(PipeWorks.accumulatingPipe(PerformanceStatistics::new));
+        if (fileLogger.isSet())
+            lp.sink(PipeWorks.loggingSink("performance", PerformanceStatistics::toPrettyString, fileLogger));
+        lp.sink(getMonitor("performance")).apply();
     }
+
 
 }

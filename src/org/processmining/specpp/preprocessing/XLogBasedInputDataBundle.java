@@ -21,7 +21,6 @@ import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.preprocessing.orderings.ActivityOrderingBuilder;
 import org.processmining.specpp.util.Reflection;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.*;
 

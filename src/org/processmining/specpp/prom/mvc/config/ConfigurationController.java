@@ -4,7 +4,6 @@ import org.processmining.specpp.base.AdvancedComposition;
 import org.processmining.specpp.base.IdentityPostProcessor;
 import org.processmining.specpp.base.impls.*;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
-import org.processmining.specpp.componenting.data.StaticDataSource;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.specpp.componenting.traits.ProvidesParameters;
@@ -18,14 +17,15 @@ import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.specpp.datastructures.tree.base.impls.EventingEnumeratingTree;
 import org.processmining.specpp.datastructures.tree.base.impls.VariableExpansion;
-import org.processmining.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.specpp.datastructures.tree.heuristic.EventingHeuristicTreeExpansion;
 import org.processmining.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
+import org.processmining.specpp.datastructures.tree.heuristic.TreeNodeScore;
 import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
 import org.processmining.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
+import org.processmining.specpp.evaluation.heuristics.PostponedPlaceScorer;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.orchestra.AdaptedAlgorithmParameterConfig;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
@@ -47,11 +47,12 @@ public class ConfigurationController extends AbstractStageController {
         super(parentController);
     }
 
-    public static ConfiguratorCollection convertToFullConfig(ConfigurationPanel.ProMConfig pc) {
+    public static ConfiguratorCollection convertToFullConfig(ProMConfig pc) {
         // BUILDING CONFIGURATORS
 
         // ** SUPERVISION ** //
 
+        boolean logToFile = pc.logToFile;
         SupervisionConfiguration.Configurator svCfg = new SupervisionConfiguration.Configurator();
         svCfg.supervisor(BaseSupervisor::new);
         boolean isSupervisingEvents = pc.supervisionSetting == ConfigurationPanel.SupervisionSetting.Full;
@@ -71,9 +72,10 @@ public class ConfigurationController extends AbstractStageController {
         // ** PROPOSAL, COMPOSITION ** //
 
         ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, PetriNet> pcCfg = new ProposerComposerConfiguration.Configurator<>();
-        if (pc.permitRestart) pcCfg.proposer(new RestartablePlaceProposer.Builder());
+        if (pc.supportRestart) pcCfg.proposer(new RestartablePlaceProposer.Builder());
         else pcCfg.proposer(new ConstrainablePlaceProposer.Builder());
-        if (pc.permitWiring) pcCfg.composition(ConstrainingPlaceCollection::new);
+        if (pc.respectWiring || pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.Uniwired)
+            pcCfg.composition(ConstrainingPlaceCollection::new);
         else if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta || pc.applyCIPR)
             pcCfg.composition(PlaceCollection::new);
         else pcCfg.composition(LightweightPlaceCollection::new);
@@ -99,10 +101,12 @@ public class ConfigurationController extends AbstractStageController {
         evCfg.evaluatorProvider(pc.concurrentReplay ? ForkJoinFitnessEvaluator::new : AbsolutelyNoFrillsFitnessEvaluator::new);
         if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta)
             evCfg.evaluatorProvider(pc.bridgedDelta.getBridge().getBuilder());
+        else if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.Uniwired)
+            evCfg.evaluatorProvider(new PostponedPlaceScorer.Builder());
 
         EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg;
         if (pc.treeExpansionSetting == ConfigurationPanel.TreeExpansionSetting.Heuristic) {
-            HeuristicTreeConfiguration.Configurator<Place, PlaceState, PlaceNode, DoubleScore> htCfg = new HeuristicTreeConfiguration.Configurator<>();
+            HeuristicTreeConfiguration.Configurator<Place, PlaceState, PlaceNode, TreeNodeScore> htCfg = new HeuristicTreeConfiguration.Configurator<>();
             htCfg.heuristic(pc.bridgedHeuristics.getBridge().getBuilder());
             htCfg.heuristicExpansion(isSupervisingEvents ? EventingHeuristicTreeExpansion::new : HeuristicTreeExpansion::new);
             htCfg.tree(isSupervisingEvents ? EventingEnumeratingTree::new : EnumeratingTree::new);
@@ -126,16 +130,18 @@ public class ConfigurationController extends AbstractStageController {
         // ** PARAMETERS ** //
 
         ExecutionParameters exp = new ExecutionParameters(new ExecutionParameters.ExecutionTimeLimits(pc.discoveryTimeLimit, null, pc.totalTimeLimit), ExecutionParameters.ParallelizationTarget.Moderate, ExecutionParameters.PerformanceFocus.Balanced);
-        PlaceGeneratorParameters pgp = new PlaceGeneratorParameters(pc.depth < 0 ? Integer.MAX_VALUE : pc.depth, true, pc.permitWiring, false, false);
+        PlaceGeneratorParameters pgp = new PlaceGeneratorParameters(pc.depth < 0 ? Integer.MAX_VALUE : pc.depth, true, pc.respectWiring, false, false);
+
 
         class CustomParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
             public CustomParameters() {
-                globalComponentSystem().provide(ParameterRequirements.EXECUTION_PARAMETERS.fulfilWith(StaticDataSource.of(exp)))
-                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWith(StaticDataSource.of(pc.supervisionSetting != ConfigurationPanel.SupervisionSetting.Lightweight ? SupervisionParameters.instrumentAll(false) : SupervisionParameters.instrumentNone(false))))
-                                       .provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWith(StaticDataSource.of(TauFitnessThresholds.tau(pc.tau))))
-                                       .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWith(StaticDataSource.of(pgp)));
+                globalComponentSystem().provide(ParameterRequirements.EXECUTION_PARAMETERS.fulfilWithStatic(exp))
+                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(pc.supervisionSetting != ConfigurationPanel.SupervisionSetting.Lightweight ? SupervisionParameters.instrumentAll(false, logToFile) : SupervisionParameters.instrumentNone(false, logToFile)))
+                                       .provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWithStatic(TauFitnessThresholds.tau(pc.tau)))
+                                       .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(pgp))
+                                       .provide(ParameterRequirements.OUTPUT_PATH_PARAMETERS.fulfilWithStatic(OutputPathParameters.getDefault()));
                 if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta)
-                    globalComponentSystem().provide(ParameterRequirements.DELTA_PARAMETERS.fulfilWith(StaticDataSource.of(new DeltaParameters(pc.delta))));
+                    globalComponentSystem().provide(ParameterRequirements.DELTA_PARAMETERS.fulfilWithStatic(new DeltaParameters(pc.delta, pc.steepness)));
             }
         }
 
@@ -150,9 +156,14 @@ public class ConfigurationController extends AbstractStageController {
         return new ConfigurationPanel(this);
     }
 
-    public void basicConfigCompleted(ConfigurationPanel.ProMConfig basicConfig) {
+    @Override
+    public void startup() {
+
+    }
+
+    public void basicConfigCompleted(ProMConfig basicConfig) {
         ConfiguratorCollection fullConfig = convertToFullConfig(basicConfig);
-        parentController.configCompleted(fullConfig);
+        parentController.configCompleted(basicConfig, fullConfig);
     }
 
 }

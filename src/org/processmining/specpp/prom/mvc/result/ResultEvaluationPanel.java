@@ -59,7 +59,7 @@ public class ResultEvaluationPanel extends AbstractStagePanel<ResultController> 
                     Object o = get();
                     fitnessLabel.setText(String.format("Alignment-Based Fitness: " + o + " (" + o.getClass() + ")"));
                 } catch (InterruptedException | ExecutionException ignored) {
-                    ignored.printStackTrace();
+                    fitnessLabel.setText("Alignment-Based Fitness: failed");
                 }
             }
         };

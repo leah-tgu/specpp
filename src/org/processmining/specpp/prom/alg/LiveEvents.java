@@ -1,11 +1,11 @@
 package org.processmining.specpp.prom.alg;
 
 import org.processmining.specpp.base.ConstraintEvent;
-import org.processmining.specpp.supervision.monitoring.EventCounterMonitor;
 import org.processmining.specpp.supervision.monitoring.KeepLastMonitor;
 import org.processmining.specpp.supervision.observations.Event;
 import org.processmining.specpp.supervision.observations.EventCountStatistics;
 import org.processmining.specpp.supervision.piping.ConcurrencyBridge;
+import org.processmining.specpp.supervision.piping.LayingPipe;
 import org.processmining.specpp.supervision.piping.PipeWorks;
 import org.processmining.specpp.supervision.supervisors.MonitoringSupervisor;
 import org.processmining.specpp.supervision.transformers.Transformers;
@@ -27,18 +27,18 @@ public class LiveEvents extends MonitoringSupervisor {
                                .require(observable(regex(".*constraints.*"), ConstraintEvent.class), observeResults(eventConcurrencyBridge));
         monitor = new KeepLastMonitor<>();
         createMonitor("events", monitor);
-        new EventCounterMonitor();
     }
 
     @Override
-    protected void instantiateObservationHandlingFullySatisfied() {
-        beginLaying().source(eventConcurrencyBridge)
-                     .giveBackgroundThread()
-                     .pipe(PipeWorks.summarizingBuffer(Transformers.eventCounter()))
-                     .schedule(REFRESH_INTERVAL)
-                     .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new))
-                     .sink(PipeWorks.loggingSink("events.count", EventCountStatistics::toPrettyString, fileLogger))
-                     .sink(getMonitor("events"))
-                     .apply();
+    protected void instantiateObservationHandlingPartiallySatisfied() {
+        LayingPipe lp = beginLaying().source(eventConcurrencyBridge)
+                                     .giveBackgroundThread()
+                                     .pipe(PipeWorks.summarizingBuffer(Transformers.eventCounter()))
+                                     .schedule(REFRESH_INTERVAL)
+                                     .pipe(PipeWorks.accumulatingPipe(EventCountStatistics::new));
+        if (fileLogger.isSet())
+            lp.sink(PipeWorks.loggingSink("events.count", EventCountStatistics::toPrettyString, fileLogger));
+        lp.sink(getMonitor("events")).apply();
     }
+
 }

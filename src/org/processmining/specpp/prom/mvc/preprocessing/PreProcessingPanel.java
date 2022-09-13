@@ -3,7 +3,6 @@ package org.processmining.specpp.prom.mvc.preprocessing;
 import org.processmining.specpp.prom.mvc.AbstractStagePanel;
 import org.processmining.specpp.prom.mvc.swing.TitledBorderPanel;
 
-import javax.swing.*;
 import java.awt.*;
 
 public class PreProcessingPanel extends AbstractStagePanel<PreProcessingController> {

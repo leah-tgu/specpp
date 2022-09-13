@@ -79,7 +79,6 @@ public class DiscoveryPanel extends AbstractStagePanel<DiscoveryController> {
         right.add(Box.createHorizontalStrut(300), c);
 
         splitPane.setRightComponent(right);
-        //splitPane.setDividerLocation(0.6);
         add(splitPane, BorderLayout.CENTER);
     }
 

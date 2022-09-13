@@ -7,13 +7,16 @@ import org.processmining.specpp.config.SimpleBuilder;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.tree.base.HeuristicStrategy;
-import org.processmining.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.specpp.datastructures.tree.heuristic.HeuristicUtils;
 import org.processmining.specpp.datastructures.tree.heuristic.InterestingnessHeuristic;
+import org.processmining.specpp.datastructures.tree.heuristic.TreeNodeScore;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
 import org.processmining.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
-import org.processmining.specpp.evaluation.heuristics.DeltaAdaptationFunction;
+import org.processmining.specpp.evaluation.heuristics.ConstantDelta;
+import org.processmining.specpp.evaluation.heuristics.LinearDelta;
+import org.processmining.specpp.evaluation.heuristics.NoDelta;
+import org.processmining.specpp.evaluation.heuristics.SigmoidDelta;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.postprocessing.ProMConverter;
 import org.processmining.specpp.postprocessing.ReplayBasedImplicitnessPostProcessing;
@@ -89,7 +92,7 @@ public class FrameworkBridge {
     }
 
     public enum BridgedDeltaAdaptationFunctions {
-        Static(new BridgedEvaluator("Static Delta", DeltaAdaptationFunction.Builder::new));
+        None(new BridgedEvaluator("None", NoDelta.Builder::new)), Constant(new BridgedEvaluator("Constant Delta", ConstantDelta.Builder::new)), Linear(new BridgedEvaluator("Linear Delta", LinearDelta.Builder::new)), Sigmoid(new BridgedEvaluator("Linear Delta", SigmoidDelta.Builder::new));
 
         private final BridgedEvaluator be;
 
@@ -134,9 +137,9 @@ public class FrameworkBridge {
 
     }
 
-    public static class BridgedTreeHeuristic extends Bridged<HeuristicStrategy<PlaceNode, DoubleScore>> {
+    public static class BridgedTreeHeuristic extends Bridged<HeuristicStrategy<PlaceNode, TreeNodeScore>> {
 
-        BridgedTreeHeuristic(String printableName, Supplier<SimpleBuilder<? extends HeuristicStrategy<PlaceNode, DoubleScore>>> simpleBuilderSupplier) {
+        BridgedTreeHeuristic(String printableName, Supplier<SimpleBuilder<? extends HeuristicStrategy<PlaceNode, TreeNodeScore>>> simpleBuilderSupplier) {
             super(printableName, simpleBuilderSupplier);
         }
     }

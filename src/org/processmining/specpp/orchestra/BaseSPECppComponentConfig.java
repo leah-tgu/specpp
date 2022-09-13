@@ -11,9 +11,9 @@ import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.tree.base.impls.EventingEnumeratingTree;
-import org.processmining.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.specpp.datastructures.tree.heuristic.EventingHeuristicTreeExpansion;
 import org.processmining.specpp.datastructures.tree.heuristic.HeuristicUtils;
+import org.processmining.specpp.datastructures.tree.heuristic.TreeNodeScore;
 import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
@@ -61,7 +61,7 @@ public class BaseSPECppComponentConfig implements SPECppComponentConfig {
 
     @Override
     public EfficientTreeConfiguration<Place, PlaceState, PlaceNode> getEfficientTreeConfiguration(GlobalComponentRepository gcr) {
-        return Configurators.<Place, PlaceState, PlaceNode, DoubleScore>heuristicTree()
+        return Configurators.<Place, PlaceState, PlaceNode, TreeNodeScore>heuristicTree()
                             .heuristic(HeuristicUtils::bfs)
                             .heuristicExpansion(EventingHeuristicTreeExpansion::new)
                             .tree(EventingEnumeratingTree::new)

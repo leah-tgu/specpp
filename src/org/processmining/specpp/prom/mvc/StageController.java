@@ -11,4 +11,6 @@ public interface StageController extends Supplier<JPanel> {
     default JPanel get() {
         return createPanel();
     }
+
+    void startup();
 }

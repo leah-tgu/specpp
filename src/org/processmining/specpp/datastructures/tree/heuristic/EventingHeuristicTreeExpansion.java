@@ -11,7 +11,7 @@ import org.processmining.specpp.supervision.piping.AsyncAdHocObservableWrapper;
 import org.processmining.specpp.supervision.piping.PipeWorks;
 import org.processmining.specpp.util.JavaTypingUtils;
 
-public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends HeuristicValue<H>> extends HeuristicTreeExpansion<N, H> {
+public class EventingHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends HeuristicValue<? super H>> extends HeuristicTreeExpansion<N, H> {
 
     private final EventSupervision<TreeHeuristicsEvent> eventSupervision = PipeWorks.eventSupervision();
 

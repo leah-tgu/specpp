@@ -67,7 +67,10 @@ public class PostProcessingConfigPanel extends JPanel {
         ppc.fill = GridBagConstraints.BOTH;
         ppc.weighty = 1;
         ppc.gridy++;
-        add(new JScrollPane(outList), ppc);
+        JScrollPane outListScrollPane = new JScrollPane(outList);
+        outListScrollPane.setMaximumSize(new Dimension(500, 300));
+        outListScrollPane.setPreferredSize(new Dimension(500, 300));
+        add(outListScrollPane, ppc);
         ppc.fill = GridBagConstraints.NONE;
 
         JList<FrameworkBridge.AnnotatedPostProcessor> inList = new JList<>(ppPipelineModel);
@@ -115,8 +118,8 @@ public class PostProcessingConfigPanel extends JPanel {
         inList.addMouseListener(ml);
         inList.setTransferHandler(new TransferHandler() {
 
-            private int importedIndex;
-            private int exportedIndex;
+            private int importedIndex = -1;
+            private int exportedIndex = -1;
 
             @Override
             protected Transferable createTransferable(JComponent c) {
@@ -138,7 +141,10 @@ public class PostProcessingConfigPanel extends JPanel {
             @Override
             protected void exportDone(JComponent source, Transferable data, int action) {
                 if (action == MOVE) {
-                    ppPipelineModel.remove(importedIndex < exportedIndex ? exportedIndex + 1 : exportedIndex);
+                    if (importedIndex < 0) ppPipelineModel.remove(exportedIndex);
+                    else ppPipelineModel.remove(importedIndex < exportedIndex ? exportedIndex + 1 : exportedIndex);
+                    exportedIndex = -1;
+                    importedIndex = -1;
                 }
             }
 
@@ -177,10 +183,14 @@ public class PostProcessingConfigPanel extends JPanel {
         ppc.weighty = 1;
         ppc.gridy++;
         ppc.fill = GridBagConstraints.BOTH;
-        add(new JScrollPane(inList), ppc);
+        JScrollPane inListScrollPane = new JScrollPane(inList);
+        inListScrollPane.setMaximumSize(new Dimension(500, 300));
+        inListScrollPane.setPreferredSize(new Dimension(500, 300));
+        add(inListScrollPane, ppc);
         JButton importPostProcessorButton = SlickerFactory.instance().createButton("import from ProM");
         importPostProcessorButton.addActionListener(e -> ProMPostProcessor.createPluginFinderWindow(pc, this::importAnnotatedPostProcessor));
         ppc.fill = GridBagConstraints.NONE;
+        ppc.weightx = 0;
         ppc.weighty = 0.1;
         ppc.gridy = 2;
         ppc.gridx = 0;

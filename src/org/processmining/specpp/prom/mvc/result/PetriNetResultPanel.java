@@ -36,12 +36,16 @@ public class PetriNetResultPanel extends JSplitPane {
         JPanel left = new JPanel(new BorderLayout());
         left.add(Box.createHorizontalStrut(400), BorderLayout.PAGE_END);
         setLeftComponent(left);
-        tableModel = SwingFactory.readOnlyTableModel(new String[]{"Place Size", "Preset", "Postset", "fitting(L)", "underfed(L)", "overfed(L)"}, ImmutableMultimap.<Class<?>, Integer>builder()
-                                                                                                                                                                  .putAll(String.class, 1, 2)
-                                                                                                                                                                  .putAll(Integer.class, 0)
-                                                                                                                                                                  .putAll(Double.class, 3, 4, 5)
-                                                                                                                                                                  .build());
+        tableModel = SwingFactory.readOnlyTableModel(new String[]{"Size", "Preset", "Postset", "fitting(L)", "underfed(L)", "overfed(L)"}, ImmutableMultimap.<Class<?>, Integer>builder()
+                                                                                                                                                            .putAll(String.class, 1, 2)
+                                                                                                                                                            .putAll(Integer.class, 0)
+                                                                                                                                                            .putAll(Double.class, 3, 4, 5)
+                                                                                                                                                            .build());
         ProMTable proMTable = SwingFactory.proMTable(tableModel);
+        proMTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        proMTable.getColumnModel().getColumn(3).setMaxWidth(80);
+        proMTable.getColumnModel().getColumn(4).setMaxWidth(80);
+        proMTable.getColumnModel().getColumn(5).setMaxWidth(80);
         JPanel right = new JPanel(new BorderLayout());
         right.add(proMTable, BorderLayout.CENTER);
         infoLabel = SlickerFactory.instance().createLabel("not yet computed");
@@ -97,6 +101,11 @@ public class PetriNetResultPanel extends JSplitPane {
     }
 
     private void updateTable(Map<Place, DetailedFitnessEvaluation> map) {
+        if (map == null) {
+            infoLabel.setText("computation failed");
+            return;
+        }
+
         tableModel.setRowCount(0);
         BitMask overallFittingVariants = null;
         for (Map.Entry<Place, DetailedFitnessEvaluation> entry : map.entrySet()) {

@@ -5,6 +5,7 @@ import org.processmining.specpp.base.AdvancedComposition;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.prom.computations.ComputationEnded;
 import org.processmining.specpp.prom.computations.ComputationEvent;
+import org.processmining.specpp.prom.computations.ComputationStarted;
 import org.processmining.specpp.prom.computations.OngoingComputation;
 import org.processmining.specpp.prom.mvc.swing.LabeledComboBox;
 import org.processmining.specpp.prom.mvc.swing.SwingFactory;
@@ -25,6 +26,7 @@ public class LiveCompositionPanel extends JPanel implements Destructible {
     private final LabeledComboBox<VisualizationOption> visualizationOptionComboBox;
     private final LivePlacesGraph livePlacesGraph;
     private final LivePlacesList livePlacesList;
+    private final LabeledComboBox<Integer> rfInterval;
     private Timer updateTimer;
     private SwingWorker<JComponent, Void> updateWorker;
     private JComponent currentContent;
@@ -53,11 +55,12 @@ public class LiveCompositionPanel extends JPanel implements Destructible {
 
         header.add(visualizationOptionComboBox);
 
-        LabeledComboBox<Integer> rfInterval = SwingFactory.labeledComboBox("Refresh Interval [s]", new Integer[]{1, 2, 5, 7, 10});
-        header.add(rfInterval);
+        rfInterval = SwingFactory.labeledComboBox("Refresh Interval [s]", new Integer[]{1, 2, 5, 7, 10});
+        rfInterval.getComboBox().setSelectedItem(1);
         rfInterval.getComboBox().addItemListener(e -> {
             if (e.getItem() != null && e.getStateChange() == ItemEvent.SELECTED) setRefreshRate((Integer) e.getItem());
         });
+        header.add(rfInterval);
 
         contentPanel = new JPanel(true);
         contentPanel.setLayout(new BorderLayout());
@@ -75,18 +78,22 @@ public class LiveCompositionPanel extends JPanel implements Destructible {
         c.gridy++;
         add(contentPanel, c);
 
-        rfInterval.getComboBox().setSelectedItem(5);
         ongoingDiscoveryComputation.addObserver(this::receive);
     }
 
     public void receive(ComputationEvent e) {
+        if (e instanceof ComputationStarted) {
+            setRefreshRate((Integer) (rfInterval.getComboBox().getSelectedItem()));
+        }
         if (e instanceof ComputationEnded) {
-            updateTimer.stop();
+            if (updateTimer != null)
+                updateTimer.stop();
             updateVisualization();
         }
     }
 
     private void setRefreshRate(int interval) {
+        if (ongoingDiscoveryComputation.hasEnded()) return;
         int millis = interval * 1000;
         if (updateTimer == null) updateTimer = new Timer(millis, e -> updateVisualization());
         else updateTimer.setDelay(millis);

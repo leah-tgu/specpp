@@ -77,8 +77,6 @@ public class ProMPostProcessor {
                 int row = table.rowAtPoint(e.getPoint());
                 if (row >= 0 && e.getClickCount() == 2) {
                     int i = table.getRowSorter().convertRowIndexToModel(row);
-                    System.out.println("ProMPostProcessor.mouseClicked");
-                    System.out.println("i = " + i);
                     consumer.accept(wrapPlugin(pc, pnTransformers, apnTransformers, i));
                 }
             }
@@ -111,6 +109,7 @@ public class ProMPostProcessor {
         });
         jf.getContentPane().add(table, BorderLayout.CENTER);
         jf.getContentPane().add(field, BorderLayout.PAGE_END);
+        jf.setPreferredSize(new Dimension(650, 450));
         jf.pack();
         jf.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         jf.setVisible(true);
@@ -119,7 +118,7 @@ public class ProMPostProcessor {
     private static void handleImport(PluginContext pc, Consumer<FrameworkBridge.AnnotatedPostProcessor> consumer, JFrame jf, List<Pair<Integer, PluginParameterBinding>> pnTransformers, List<Pair<Integer, PluginParameterBinding>> apnTransformers, int row) {
         FrameworkBridge.AnnotatedPostProcessor wrapPlugin = wrapPlugin(pc, pnTransformers, apnTransformers, row);
         if (wrapPlugin == null) return;
-        JOptionPane.showMessageDialog(jf, "Successfully imported " + wrapPlugin + ".", "Import", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, "Successfully imported " + wrapPlugin + ".", "Import", JOptionPane.INFORMATION_MESSAGE);
         // jf.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
         consumer.accept(wrapPlugin);
     }
@@ -129,13 +128,12 @@ public class ProMPostProcessor {
 
         PluginParameterBinding binding;
         Function<ProMPetrinetWrapper, ProMPetrinetWrapper> invoker;
-        PluginContext childContext = pc.createChildContext("post processsing child");
+        PluginContext childContext = pc.createChildContext("post processing child context");
 
-        // TODO the initial & final markings are going to break in both variants
         if (row < pnTransformers.size()) {
             binding = pnTransformers.get(row).getSecond();
             invoker = (ProMPetrinetWrapper pnw) -> {
-                PluginExecutionResult invoke = binding.invoke(childContext, pnw.getNet());
+                PluginExecutionResult invoke = binding.invoke(childContext, pnw);
                 Optional<Petrinet> first = Arrays.stream(invoke.getResults())
                                                  .filter(r -> r instanceof Petrinet)
                                                  .map(r -> (Petrinet) r)
@@ -189,14 +187,6 @@ public class ProMPostProcessor {
 
         return new FrameworkBridge.AnnotatedPostProcessor(binding.getPlugin()
                                                                  .getName(), ProMPetrinetWrapper.class, ProMPetrinetWrapper.class, () -> (() -> pp));
-    }
-
-
-    private static void filterModel(DefaultListModel<String> model, String text, List<String> entireList) {
-        for (String s : entireList) {
-            if (s.contains(text) && !model.contains(s)) model.addElement(s);
-            else if (!s.contains(text) && model.contains(s)) model.removeElement(s);
-        }
     }
 
     private static void print(List<Pair<Integer, PluginParameterBinding>> pairs) {

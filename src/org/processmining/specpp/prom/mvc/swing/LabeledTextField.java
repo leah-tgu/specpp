@@ -3,7 +3,6 @@ package org.processmining.specpp.prom.mvc.swing;
 import com.fluxicon.slickerbox.factory.SlickerFactory;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class LabeledTextField extends JPanel {
 

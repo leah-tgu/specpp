@@ -1,6 +1,5 @@
 package org.processmining.specpp.postprocessing;
 
-import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.componenting.system.link.PetriNetPostProcessor;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;

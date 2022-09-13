@@ -25,7 +25,7 @@ public abstract class AbstractQueueingComposer<C extends Candidate, I extends Co
     protected abstract CandidateDecision reDeliberateCandidate(C candidate);
 
     @Override
-    protected boolean handlePostponedDecisions() {
+    protected boolean iteratePostponedCandidates() {
         LinkedList<C> postponedAgain = new LinkedList<>();
         for (C postponedCandidate : postponedCandidates) {
             CandidateDecision candidateDecision = reDeliberateCandidate(postponedCandidate);

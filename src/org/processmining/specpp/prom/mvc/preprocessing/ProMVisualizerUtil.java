@@ -54,7 +54,9 @@ public class ProMVisualizerUtil {
             proMVisualizerAdapterMap.put(visualizerName, new ProMVisualizerAdapter(context, visualizerName, pluginName, requiresCanceller));
         }
 
-        return viewTypes.stream().map(vt -> proMVisualizerAdapterMap.get(vt.getTypeName())).collect(Collectors.toList());
+        return viewTypes.stream()
+                        .map(vt -> proMVisualizerAdapterMap.get(vt.getTypeName()))
+                        .collect(Collectors.toList());
     }
 
 }

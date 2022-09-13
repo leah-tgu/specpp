@@ -163,4 +163,9 @@ public class PreProcessingController extends AbstractStageController {
     public JPanel createPanel() {
         return createPreProcessingPanel();
     }
+
+    @Override
+    public void startup() {
+
+    }
 }

@@ -1,9 +1,8 @@
 package org.processmining.specpp.prom.mvc;
 
-import org.processmining.specpp.prom.mvc.swing.ColorScheme;
+import org.processmining.specpp.prom.util.Iconic;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -29,10 +28,14 @@ public class StageProgressionPanel extends JPanel {
         stageButtons = new ArrayList<>();
         for (SPECppController.PluginStage stage : SPECppController.PLUGIN_STAGES) {
             JButton jButton = new JButton(stage.toString());
+            jButton.setContentAreaFilled(false);
+            jButton.setHorizontalTextPosition(JButton.CENTER);
+            jButton.setVerticalTextPosition(JButton.CENTER);
+            jButton.setBorder(BorderFactory.createEmptyBorder());
             jButton.setOpaque(false);
-            jButton.setBorder(createUnHighlightedBorder());
+            locked(jButton);
             jButton.setMinimumSize(new Dimension(150, 50));
-            jButton.setPreferredSize(new Dimension(150, 50));
+            //jButton.setPreferredSize(new Dimension(150, 50));
             jButton.addActionListener(e -> {
                 if (stage != currentStage) parentController.setPluginStage(stage);
             });
@@ -43,31 +46,39 @@ public class StageProgressionPanel extends JPanel {
 
     }
 
-    private Border createHighlightedBorder() {
-        return BorderFactory.createLineBorder(ColorScheme.lightPink, 5, true);
+    private void highlighted(JButton button) {
+        button.setIcon(Iconic.chevron_pink);
+        button.setEnabled(true);
     }
 
-    private Border createUnHighlightedBorder() {
-        return BorderFactory.createLineBorder(ColorScheme.lightBlue, 5, true);
+    private void unlocked(JButton button) {
+        button.setIcon(Iconic.chevron_blue);
+        button.setEnabled(true);
+    }
+
+    private void locked(JButton button) {
+        button.setIcon(Iconic.chevron_white);
+        button.setEnabled(false);
     }
 
     public void updateCurrentStage(SPECppController.PluginStage stage) {
         SwingUtilities.invokeLater(() -> {
-            if (currentStage != null) stageButtons.get(currentStage.ordinal()).setBorder(createUnHighlightedBorder());
             currentStage = stage;
             int ordinal = stage.ordinal();
-            stageButtons.get(ordinal).setBorder(createHighlightedBorder());
-            for (int i = 0; i <= ordinal; i++) {
-                stageButtons.get(i).setEnabled(true);
+            highlighted(stageButtons.get(ordinal));
+            for (int i = 0; i < ordinal; i++) {
+                JButton precedingButton = stageButtons.get(i);
+                unlocked(precedingButton);
             }
             for (int i = ordinal + 1; i < stageButtons.size(); i++) {
-                stageButtons.get(i).setEnabled(false);
+                JButton postButton = stageButtons.get(i);
+                locked(postButton);
             }
         });
     }
 
     public void unlockStageButton(SPECppController.PluginStage stage) {
-        SwingUtilities.invokeLater(() -> stageButtons.get(stage.ordinal()).setEnabled(true));
+        SwingUtilities.invokeLater(() -> unlocked(stageButtons.get(stage.ordinal())));
     }
 
 }

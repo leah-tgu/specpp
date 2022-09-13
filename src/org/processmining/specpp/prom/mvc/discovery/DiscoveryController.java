@@ -37,8 +37,7 @@ public class DiscoveryController extends AbstractStageController implements Dest
     private final OngoingComputation ongoingDiscoveryComputation;
     private final OngoingStagedComputation ongoingPostProcessingComputation;
     private final ExecutionParameters.ExecutionTimeLimits timeLimits;
-    private LocalDateTime startTime;
-    private List<Timer> startedTimers = new LinkedList<>();
+    private final List<Timer> startedTimers = new LinkedList<>();
     private final ListeningExecutorService executorService;
     private List<Result> intermediateResults;
 
@@ -66,8 +65,11 @@ public class DiscoveryController extends AbstractStageController implements Dest
         ongoingDiscoveryComputation.setCancellationCallback(this::cancelDiscoveryComputation);
         ongoingPostProcessingComputation = new OngoingStagedComputation(specpp.getPostProcessor().getPipelineLength());
         ongoingPostProcessingComputation.setCancellationCallback(this::cancelPostProcessingComputation);
-        startDiscovery();
+    }
 
+    @Override
+    public void startup() {
+        startDiscovery();
     }
 
     public SPECpp<Place, AdvancedComposition<Place>, PetriNet, ProMPetrinetWrapper> getSpecpp() {
@@ -79,7 +81,7 @@ public class DiscoveryController extends AbstractStageController implements Dest
 
         specpp.start();
 
-        startTime = LocalDateTime.now();
+        LocalDateTime startTime = LocalDateTime.now();
         if (timeLimits.hasDiscoveryTimeLimit())
             ongoingDiscoveryComputation.setTimeLimit(timeLimits.getDiscoveryTimeLimit());
         else if (timeLimits.hasTotalTimeLimit())
@@ -145,31 +147,28 @@ public class DiscoveryController extends AbstractStageController implements Dest
 
     private void postProcessingFinished() {
         ongoingPostProcessingComputation.setEnd(LocalDateTime.now());
-        specpp.stop();
+        if (specpp.isActive()) specpp.stop();
         if (!ongoingPostProcessingComputation.isCancelled()) {
             parentController.discoveryCompleted(specpp.getPostProcessedResult(), intermediateResults);
         }
     }
 
     public void cancelDiscoveryComputation() {
-        if (ongoingDiscoveryComputation.isRunning()) {
-            gracefulCancellationDelegate.getData().run();
-            ongoingDiscoveryComputation.markGracefullyCancelled();
-        }
+        gracefulCancellationDelegate.getData().run();
+        ongoingDiscoveryComputation.markGracefullyCancelled();
     }
 
     public void cancelPostProcessingComputation() {
-        if (ongoingPostProcessingComputation.isRunning()) {
-            ListenableFuture<?> future = ongoingPostProcessingComputation.getComputationFuture();
-            if (future != null && !future.isDone()) future.cancel(true);
-            ongoingPostProcessingComputation.markForciblyCancelled();
-        }
+        ListenableFuture<?> future = ongoingPostProcessingComputation.getComputationFuture();
+        if (future != null && !future.isDone()) future.cancel(true);
+        ongoingPostProcessingComputation.markForciblyCancelled();
+        if (specpp.isActive()) specpp.stop();
     }
 
     private void cancelEverything() {
         cancelDiscoveryComputation();
         cancelPostProcessingComputation();
-        if (specpp.isStarted()) specpp.stop();
+        if (specpp.isActive()) specpp.stop();
     }
 
     @Override

@@ -5,14 +5,12 @@ import com.google.common.collect.ImmutableList;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.preprocessing.orderings.ActivityOrderingBuilder;
-import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import org.processmining.specpp.prom.mvc.swing.LabeledComboBox;
+import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import org.processmining.specpp.supervision.observations.ClassKey;
-import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
@@ -36,12 +34,6 @@ public class ParametersPanel extends JPanel {
         classifierComboBox = eventClassifierBox.getComboBox();
         classifierComboBox.setMinimumSize(new Dimension(175, 25));
         classifierComboBox.setSelectedItem(defaultParameters.getEventClassifier());
-        classifierComboBox.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                Object item = e.getItem();
-                DebuggingSupervisor.debug("ParametersPanel", "selected " + item + " as classifier");
-            }
-        });
 
         availableOrderings = PreProcessingParameters.getAvailableTransitionEncodingsBuilders();
         ClassKey<? extends ActivityOrderingBuilder>[] tebOptions = availableOrderings.stream()
@@ -51,15 +43,10 @@ public class ParametersPanel extends JPanel {
 
 
         LabeledComboBox<ClassKey<? extends ActivityOrderingBuilder>> orderingStrategyBox = SwingFactory.labeledComboBox("Ordering Strategy", tebOptions);
+        orderingStrategyBox.setMinimumSize(new Dimension(250, 25));
         orderingComboBox = orderingStrategyBox.getComboBox();
         orderingComboBox.setMinimumSize(new Dimension(250, 25));
         orderingComboBox.setSelectedItem(selected);
-        orderingComboBox.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                Object item = e.getItem();
-                DebuggingSupervisor.debug("ParametersPanel", "selected " + item + " as activity ordering strategy");
-            }
-        });
 
         artificialTransitionsCheckBox = SlickerFactory.instance()
                                                       .createCheckBox("introduce artificial start & end transitions", defaultParameters.isAddStartEndTransitions());
@@ -84,6 +71,31 @@ public class ParametersPanel extends JPanel {
         c.weighty = 0.2;
         add(previewButton, c);
 
+
+        tryInstantiatingFromLastOrLoaded();
+    }
+
+    private void tryInstantiatingFromLastOrLoaded() {
+        PreProcessingParameters preProcessingParameters = controller.getParentController().getPreProcessingParameters();
+        if (preProcessingParameters != null) {
+            instantiateFrom(preProcessingParameters);
+            return;
+        }
+        PreProcessingParameters loadedPreProcessingParameters = controller.getParentController()
+                                                                          .getLoadedPreProcessingParameters();
+        if (loadedPreProcessingParameters != null) {
+            instantiateFrom(loadedPreProcessingParameters);
+        }
+    }
+
+    private void instantiateFrom(PreProcessingParameters preProcessingParameters) {
+        XEventClassifier eventClassifier = preProcessingParameters.getEventClassifier();
+        if (availableEventClassifiers.contains(eventClassifier))
+            classifierComboBox.setSelectedItem(eventClassifier);
+        Class<? extends ActivityOrderingBuilder> teb = preProcessingParameters.getTransitionEncodingsBuilderClass();
+        if (availableOrderings.contains(teb))
+            orderingComboBox.setSelectedItem(teb);
+        artificialTransitionsCheckBox.setSelected(preProcessingParameters.isAddStartEndTransitions());
     }
 
     public PreProcessingParameters collectParameters() {

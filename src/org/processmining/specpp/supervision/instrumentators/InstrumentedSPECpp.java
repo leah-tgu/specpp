@@ -1,7 +1,6 @@
 package org.processmining.specpp.supervision.instrumentators;
 
 import org.processmining.specpp.base.Candidate;
-import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.base.Result;
 import org.processmining.specpp.base.impls.PostProcessingPipeline;
 import org.processmining.specpp.base.impls.SPECpp;

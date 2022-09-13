@@ -4,6 +4,7 @@ import org.processmining.specpp.datastructures.encoding.BitMask;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.EnumCounts;
 import org.processmining.specpp.datastructures.util.IndexedItem;
+import org.processmining.specpp.datastructures.util.Pair;
 import org.processmining.specpp.datastructures.util.Tuple2;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 
@@ -51,12 +52,12 @@ public class AbsolutelyNoFrillsFitnessEvaluator extends AbstractBasicFitnessEval
     private void run(BitMask consideredVariants, Place place, ResultUpdater upd) {
         IntUnaryOperator presetIndicator = ReplayUtils.presetIndicator(place);
         IntUnaryOperator postsetIndicator = ReplayUtils.postsetIndicator(place);
-        Spliterator<IndexedItem<Tuple2<IntBuffer, IntBuffer>>> spliterator = getIndexedItemSpliterator();
+        Spliterator<IndexedItem<Pair<IntBuffer>>> spliterator = getIndexedItemSpliterator();
         IntVector frequencies = getVariantFrequencies();
         spliterator.forEachRemaining(ii -> {
             if (consideredVariants == null || consideredVariants.get(ii.getIndex())) {
-                Tuple2<IntBuffer, IntBuffer> t = ii.getItem();
-                IntBuffer presetEncodedVariant = t.getT1(), postsetEncodedVariant = t.getT2();
+                Pair<IntBuffer> pair = ii.getItem();
+                IntBuffer presetEncodedVariant = pair.first(), postsetEncodedVariant = pair.second();
                 int acc = 0;
                 boolean wentUnder = false, wentOver = false, activated = false;
                 while (presetEncodedVariant.hasRemaining() && postsetEncodedVariant.hasRemaining()) {

@@ -5,7 +5,7 @@ import org.processmining.specpp.datastructures.encoding.BitMask;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.EvaluationParameterTuple2;
 import org.processmining.specpp.datastructures.util.IndexedItem;
-import org.processmining.specpp.datastructures.util.Tuple2;
+import org.processmining.specpp.datastructures.util.Pair;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 import org.processmining.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.specpp.util.JavaTypingUtils;
@@ -29,11 +29,11 @@ public abstract class AbstractBasicFitnessEvaluator extends AbstractFitnessEvalu
 
     }
 
-    protected Spliterator<IndexedItem<Tuple2<IntBuffer, IntBuffer>>> getIndexedItemSpliterator() {
+    protected Spliterator<IndexedItem<Pair<IntBuffer>>> getIndexedItemSpliterator() {
         return getMultiEncodedLog().indexedSpliterator();
     }
 
-    protected Stream<IndexedItem<Tuple2<IntBuffer, IntBuffer>>> getIndexedItemStream() {
+    protected Stream<IndexedItem<Pair<IntBuffer>>> getIndexedItemStream() {
         return getMultiEncodedLog().indexedStream(false);
     }
 

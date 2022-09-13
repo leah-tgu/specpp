@@ -3,7 +3,7 @@ package org.processmining.specpp.evaluation.fitness;
 import org.processmining.specpp.datastructures.encoding.BitMask;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.IndexedItem;
-import org.processmining.specpp.datastructures.util.Tuple2;
+import org.processmining.specpp.datastructures.util.Pair;
 
 import java.nio.IntBuffer;
 import java.util.EnumSet;
@@ -38,7 +38,7 @@ public class ForkJoinFitnessEvaluator extends AbstractBasicFitnessEvaluator {
         IntUnaryOperator presetIndicator = ReplayUtils.presetIndicator(place);
         IntUnaryOperator postsetIndicator = ReplayUtils.postsetIndicator(place);
 
-        Stream<IndexedItem<Tuple2<IntBuffer, IntBuffer>>> stream = getIndexedItemStream();
+        Stream<IndexedItem<Pair<IntBuffer>>> stream = getIndexedItemStream();
         if (consideredVariants != null) stream = stream.filter(ip -> consideredVariants.get(ip.getIndex()));
         return stream.map(ip -> new IndexedItem<>(ip.getIndex(), ReplayUtils.variantReplay(ip.getItem()
                                                                                              .getT1(), presetIndicator, ip.getItem()

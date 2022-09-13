@@ -1,7 +1,6 @@
 package org.processmining.specpp.base.impls;
 
 import org.processmining.specpp.base.Candidate;
-import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.base.Result;
 import org.processmining.specpp.componenting.data.DataRequirements;
 import org.processmining.specpp.componenting.data.ParameterRequirements;

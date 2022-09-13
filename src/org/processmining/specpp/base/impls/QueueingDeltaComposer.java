@@ -22,7 +22,6 @@ import org.processmining.specpp.datastructures.util.EvaluationParameterTuple2;
 import org.processmining.specpp.datastructures.util.StackedCache;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 import org.processmining.specpp.evaluation.fitness.DetailedFitnessEvaluation;
-import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.specpp.util.JavaTypingUtils;
 
 public class QueueingDeltaComposer<I extends AdvancedComposition<Place>, R extends Result> extends AbstractQueueingComposer<Place, I, R, CandidateConstraint<Place>> {
@@ -60,28 +59,16 @@ public class QueueingDeltaComposer<I extends AdvancedComposition<Place>, R exten
 
     @Override
     protected CandidateDecision deliberateCandidate(Place candidate) {
-
-        // TODO no
         if (candidate.size() > currentTreeLevel) {
-            DebuggingSupervisor.debug("handlePostponedDecisionsUntilNoChange", "emptying postponed candidates queue as tree level changed: " + currentTreeLevel + " to " + candidate.size());
             currentTreeLevel = candidate.size();
-            DebuggingSupervisor.debug("handlePostponedDecisionsUntilNoChange", "starting with queue of length " + postponedCandidates.size());
-            handlePostponedDecisionsUntilNoChange();
+            iteratePostponedCandidatesUntilNoChange();
         }
-
         return meetsCurrentDelta(candidate) ? CandidateDecision.Accept : CandidateDecision.Postpone;
     }
 
     @Override
     protected CandidateDecision reDeliberateCandidate(Place candidate) {
         return meetsCurrentDelta(candidate) ? CandidateDecision.Accept : CandidateDecision.Postpone;
-    }
-
-    @Override
-    protected int handlePostponedDecisionsUntilNoChange() {
-        int i = super.handlePostponedDecisionsUntilNoChange();
-        DebuggingSupervisor.debug("handlePostponedDecisionsUntilNoChange", "ended with queue of length " + postponedCandidates.size() + " within " + i + " iterations");
-        return i;
     }
 
     private boolean meetsCurrentDelta(Place candidate) {

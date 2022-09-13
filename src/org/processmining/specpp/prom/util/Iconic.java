@@ -13,5 +13,8 @@ public class Iconic {
     public static final Icon right_arrow = new ImageIcon(ImageLoader.load("right_arrow.png"));
     public static final Icon tiny_hand = new ImageIcon(ImageLoader.load("tiny_hand.png"));
     public static final Icon tiny_right_arrow = new ImageIcon(ImageLoader.load("tiny_right_arrow.png"));
+    public static final Icon chevron_white = new ImageIcon(ImageLoader.load("chevron_white.png"));
+    public static final Icon chevron_pink = new ImageIcon(ImageLoader.load("chevron_pink.png"));
+    public static final Icon chevron_blue = new ImageIcon(ImageLoader.load("chevron_blue.png"));
 
 }

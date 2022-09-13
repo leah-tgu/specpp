@@ -1,7 +1,6 @@
 package org.processmining.specpp.postprocessing;
 
 import org.processmining.specpp.base.Evaluator;
-import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.specpp.componenting.system.ComponentSystemAwareBuilder;
