@@ -1,8 +1,11 @@
-package org.processmining.specpp.supervision.piping;
+package org.processmining.specpp.supervision.observations.performance;
 
+import org.processmining.specpp.datastructures.util.ImmutableTuple2;
+import org.processmining.specpp.datastructures.util.Tuple2;
 import org.processmining.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.specpp.supervision.observations.performance.PerformanceMeasurement;
 import org.processmining.specpp.supervision.observations.performance.TaskDescription;
+import org.processmining.specpp.supervision.piping.AbstractAsyncAwareObservable;
 
 import java.time.Duration;
 import java.time.Instant;

@@ -50,7 +50,7 @@ public class ProMConfig {
 
     public static ProMConfig getLightweight() {
         ProMConfig pc = getDefault();
-        pc.supervisionSetting = ConfigurationPanel.SupervisionSetting.Lightweight;
+        pc.supervisionSetting = ConfigurationPanel.SupervisionSetting.None;
         pc.treeExpansionSetting = ConfigurationPanel.TreeExpansionSetting.DFS;
         return pc;
     }

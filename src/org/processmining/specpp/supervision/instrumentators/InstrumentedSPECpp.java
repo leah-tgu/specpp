@@ -12,7 +12,7 @@ import org.processmining.specpp.componenting.system.link.ProposerComponent;
 import org.processmining.specpp.supervision.Supervisor;
 import org.processmining.specpp.supervision.observations.performance.PerformanceEvent;
 import org.processmining.specpp.supervision.observations.performance.TaskDescription;
-import org.processmining.specpp.supervision.piping.TimeStopper;
+import org.processmining.specpp.supervision.observations.performance.TimeStopper;
 
 import java.util.List;
 

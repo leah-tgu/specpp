@@ -5,6 +5,7 @@ import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.classification.XEventNameClassifier;
 import org.processmining.specpp.config.parameters.Parameters;
 import org.processmining.specpp.preprocessing.orderings.*;
+import org.processmining.specpp.prom.alg.FrameworkBridge;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,20 +14,20 @@ public class PreProcessingParameters implements Parameters {
 
     private final XEventClassifier eventClassifier;
     private final boolean addStartEndTransitions;
-    private final Class<? extends ActivityOrderingBuilder> transitionEncodingsBuilderClass;
+    private final Class<? extends ActivityOrderingStrategy> transitionEncodingsBuilderClass;
 
-    public PreProcessingParameters(XEventClassifier eventClassifier, boolean addStartEndTransitions, Class<? extends ActivityOrderingBuilder> transitionEncodingsBuilderClass) {
+    public PreProcessingParameters(XEventClassifier eventClassifier, boolean addStartEndTransitions, Class<? extends ActivityOrderingStrategy> transitionEncodingsBuilderClass) {
         this.eventClassifier = eventClassifier;
         this.addStartEndTransitions = addStartEndTransitions;
         this.transitionEncodingsBuilderClass = transitionEncodingsBuilderClass;
     }
 
     public static PreProcessingParameters getDefault() {
-        return new PreProcessingParameters(new XEventNameClassifier(), true, AverageTracePositionOrdering.class);
+        return new PreProcessingParameters(new XEventNameClassifier(), true, AverageFirstOccurrenceIndex.class);
     }
 
-    public static List<Class<? extends ActivityOrderingBuilder>> getAvailableTransitionEncodingsBuilders() {
-        return ImmutableList.of(AverageTracePositionOrdering.class, TraceFrequencyOrdering.class, ActivityFrequencyOrdering.class, LexicographicTransitionOrdering.class);
+    public static List<Class<? extends ActivityOrderingStrategy>> getAvailableTransitionEncodingsBuilders() {
+        return ImmutableList.of(AverageFirstOccurrenceIndex.class, AbsoluteTraceFrequency.class, AbsoluteActivityFrequency.class, Lexicographic.class);
     }
 
     @Override
@@ -47,7 +48,7 @@ public class PreProcessingParameters implements Parameters {
         return "PreProcessingParameters{" + "eventClassifierBuilder=" + eventClassifier + ", addStartEndTransitions=" + addStartEndTransitions + ", transitionEncodingsBuilderClass=" + transitionEncodingsBuilderClass + '}';
     }
 
-    public Class<? extends ActivityOrderingBuilder> getTransitionEncodingsBuilderClass() {
+    public Class<? extends ActivityOrderingStrategy> getTransitionEncodingsBuilderClass() {
         return transitionEncodingsBuilderClass;
     }
 

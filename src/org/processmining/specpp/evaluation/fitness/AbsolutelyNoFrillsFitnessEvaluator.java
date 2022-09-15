@@ -15,24 +15,20 @@ import java.util.function.IntUnaryOperator;
 @SuppressWarnings("duplication")
 public class AbsolutelyNoFrillsFitnessEvaluator extends AbstractBasicFitnessEvaluator {
 
+
     @Override
     public BasicFitnessEvaluation basicComputation(Place place, BitMask consideredVariants) {
-        timeStopper.start(AbstractBasicFitnessEvaluator.BASIC_EVALUATION);
         int[] counts = ReplayUtils.getCountArray();
         ResultUpdater upd = (idx, c, activated, wentUnder, wentOver, notZeroAtEnd) -> ReplayUtils.updateCounts(counts, c, activated, wentUnder, wentOver, notZeroAtEnd);
 
         run(consideredVariants, place, upd);
 
         EnumCounts<ReplayUtils.ReplayOutcomes> enumCounts = new EnumCounts<>(counts);
-        BasicFitnessEvaluation evaluation = ReplayUtils.summarizeReplayOutcomeCounts(enumCounts);
-        timeStopper.stop(AbstractBasicFitnessEvaluator.BASIC_EVALUATION);
-        return evaluation;
+        return ReplayUtils.summarizeReplayOutcomeCounts(enumCounts);
     }
 
     @Override
     public DetailedFitnessEvaluation detailedComputation(Place place, BitMask consideredVariants) {
-        timeStopper.start(AbstractBasicFitnessEvaluator.DETAILED_EVALUATION);
-
         BitMask bm = new BitMask();
         int[] counts = ReplayUtils.getCountArray();
         ResultUpdater upd = (idx, c, activated, wentUnder, wentOver, notZeroAtEnd) -> {
@@ -44,9 +40,7 @@ public class AbsolutelyNoFrillsFitnessEvaluator extends AbstractBasicFitnessEval
 
         EnumCounts<ReplayUtils.ReplayOutcomes> enumCounts = new EnumCounts<>(counts);
         BasicFitnessEvaluation evaluation = ReplayUtils.summarizeReplayOutcomeCounts(enumCounts);
-        DetailedFitnessEvaluation res = new DetailedFitnessEvaluation(bm, evaluation);
-        timeStopper.stop(AbstractBasicFitnessEvaluator.DETAILED_EVALUATION);
-        return res;
+        return new DetailedFitnessEvaluation(bm, evaluation);
     }
 
     private void run(BitMask consideredVariants, Place place, ResultUpdater upd) {

@@ -135,7 +135,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         permitSubtreeCutoffCheckBox = SwingFactory.labeledCheckBox("Permit over/underfed subtree cutoff");
         permitSubtreeCutoffCheckBox.addChangeListener(e -> updatedProposalSettings());
         // proposal.append(permitSubtreeCutoffCheckBox)
-        respectWiringCheckBox = SwingFactory.labeledCheckBox("respect Wiring Constraints");
+        respectWiringCheckBox = SwingFactory.labeledCheckBox("respect wiring constraints");
         respectWiringCheckBox.addChangeListener(e -> updatedProposalSettings());
         proposal.append(respectWiringCheckBox);
         supportRestartCheckBox = SwingFactory.labeledCheckBox("use restartable implementation");
@@ -293,7 +293,10 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         tauInput.setText(Double.toString(pc.tau));
         deltaInput.setText(pc.delta < 0 ? null : Double.toString(pc.delta));
         steepnessInput.setText(pc.steepness < 0 ? null : Integer.toString(pc.steepness));
-        depthInput.setText(pc.depth < 0 ? null : Integer.toString(pc.depth));
+        if (pc.depth >= 0) {
+            depthInput.setText(Integer.toString(pc.depth));
+            depthInput.activate();
+        } depthInput.deactivate();
         if (pc.discoveryTimeLimit != null) {
             discoveryTimeLimitInput.setText(pc.discoveryTimeLimit.toString());
             discoveryTimeLimitInput.activate();
@@ -302,6 +305,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
             totalTimeLimitInput.setText(pc.totalTimeLimit.toString());
             totalTimeLimitInput.activate();
         } else totalTimeLimitInput.deactivate();
+        updateReadinessState();
     }
 
     public ProMConfig collectConfig() {
@@ -394,7 +398,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     public enum SupervisionSetting {
-        Lightweight, PerformanceOnly, Full
+        None, PerformanceOnly, Full
     }
 
     public enum Preset {
@@ -416,7 +420,24 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     public enum CompositionStrategy {
-        Standard, TauDelta, Uniwired
+        Standard("Standard", ""), TauDelta("Tau-Delta", ""), Uniwired("Uniwired", "");
+
+        private final String printableName;
+        private final String description;
+
+        CompositionStrategy(String printableName, String description) {
+            this.printableName = printableName;
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public String toString() {
+            return printableName;
+        }
     }
 
 }

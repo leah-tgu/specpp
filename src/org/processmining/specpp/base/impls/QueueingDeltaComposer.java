@@ -13,6 +13,7 @@ import org.processmining.specpp.componenting.system.link.ComposerComponent;
 import org.processmining.specpp.config.parameters.TauFitnessThresholds;
 import org.processmining.specpp.datastructures.encoding.BitMask;
 import org.processmining.specpp.datastructures.encoding.MutatingSetOperations;
+import org.processmining.specpp.datastructures.encoding.NonMutatingSetOperations;
 import org.processmining.specpp.datastructures.encoding.WeightedBitMask;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.tree.heuristic.DoubleScore;
@@ -78,7 +79,7 @@ public class QueueingDeltaComposer<I extends AdvancedComposition<Place>, R exten
         double adaptedTau = fitnessThresholds.getData().getFittingThreshold() * adaptedDelta.getScore();
         WeightedBitMask supportedVariants = currentlySupportedVariants.getData();
         IntVector frequencies = variantFrequencies.getData();
-        BitMask intersection = MutatingSetOperations.intersection(evaluation.getFittingVariants(), supportedVariants);
+        BitMask intersection = NonMutatingSetOperations.intersection(evaluation.getFittingVariants(), supportedVariants);
         double f = intersection.stream().mapToDouble(frequencies::getRelative).sum();
         return f >= supportedVariants.getWeight() - adaptedTau;
     }

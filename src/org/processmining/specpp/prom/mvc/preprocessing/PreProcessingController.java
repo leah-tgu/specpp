@@ -2,7 +2,6 @@ package org.processmining.specpp.prom.mvc.preprocessing;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections4.BidiMap;
-import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.classification.XEventNameClassifier;
 import org.deckfour.xes.model.XLog;
@@ -17,7 +16,7 @@ import org.processmining.specpp.datastructures.util.Tuple3;
 import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.preprocessing.XLogBasedInputDataBundle;
-import org.processmining.specpp.preprocessing.orderings.ActivityOrderingBuilder;
+import org.processmining.specpp.preprocessing.orderings.ActivityOrderingStrategy;
 import org.processmining.specpp.prom.mvc.AbstractStageController;
 import org.processmining.specpp.prom.mvc.SPECppController;
 
@@ -132,11 +131,8 @@ public class PreProcessingController extends AbstractStageController {
                     SwingWorker<Pair<List<Activity>>, Void> lists = previewPanel.updateLists(activities, comparators);
                     selection = ImmutablePair.map(lists.get(), HashSet::new);
                 }
-
-                BidiMap<Activity, Transition> transitionMapping = new DualHashBidiMap<>();
-                lastDerivedLog.getT2()
-                              .forEach((label, activity) -> transitionMapping.put(activity, XLogBasedInputDataBundle.makeTransition(activity, label)));
-                IntEncodings<Transition> encodings = ActivityOrderingBuilder.createEncodings(selection, lastComparators, transitionMapping);
+                BidiMap<Activity, Transition> transitionMapping = XLogBasedInputDataBundle.createTransitions(lastDerivedLog.getT1(), lastDerivedLog.getT2());
+                IntEncodings<Transition> encodings = ActivityOrderingStrategy.createEncodings(selection, lastComparators, transitionMapping);
                 return new Tuple3<>(lastParameters, selection, new InputDataBundle(lastDerivedLog.getT1(), encodings, transitionMapping));
             }
 

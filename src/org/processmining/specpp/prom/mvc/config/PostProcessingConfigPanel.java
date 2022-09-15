@@ -2,6 +2,7 @@ package org.processmining.specpp.prom.mvc.config;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
 import org.processmining.framework.plugin.PluginContext;
+import org.processmining.framework.util.ui.widgets.ProMTable;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 import org.processmining.specpp.prom.alg.ProMPostProcessor;
 import org.processmining.specpp.prom.mvc.swing.MyListModel;
@@ -12,6 +13,7 @@ import org.processmining.specpp.prom.util.Iconic;
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -20,16 +22,56 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PostProcessingConfigPanel extends JPanel {
 
-    private final MyListModel<FrameworkBridge.AnnotatedPostProcessor> availablePostProcessors;
+    private final MyListModel<FrameworkBridge.AnnotatedPostProcessor> availablePostProcessorsListModel;
+    private final DefaultTableModel tableModel;
+    private final List<FrameworkBridge.AnnotatedPostProcessor> availablePostProcessors;
+    private static final String DRAG_DROP_HELP_TEXT = "use drag & drop to add, remove and reorder the desired post processing steps";
 
     public PostProcessingConfigPanel(PluginContext pc, MyListModel<FrameworkBridge.AnnotatedPostProcessor> ppPipelineModel) {
         super(new GridBagLayout());
 
-        availablePostProcessors = new MyListModel<>(FrameworkBridge.POST_PROCESSORS);
-        JList<FrameworkBridge.AnnotatedPostProcessor> outList = new JList<>(availablePostProcessors);
+        availablePostProcessors = new ArrayList<>();
+        availablePostProcessorsListModel = new MyListModel<>();
+        tableModel = SwingFactory.readOnlyTableModel("Input", "Output", "Name");
+        FrameworkBridge.POST_PROCESSORS.forEach(this::addAvailablePostProcessor);
+
+        JList<FrameworkBridge.AnnotatedPostProcessor> outList = new JList<>(availablePostProcessorsListModel);
+        ProMTable proMTable = SwingFactory.proMTable(tableModel);
+        proMTable.setColumnSelectionAllowed(false);
+        proMTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        proMTable.setTransferHandler(new TransferHandler() {
+            @Override
+            protected Transferable createTransferable(JComponent c) {
+                int i = proMTable.getSelectedRow();
+                if (i < 0) return null;
+                return new AnnotatedPostProcessorTransferable(availablePostProcessors.get(i));
+            }
+
+            @Override
+            public boolean canImport(TransferSupport support) {
+                return support.isDrop() && support.isDataFlavorSupported(AnnotatedPostProcessorTransferable.myFlave);
+            }
+
+            @Override
+            public boolean importData(TransferSupport support) {
+                return canImport(support);
+            }
+
+            @Override
+            public int getSourceActions(JComponent c) {
+                return COPY;
+            }
+
+        });
+        proMTable.getTable().setDragEnabled(true);
+        proMTable.getTable().setDropMode(DropMode.INSERT);
+
+
         outList.setDragEnabled(true);
         outList.setDropMode(DropMode.INSERT);
         outList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -70,7 +112,9 @@ public class PostProcessingConfigPanel extends JPanel {
         JScrollPane outListScrollPane = new JScrollPane(outList);
         outListScrollPane.setMaximumSize(new Dimension(500, 300));
         outListScrollPane.setPreferredSize(new Dimension(500, 300));
-        add(outListScrollPane, ppc);
+        proMTable.setMaximumSize(new Dimension(500, 300));
+        proMTable.setPreferredSize(new Dimension(500, 300));
+        add(proMTable, ppc);
         ppc.fill = GridBagConstraints.NONE;
 
         JList<FrameworkBridge.AnnotatedPostProcessor> inList = new JList<>(ppPipelineModel);
@@ -170,10 +214,14 @@ public class PostProcessingConfigPanel extends JPanel {
         ppc.anchor = GridBagConstraints.CENTER;
         ppc.weightx = 0;
         ppc.weighty = 0;
-        add(new JLabel(Iconic.tiny_right_arrow), ppc);
+        JLabel arrow = new JLabel(Iconic.tiny_right_arrow);
+        arrow.setToolTipText(DRAG_DROP_HELP_TEXT);
+        add(arrow, ppc);
         ppc.gridheight = 2;
         ppc.gridy++;
-        add(new JLabel(Iconic.tiny_hand), ppc);
+        JLabel hand = new JLabel(Iconic.tiny_hand);
+        hand.setToolTipText(DRAG_DROP_HELP_TEXT);
+        add(hand, ppc);
         ppc.weightx = 1;
         ppc.gridheight = 1;
         ppc.gridx = 2;
@@ -207,7 +255,7 @@ public class PostProcessingConfigPanel extends JPanel {
                     ppTypesOkay.setIcon(Iconic.checkmark);
                 } else {
                     ppTypesOkay.setText("input & output types are incompatible \"[PetriNet =/> ProMPetrinetWrapper]\"");
-                    ppTypesOkay.setIcon(Iconic.cross);
+                    ppTypesOkay.setIcon(Iconic.red_cross);
                 }
             }
 
@@ -231,7 +279,13 @@ public class PostProcessingConfigPanel extends JPanel {
 
     public void importAnnotatedPostProcessor(FrameworkBridge.AnnotatedPostProcessor annotatedPostProcessor) {
         if (annotatedPostProcessor == null) return;
-        availablePostProcessors.append(annotatedPostProcessor);
+        addAvailablePostProcessor(annotatedPostProcessor);
+    }
+
+    private void addAvailablePostProcessor(FrameworkBridge.AnnotatedPostProcessor annotatedPostProcessor) {
+        availablePostProcessors.add(annotatedPostProcessor);
+        availablePostProcessorsListModel.append(annotatedPostProcessor);
+        tableModel.addRow(new Object[]{annotatedPostProcessor.getInType().getSimpleName(), annotatedPostProcessor.getOutType().getSimpleName(), annotatedPostProcessor.getPrintableName()});
     }
 
 }

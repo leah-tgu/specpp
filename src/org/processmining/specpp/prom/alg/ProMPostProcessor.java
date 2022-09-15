@@ -28,8 +28,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
@@ -118,7 +119,7 @@ public class ProMPostProcessor {
     private static void handleImport(PluginContext pc, Consumer<FrameworkBridge.AnnotatedPostProcessor> consumer, JFrame jf, List<Pair<Integer, PluginParameterBinding>> pnTransformers, List<Pair<Integer, PluginParameterBinding>> apnTransformers, int row) {
         FrameworkBridge.AnnotatedPostProcessor wrapPlugin = wrapPlugin(pc, pnTransformers, apnTransformers, row);
         if (wrapPlugin == null) return;
-        JOptionPane.showMessageDialog(null, "Successfully imported " + wrapPlugin + ".", "Import", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(jf, "Successfully imported " + wrapPlugin + ".", "Import", JOptionPane.INFORMATION_MESSAGE);
         // jf.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
         consumer.accept(wrapPlugin);
     }
@@ -127,13 +128,17 @@ public class ProMPostProcessor {
 
 
         PluginParameterBinding binding;
-        Function<ProMPetrinetWrapper, ProMPetrinetWrapper> invoker;
-        PluginContext childContext = pc.createChildContext("post processing child context");
+        BiFunction<PluginContext, ProMPetrinetWrapper, ProMPetrinetWrapper> invoker;
 
         if (row < pnTransformers.size()) {
             binding = pnTransformers.get(row).getSecond();
-            invoker = (ProMPetrinetWrapper pnw) -> {
-                PluginExecutionResult invoke = binding.invoke(childContext, pnw);
+            invoker = (PluginContext cont, ProMPetrinetWrapper pnw) -> {
+                PluginExecutionResult invoke = binding.invoke(cont, pnw);
+                try {
+                    invoke.synchronize();
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 Optional<Petrinet> first = Arrays.stream(invoke.getResults())
                                                  .filter(r -> r instanceof Petrinet)
                                                  .map(r -> (Petrinet) r)
@@ -155,8 +160,13 @@ public class ProMPostProcessor {
             };
         } else if (row - pnTransformers.size() < apnTransformers.size()) {
             binding = apnTransformers.get(row - pnTransformers.size()).getSecond();
-            invoker = (ProMPetrinetWrapper pnw) -> {
-                PluginExecutionResult invoke = binding.invoke(childContext, pnw);
+            invoker = (PluginContext cont, ProMPetrinetWrapper pnw) -> {
+                PluginExecutionResult invoke = binding.invoke(cont, pnw);
+                try {
+                    invoke.synchronize();
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 Optional<AcceptingPetriNet> first = Arrays.stream(invoke.getResults())
                                                           .filter(r -> r instanceof AcceptingPetriNet)
                                                           .map(r -> (AcceptingPetriNet) r)
@@ -171,7 +181,8 @@ public class ProMPostProcessor {
 
             @Override
             public ProMPetrinetWrapper postProcess(ProMPetrinetWrapper result) {
-                return invoker.apply(result);
+                PluginContext childContext = pc.createChildContext("post processing child context");
+                return invoker.apply(childContext, result);
             }
 
             @Override

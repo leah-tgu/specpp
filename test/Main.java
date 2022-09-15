@@ -355,18 +355,18 @@ public class Main {
                                                    .collect(Collectors.toMap(e -> e.getKey()
                                                                                    .toString(), Map.Entry::getKey));
 
-        List<Class<? extends ActivityOrderingBuilder>> classes = new LinkedList<>();
-        classes.add(AverageTracePositionOrdering.class);
-        classes.add(TraceFrequencyOrdering.class);
-        classes.add(ActivityFrequencyOrdering.class);
-        classes.add(LexicographicTransitionOrdering.class);
+        List<Class<? extends ActivityOrderingStrategy>> classes = new LinkedList<>();
+        classes.add(AverageFirstOccurrenceIndex.class);
+        classes.add(AbsoluteTraceFrequency.class);
+        classes.add(AbsoluteActivityFrequency.class);
+        classes.add(Lexicographic.class);
 
 
         System.out.println(activityMap.values());
         log.stream().limit(10).forEach(System.out::println);
 
-        for (Class<? extends ActivityOrderingBuilder> aClass : classes) {
-            ActivityOrderingBuilder instance = Reflection.instance(aClass, log, activityMap, mapping);
+        for (Class<? extends ActivityOrderingStrategy> aClass : classes) {
+            ActivityOrderingStrategy instance = Reflection.instance(aClass, log, activityMap, mapping);
             System.out.println(aClass);
             System.out.println(instance);
             System.out.println(instance.build());

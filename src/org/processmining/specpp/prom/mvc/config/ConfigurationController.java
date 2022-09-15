@@ -57,7 +57,7 @@ public class ConfigurationController extends AbstractStageController {
         svCfg.supervisor(BaseSupervisor::new);
         boolean isSupervisingEvents = pc.supervisionSetting == ConfigurationPanel.SupervisionSetting.Full;
         switch (pc.supervisionSetting) {
-            case Lightweight:
+            case None:
                 break;
             case PerformanceOnly:
                 svCfg.supervisor(LivePerformance::new);
@@ -136,7 +136,7 @@ public class ConfigurationController extends AbstractStageController {
         class CustomParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
             public CustomParameters() {
                 globalComponentSystem().provide(ParameterRequirements.EXECUTION_PARAMETERS.fulfilWithStatic(exp))
-                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(pc.supervisionSetting != ConfigurationPanel.SupervisionSetting.Lightweight ? SupervisionParameters.instrumentAll(false, logToFile) : SupervisionParameters.instrumentNone(false, logToFile)))
+                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(pc.supervisionSetting != ConfigurationPanel.SupervisionSetting.None ? SupervisionParameters.instrumentAll(false, logToFile) : SupervisionParameters.instrumentNone(false, logToFile)))
                                        .provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWithStatic(TauFitnessThresholds.tau(pc.tau)))
                                        .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(pgp))
                                        .provide(ParameterRequirements.OUTPUT_PATH_PARAMETERS.fulfilWithStatic(OutputPathParameters.getDefault()));

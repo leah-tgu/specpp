@@ -16,6 +16,7 @@ public class ProMPetrinetResultPanel extends JPanel {
 
             @Override
             protected JComponent doInBackground() throws Exception {
+                if (proMPetrinetWrapper == null) return new MessagePanel("Post Processor failed.");
                 LivePlacesGraph lg = new LivePlacesGraph();
                 lg.update(proMPetrinetWrapper);
                 return lg.getComponent();

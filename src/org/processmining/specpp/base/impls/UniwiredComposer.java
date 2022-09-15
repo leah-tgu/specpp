@@ -44,12 +44,11 @@ public class UniwiredComposer<I extends AdvancedComposition<Place>, R extends Re
                                .require(DataRequirements.dataSource("tree.current_level", Integer.class), treeLevelSource)
                                .require(EvaluationRequirements.POSTPONED_CANDIDATES_HEURISTIC, heuristic);
         localComponentSystem().require(SupervisionRequirements.observer("proposer.signals.in", ProposerSignal.class), proposerSignalsIn)
-                              .require(SupervisionRequirements.observable("composition.constraints.wiring", WiringConstraint.class), ContainerUtils.observeResults(this::addConstraint));
+                              .require(SupervisionRequirements.observable("composition.constraints.wiring", JavaTypingUtils.castClass(CandidateConstraint.class)), ContainerUtils.observeResults(this::addConstraint));
 
     }
 
-    private void addConstraint(WiringConstraint constraint) {
-        DebuggingSupervisor.debug("uniwired composer", "received " + constraint);
+    private void addConstraint(CandidateConstraint<Place> constraint) {
         if (constraint instanceof AddWiredPlace) wiringMatrix.wire(constraint.getAffectedCandidate());
         else if (constraint instanceof RemoveWiredPlace) wiringMatrix.unwire(constraint.getAffectedCandidate());
     }

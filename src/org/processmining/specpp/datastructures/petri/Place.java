@@ -56,11 +56,11 @@ public class Place implements Candidate, NodeProperties, ProperlyHashable, Prope
 
 
     public Place nonSelfLoops() {
-        return new Place(MutatingSetOperations.dualSetminus(preset(), postset()));
+        return new Place(NonMutatingSetOperations.dualSetminus(preset(), postset()));
     }
 
     public Place selfLoops() {
-        return new Place(MutatingSetOperations.dualIntersection(preset(), postset()));
+        return new Place(NonMutatingSetOperations.dualIntersection(preset(), postset()));
     }
 
     @Override

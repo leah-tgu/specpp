@@ -8,8 +8,8 @@ import org.processmining.specpp.datastructures.util.Pair;
 import java.util.Comparator;
 import java.util.Map;
 
-public class LexicographicTransitionOrdering extends ActivityOrderingBuilder {
-    public LexicographicTransitionOrdering(Log log, Map<String, Activity> activityMapping) {
+public class Lexicographic extends ActivityOrderingStrategy {
+    public Lexicographic(Log log, Map<String, Activity> activityMapping) {
         super(log, activityMapping);
     }
 

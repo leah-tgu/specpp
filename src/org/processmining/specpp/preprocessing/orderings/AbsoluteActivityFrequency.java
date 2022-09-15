@@ -11,8 +11,8 @@ import org.processmining.specpp.datastructures.util.Pair;
 import java.util.Comparator;
 import java.util.Map;
 
-public class ActivityFrequencyOrdering extends ActivityOrderingBuilder {
-    public ActivityFrequencyOrdering(Log log, Map<String, Activity> activityMapping) {
+public class AbsoluteActivityFrequency extends ActivityOrderingStrategy {
+    public AbsoluteActivityFrequency(Log log, Map<String, Activity> activityMapping) {
         super(log, activityMapping);
     }
 

@@ -1,6 +1,9 @@
 package org.processmining.specpp.evaluation.fitness;
 
+import org.processmining.specpp.componenting.data.ParameterRequirements;
+import org.processmining.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.specpp.componenting.evaluation.EvaluationRequirements;
+import org.processmining.specpp.componenting.system.ComponentSystemAwareBuilder;
 import org.processmining.specpp.datastructures.encoding.BitMask;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.EvaluationParameterTuple2;
@@ -16,17 +19,33 @@ import java.util.stream.Stream;
 
 public abstract class AbstractBasicFitnessEvaluator extends AbstractFitnessEvaluator {
 
+    private  ReplayComputationParameters replayComputationParameters;
+
+    public static abstract class Builder extends ComponentSystemAwareBuilder<AbstractBasicFitnessEvaluator> {
+
+        private final DelegatingDataSource<ReplayComputationParameters> replayComputationParametersSource = new DelegatingDataSource<>();
+
+        public Builder() {
+            globalComponentSystem().require(ParameterRequirements.REPLAY_COMPUTATION, replayComputationParametersSource);
+        }
+
+    }
 
     public static final TaskDescription BASIC_EVALUATION = new TaskDescription("Basic Fitness Evaluation");
     public static final TaskDescription DETAILED_EVALUATION = new TaskDescription("Detailed Fitness Evaluation");
 
     public AbstractBasicFitnessEvaluator() {
-        globalComponentSystem()
-                .provide(EvaluationRequirements.evaluator(Place.class, BasicFitnessEvaluation.class, this::eval))
-                .provide(EvaluationRequirements.evaluator(Place.class, DetailedFitnessEvaluation.class, this::detailedEval))
-                .provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), BasicFitnessEvaluation.class, this::subsetEval))
-                .provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), DetailedFitnessEvaluation.class, this::detailedSubsetEval));
+        globalComponentSystem().provide(EvaluationRequirements.evaluator(Place.class, BasicFitnessEvaluation.class, this::eval))
+                               .provide(EvaluationRequirements.evaluator(Place.class, DetailedFitnessEvaluation.class, this::detailedEval))
+                               .provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), BasicFitnessEvaluation.class, this::subsetEval))
+                               .provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), DetailedFitnessEvaluation.class, this::detailedSubsetEval));
 
+
+    }
+
+    public AbstractBasicFitnessEvaluator(ReplayComputationParameters replayComputationParameters) {
+        // TODO cont here
+        this.replayComputationParameters = replayComputationParameters;
     }
 
     protected Spliterator<IndexedItem<Pair<IntBuffer>>> getIndexedItemSpliterator() {

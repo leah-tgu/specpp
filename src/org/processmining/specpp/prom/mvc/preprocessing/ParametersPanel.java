@@ -4,23 +4,24 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 import com.google.common.collect.ImmutableList;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.processmining.specpp.orchestra.PreProcessingParameters;
-import org.processmining.specpp.preprocessing.orderings.ActivityOrderingBuilder;
+import org.processmining.specpp.preprocessing.orderings.ActivityOrderingStrategy;
+import org.processmining.specpp.prom.alg.FrameworkBridge;
 import org.processmining.specpp.prom.mvc.swing.LabeledComboBox;
 import org.processmining.specpp.prom.mvc.swing.SwingFactory;
-import org.processmining.specpp.supervision.observations.ClassKey;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("unchecked")
 public class ParametersPanel extends JPanel {
 
     private final PreProcessingController controller;
     private final JComboBox<XEventClassifier> classifierComboBox;
-    private final JComboBox<ClassKey<? extends ActivityOrderingBuilder>> orderingComboBox;
+    private final JComboBox<FrameworkBridge.BridgedActivityOrderingStrategies> orderingComboBox;
     private final JCheckBox artificialTransitionsCheckBox;
-    private final List<Class<? extends ActivityOrderingBuilder>> availableOrderings;
+    private final List<FrameworkBridge.BridgedActivityOrderingStrategies> availableOrderings;
     private final ImmutableList<XEventClassifier> availableEventClassifiers;
     private final JButton previewButton;
 
@@ -32,21 +33,18 @@ public class ParametersPanel extends JPanel {
         availableEventClassifiers = ImmutableList.copyOf(eventClassifiers);
         LabeledComboBox<XEventClassifier> eventClassifierBox = SwingFactory.labeledComboBox("Event Classifier", availableEventClassifiers.toArray(new XEventClassifier[0]));
         classifierComboBox = eventClassifierBox.getComboBox();
+
         classifierComboBox.setMinimumSize(new Dimension(175, 25));
+        classifierComboBox.setPreferredSize(new Dimension(175, 25));
         classifierComboBox.setSelectedItem(defaultParameters.getEventClassifier());
 
-        availableOrderings = PreProcessingParameters.getAvailableTransitionEncodingsBuilders();
-        ClassKey<? extends ActivityOrderingBuilder>[] tebOptions = availableOrderings.stream()
-                                                                                     .map(ClassKey::new)
-                                                                                     .toArray(ClassKey[]::new);
-        ClassKey<? extends ActivityOrderingBuilder> selected = new ClassKey<>(defaultParameters.getTransitionEncodingsBuilderClass());
-
-
-        LabeledComboBox<ClassKey<? extends ActivityOrderingBuilder>> orderingStrategyBox = SwingFactory.labeledComboBox("Ordering Strategy", tebOptions);
-        orderingStrategyBox.setMinimumSize(new Dimension(250, 25));
+        availableOrderings = FrameworkBridge.ORDERING_STRATEGIES;
+        LabeledComboBox<FrameworkBridge.BridgedActivityOrderingStrategies> orderingStrategyBox = SwingFactory.labeledComboBox("Ordering Strategy", availableOrderings.toArray(new FrameworkBridge.BridgedActivityOrderingStrategies[0]));
         orderingComboBox = orderingStrategyBox.getComboBox();
         orderingComboBox.setMinimumSize(new Dimension(250, 25));
-        orderingComboBox.setSelectedItem(selected);
+        orderingComboBox.setPreferredSize(new Dimension(250, 25));
+        orderingComboBox.setSelectedItem(findEnum(defaultParameters.getTransitionEncodingsBuilderClass()));
+        orderingStrategyBox.add(SwingFactory.help("see more", () -> "Determines the order in which the search tree is explored. Can have a big impact on performance."));
 
         artificialTransitionsCheckBox = SlickerFactory.instance()
                                                       .createCheckBox("introduce artificial start & end transitions", defaultParameters.isAddStartEndTransitions());
@@ -90,17 +88,23 @@ public class ParametersPanel extends JPanel {
 
     private void instantiateFrom(PreProcessingParameters preProcessingParameters) {
         XEventClassifier eventClassifier = preProcessingParameters.getEventClassifier();
-        if (availableEventClassifiers.contains(eventClassifier))
-            classifierComboBox.setSelectedItem(eventClassifier);
-        Class<? extends ActivityOrderingBuilder> teb = preProcessingParameters.getTransitionEncodingsBuilderClass();
-        if (availableOrderings.contains(teb))
-            orderingComboBox.setSelectedItem(teb);
+        if (availableEventClassifiers.contains(eventClassifier)) classifierComboBox.setSelectedItem(eventClassifier);
+        Class<? extends ActivityOrderingStrategy> aos = preProcessingParameters.getTransitionEncodingsBuilderClass();
+        orderingComboBox.setSelectedItem(findEnum(aos));
         artificialTransitionsCheckBox.setSelected(preProcessingParameters.isAddStartEndTransitions());
+    }
+
+    private FrameworkBridge.BridgedActivityOrderingStrategies findEnum(Class<? extends ActivityOrderingStrategy> strategyClass) {
+        Optional<FrameworkBridge.BridgedActivityOrderingStrategies> first = availableOrderings.stream()
+                                                                                              .filter(baos -> baos.getStrategyClass()
+                                                                                                                  .equals(strategyClass))
+                                                                                              .findFirst();
+        return first.orElse(FrameworkBridge.BridgedActivityOrderingStrategies.AverageFirstOccurrenceIndex);
     }
 
     public PreProcessingParameters collectParameters() {
         XEventClassifier eventClassifier = availableEventClassifiers.get(classifierComboBox.getSelectedIndex());
-        Class<? extends ActivityOrderingBuilder> orderingStrategy = availableOrderings.get(orderingComboBox.getSelectedIndex());
+        Class<? extends ActivityOrderingStrategy> orderingStrategy = ((FrameworkBridge.BridgedActivityOrderingStrategies) orderingComboBox.getSelectedItem()).getStrategyClass();
         boolean introduceArtificialTransitions = artificialTransitionsCheckBox.isSelected();
         return new PreProcessingParameters(eventClassifier, introduceArtificialTransitions, orderingStrategy);
     }

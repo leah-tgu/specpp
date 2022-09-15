@@ -4,6 +4,8 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 import com.google.common.collect.Multimap;
 import org.processmining.framework.util.ui.widgets.ProMComboBox;
 import org.processmining.framework.util.ui.widgets.ProMTable;
+import org.processmining.specpp.prom.util.Iconic;
+import org.processmining.specpp.prom.util.RoundedBorder;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -11,6 +13,7 @@ import javax.swing.table.TableModel;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 public class SwingFactory {
@@ -25,6 +28,16 @@ public class SwingFactory {
 
     public static <T> LabeledComboBox<T> labeledComboBox(String label, T[] values) {
         return new LabeledComboBox<>(label, values);
+    }
+
+    public static JButton help(String hint, Supplier<String> contextDependentText) {
+        JButton button = new JButton(Iconic.tiny_circled_questionmark);
+        button.setContentAreaFilled(false);
+        button.setToolTipText(hint);
+        button.addActionListener(e -> {
+            JOptionPane.showMessageDialog(null, contextDependentText.get(), "Help", JOptionPane.INFORMATION_MESSAGE);
+        });
+        return button;
     }
 
     public static LabeledTextField labeledTextField(String label, int inputTextColumns) {

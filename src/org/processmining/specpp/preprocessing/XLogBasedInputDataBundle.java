@@ -14,11 +14,12 @@ import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.log.Variant;
 import org.processmining.specpp.datastructures.log.impls.*;
 import org.processmining.specpp.datastructures.petri.FinalTransition;
+import org.processmining.specpp.datastructures.petri.InitialFinalTransition;
 import org.processmining.specpp.datastructures.petri.InitialTransition;
 import org.processmining.specpp.datastructures.petri.Transition;
 import org.processmining.specpp.datastructures.util.*;
 import org.processmining.specpp.orchestra.PreProcessingParameters;
-import org.processmining.specpp.preprocessing.orderings.ActivityOrderingBuilder;
+import org.processmining.specpp.preprocessing.orderings.ActivityOrderingStrategy;
 import org.processmining.specpp.util.Reflection;
 
 import java.io.File;
@@ -27,7 +28,7 @@ import java.util.*;
 public class XLogBasedInputDataBundle implements DataSource<InputDataBundle> {
 
     private final XLog xLog;
-    private final Class<? extends ActivityOrderingBuilder> transitionEncodingsBuilderClass;
+    private final Class<? extends ActivityOrderingStrategy> transitionEncodingsBuilderClass;
     private final boolean introduceStartEndTransitions;
     private final XEventClassifier eventClassifier;
 
@@ -53,19 +54,40 @@ public class XLogBasedInputDataBundle implements DataSource<InputDataBundle> {
         else return new Transition(label);
     }
 
-    public static Tuple2<IntEncodings<Transition>, BidiMap<Activity, Transition>> deriveTransitions(Pair<Comparator<Activity>> comparators, Map<String, Activity> activityMapping) {
-        BidiMap<Activity, Transition> transitionMapping = new DualHashBidiMap<>();
-        activityMapping.forEach((label, activity) -> transitionMapping.put(activity, makeTransition(activity, label)));
+    public static Transition makeTransition(Activity activity, String label, boolean isInitial, boolean isFinal) {
+        if (isInitial && isFinal) return new InitialFinalTransition(label);
+        else if (isInitial) return new InitialTransition(label);
+        else if (isFinal) return new FinalTransition(label);
+        else return new Transition(label);
+    }
+
+    public static Tuple2<IntEncodings<Transition>, BidiMap<Activity, Transition>> deriveTransitions(Pair<Comparator<Activity>> comparators, Log log, Map<String, Activity> activityMapping) {
+        BidiMap<Activity, Transition> transitionMapping = createTransitions(log, activityMapping);
         Set<Activity> presetSet = new HashSet<>(activityMapping.values());
         presetSet.remove(Factory.ARTIFICIAL_END);
         Set<Activity> postsetSet = new HashSet<>(activityMapping.values());
         postsetSet.remove(Factory.ARTIFICIAL_START);
-        IntEncodings<Transition> encodings = ActivityOrderingBuilder.createEncodings(new ImmutablePair<>(presetSet, postsetSet), comparators, transitionMapping);
+        IntEncodings<Transition> encodings = ActivityOrderingStrategy.createEncodings(new ImmutablePair<>(presetSet, postsetSet), comparators, transitionMapping);
         return new ImmutableTuple2<>(encodings, transitionMapping);
     }
 
-    public static Pair<Comparator<Activity>> createOrderings(Log log, Map<String, Activity> activityMapping, Class<? extends ActivityOrderingBuilder> transitionEncodingsBuilderClass) {
-        ActivityOrderingBuilder teb = Reflection.instance(transitionEncodingsBuilderClass, log, activityMapping);
+    public static BidiMap<Activity, Transition> createTransitions(Log log, Map<String, Activity> activityMapping) {
+        Set<Activity> initialActivities = new HashSet<>(), finalActivities = new HashSet<>();
+        for (IndexedVariant indexedVariant : log) {
+            Variant v = indexedVariant.getVariant();
+            int size = v.size();
+            if (size > 0) {
+                initialActivities.add(v.getAt(0));
+                finalActivities.add(v.getAt(size - 1));
+            }
+        }
+        BidiMap<Activity, Transition> transitionMapping = new DualHashBidiMap<>();
+        activityMapping.forEach((label, activity) -> transitionMapping.put(activity, makeTransition(activity, label, initialActivities.contains(activity), finalActivities.contains(activity))));
+        return transitionMapping;
+    }
+
+    public static Pair<Comparator<Activity>> createOrderings(Log log, Map<String, Activity> activityMapping, Class<? extends ActivityOrderingStrategy> transitionEncodingsBuilderClass) {
+        ActivityOrderingStrategy teb = Reflection.instance(transitionEncodingsBuilderClass, log, activityMapping);
         return teb.build();
     }
 
@@ -108,7 +130,7 @@ public class XLogBasedInputDataBundle implements DataSource<InputDataBundle> {
     public InputDataBundle getData() {
         Tuple2<Log, Map<String, Activity>> tuple = convertLog(xLog, eventClassifier, introduceStartEndTransitions);
         Pair<Comparator<Activity>> orderings = createOrderings(tuple.getT1(), tuple.getT2(), transitionEncodingsBuilderClass);
-        Tuple2<IntEncodings<Transition>, BidiMap<Activity, Transition>> derivedTransitions = deriveTransitions(orderings, tuple.getT2());
+        Tuple2<IntEncodings<Transition>, BidiMap<Activity, Transition>> derivedTransitions = deriveTransitions(orderings, tuple.getT1(), tuple.getT2());
         return new InputDataBundle(tuple.getT1(), derivedTransitions.getT1(), derivedTransitions.getT2());
     }
 

@@ -13,12 +13,12 @@ import org.processmining.specpp.datastructures.util.Pair;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class ActivityOrderingBuilder implements SimpleBuilder<Pair<Comparator<Activity>>> {
+public abstract class ActivityOrderingStrategy implements SimpleBuilder<Pair<Comparator<Activity>>> {
 
     private final Log log;
     private final Map<String, Activity> activityMapping;
 
-    public ActivityOrderingBuilder(Log log, Map<String, Activity> activityMapping) {
+    public ActivityOrderingStrategy(Log log, Map<String, Activity> activityMapping) {
         this.log = log;
         this.activityMapping = activityMapping;
     }

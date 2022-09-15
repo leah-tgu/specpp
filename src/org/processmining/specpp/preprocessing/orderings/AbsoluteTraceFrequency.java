@@ -12,8 +12,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class TraceFrequencyOrdering extends ActivityOrderingBuilder {
-    public TraceFrequencyOrdering(Log log, Map<String, Activity> activityMapping) {
+public class AbsoluteTraceFrequency extends ActivityOrderingStrategy {
+    public AbsoluteTraceFrequency(Log log, Map<String, Activity> activityMapping) {
         super(log, activityMapping);
     }
 

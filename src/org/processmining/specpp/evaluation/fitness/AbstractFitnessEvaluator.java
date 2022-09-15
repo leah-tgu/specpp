@@ -10,7 +10,7 @@ import org.processmining.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.specpp.datastructures.encoding.BitMask;
 import org.processmining.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.specpp.supervision.observations.performance.PerformanceEvent;
-import org.processmining.specpp.supervision.piping.TimeStopper;
+import org.processmining.specpp.supervision.observations.performance.TimeStopper;
 
 public abstract class AbstractFitnessEvaluator extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators, IsGlobalProvider {
 

@@ -8,13 +8,11 @@ import org.processmining.specpp.datastructures.log.impls.IndexedVariant;
 import org.processmining.specpp.datastructures.util.ImmutablePair;
 import org.processmining.specpp.datastructures.util.Pair;
 
-import java.util.Comparator;
-import java.util.IntSummaryStatistics;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class AverageTracePositionOrdering extends ActivityOrderingBuilder {
-    public AverageTracePositionOrdering(Log log, Map<String, Activity> activityMapping) {
+public class AverageFirstOccurrenceIndex extends ActivityOrderingStrategy {
+    public AverageFirstOccurrenceIndex(Log log, Map<String, Activity> activityMapping) {
         super(log, activityMapping);
     }
 
@@ -26,12 +24,14 @@ public class AverageTracePositionOrdering extends ActivityOrderingBuilder {
 
 
         for (IndexedVariant indexedVariant : log) {
+            Set<Activity> seen = new HashSet<>();
             Variant variant = indexedVariant.getVariant();
             int variantFrequency = log.getVariantFrequency(indexedVariant.getIndex());
             int j = 0;
             for (Activity activity : variant) {
-                stats.get(activity).accept(j * variantFrequency);
+                if (!seen.contains(activity)) stats.get(activity).accept(j * variantFrequency);
                 j++;
+                seen.add(activity);
             }
         }
 
