@@ -33,4 +33,10 @@ public class ConstantDelta extends AbstractDeltaAdaptationFunction {
         return 1;
     }
 
+    @Override
+    public String toString() {
+        return "ConstantDelta{" +
+                "delta=" + delta +
+                '}';
+    }
 }

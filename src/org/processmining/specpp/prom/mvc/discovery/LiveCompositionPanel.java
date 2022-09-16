@@ -45,7 +45,7 @@ public class LiveCompositionPanel extends JPanel implements Destructible {
         header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
         //header.setOpaque(true);
         //header.setBackground(ColorScheme.lightBlue);
-        header.add(SwingFactory.createHeader("Intermediate Result"));
+        header.add(SwingFactory.createHeader("Currently Accepted Places"));
         header.add(Box.createHorizontalStrut(150));
         visualizationOptionComboBox = SwingFactory.labeledComboBox("Visualization", VisualizationOption.values());
         visualizationOptionComboBox.getComboBox().setSelectedItem(VisualizationOption.List);

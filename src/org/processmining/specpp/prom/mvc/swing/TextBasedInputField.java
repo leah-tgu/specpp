@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class TextBasedInputField<T> extends LabeledTextField {
@@ -16,6 +18,7 @@ public class TextBasedInputField<T> extends LabeledTextField {
 
     public TextBasedInputField(String label, Function<String, T> parseInput, int inputTextColumns) {
         super(label, inputTextColumns);
+        this.listeners = new LinkedList<>();
         this.parseInput = parseInput;
 
         ogBorder = field.getBorder();
@@ -44,8 +47,16 @@ public class TextBasedInputField<T> extends LabeledTextField {
         showVerificationStatus();
     }
 
+    protected java.util.List<Consumer<Boolean>> listeners;
+
+    public void addVerificationStatusListener(Consumer<Boolean> bc) {
+        listeners.add(bc);
+    }
+
     public void showVerificationStatus() {
-        field.setBorder(iv.verify(field) ? ogBorder : BorderFactory.createLineBorder(Color.red, 2, false));
+        boolean verified = iv.verify(field);
+        field.setBorder(verified ? ogBorder : BorderFactory.createLineBorder(Color.red, 2, false));
+        listeners.forEach(bc -> bc.accept(verified));
     }
 
     protected T tryParse() {
@@ -56,12 +67,18 @@ public class TextBasedInputField<T> extends LabeledTextField {
         }
     }
 
+    @Override
+    public void setVisible(boolean aFlag) {
+        super.setVisible(aFlag);
+        showVerificationStatus();
+    }
+
     protected boolean permittedToBeWrong() {
         return !isVisible() || !isEnabled();
     }
 
     public T getInput() {
-        SwingUtilities.invokeLater(this::showVerificationStatus);
+        //SwingUtilities.invokeLater(this::showVerificationStatus);
         return tryParse();
     }
 

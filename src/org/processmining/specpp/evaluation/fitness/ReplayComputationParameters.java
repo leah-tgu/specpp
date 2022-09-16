@@ -10,6 +10,14 @@ public class ReplayComputationParameters implements Parameters {
         this.clipMarkingAtZero = clipMarkingAtZero;
     }
 
+    public static ReplayComputationParameters getDefault() {
+        return new ReplayComputationParameters(true);
+    }
+
+    public static ReplayComputationParameters permitNegative(boolean permitNegativeMarkingsDuringReplay) {
+        return new ReplayComputationParameters(!permitNegativeMarkingsDuringReplay);
+    }
+
     public boolean isClipMarkingAtZero() {
         return clipMarkingAtZero;
     }

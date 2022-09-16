@@ -88,4 +88,8 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
     public Duration calculateRuntime() {
         return Duration.between(start, end);
     }
+
+    public boolean hasTerminatedSuccessfully() {
+        return hasEnded() && !forciblyCancelled;
+    }
 }

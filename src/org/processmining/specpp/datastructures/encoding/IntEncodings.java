@@ -2,6 +2,7 @@ package org.processmining.specpp.datastructures.encoding;
 
 import org.processmining.specpp.traits.ProperlyPrintable;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -37,11 +38,8 @@ public class IntEncodings<T> implements ProperlyPrintable {
         return result;
     }
 
-    public Set<Integer> combinedRange() {
-        HashSet<Integer> result = new HashSet<>();
-        presetEncoding.range().forEach(result::add);
-        postsetEncoding.range().forEach(result::add);
-        return result;
+    public IntEncoding<T> combinedEncoding() {
+        return HashmapEncoding.ofList(new ArrayList<>(combinedDomain()));
     }
 
     public IntEncoding<T> getPresetEncoding() {

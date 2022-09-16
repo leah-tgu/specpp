@@ -18,9 +18,9 @@ import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class PetriNetResultPanel extends JSplitPane {
 
@@ -36,11 +36,15 @@ public class PetriNetResultPanel extends JSplitPane {
         JPanel left = new JPanel(new BorderLayout());
         left.add(Box.createHorizontalStrut(400), BorderLayout.PAGE_END);
         setLeftComponent(left);
-        tableModel = SwingFactory.readOnlyTableModel(new String[]{"Size", "Preset", "Postset", "fitting(L)", "underfed(L)", "overfed(L)"}, ImmutableMultimap.<Class<?>, Integer>builder()
-                                                                                                                                                            .putAll(String.class, 1, 2)
-                                                                                                                                                            .putAll(Integer.class, 0)
-                                                                                                                                                            .putAll(Double.class, 3, 4, 5)
-                                                                                                                                                            .build());
+        String overfedSymbol = "\u25B3(L)";
+        String underfedSymbol = "\u25BD(L)";
+        String fittingSymbol = "\u25A1(L)";
+        String rel = "^r";
+        tableModel = SwingFactory.readOnlyTableModel(new String[]{"Size", "Preset", "Postset", fittingSymbol, underfedSymbol, overfedSymbol, fittingSymbol + rel, underfedSymbol + rel, overfedSymbol + rel}, ImmutableMultimap.<Class<?>, Integer>builder()
+                                                                                                                                                                                                                               .putAll(String.class, 1, 2)
+                                                                                                                                                                                                                               .putAll(Integer.class, 0)
+                                                                                                                                                                                                                               .putAll(Double.class, 3, 4, 5, 6, 7, 8)
+                                                                                                                                                                                                                               .build());
         ProMTable proMTable = SwingFactory.proMTable(tableModel);
         proMTable.getColumnModel().getColumn(0).setMaxWidth(50);
         proMTable.getColumnModel().getColumn(3).setMaxWidth(80);
@@ -48,8 +52,12 @@ public class PetriNetResultPanel extends JSplitPane {
         proMTable.getColumnModel().getColumn(5).setMaxWidth(80);
         JPanel right = new JPanel(new BorderLayout());
         right.add(proMTable, BorderLayout.CENTER);
+        JPanel bottomLine = new JPanel();
+        bottomLine.setLayout(new BoxLayout(bottomLine, BoxLayout.LINE_AXIS));
+        bottomLine.add(SlickerFactory.instance().createLabel(String.format("Size: %d", petriNet.size())));
         infoLabel = SlickerFactory.instance().createLabel("not yet computed");
-        right.add(infoLabel, BorderLayout.PAGE_END);
+        bottomLine.add(infoLabel);
+        right.add(bottomLine, BorderLayout.PAGE_END);
         setRightComponent(right);
 
 
@@ -77,13 +85,7 @@ public class PetriNetResultPanel extends JSplitPane {
 
             @Override
             protected Map<Place, DetailedFitnessEvaluation> doInBackground() throws Exception {
-                HashMap<Place, DetailedFitnessEvaluation> res = new HashMap<>();
-                for (Place p : petriNet.getPlaces()) {
-                    DetailedFitnessEvaluation eval = evaluator.eval(p);
-                    res.put(p, eval);
-                }
-                return res;
-                // return petriNet.getPlaces().stream().collect(Collectors.toMap(p -> p, evaluator));
+                return petriNet.getPlaces().stream().collect(Collectors.toMap(p -> p, evaluator));
             }
 
             @Override
@@ -115,12 +117,12 @@ public class PetriNetResultPanel extends JSplitPane {
             if (overallFittingVariants == null) overallFittingVariants = fittingVariants;
             else overallFittingVariants.intersection(fittingVariants);
             BasicFitnessEvaluation fractions = value.getFractionalEvaluation();
-            tableModel.addRow(new Object[]{key.size(), key.preset().toString(), key.postset().toString(), fractions.getFittingFraction(), fractions.getUnderfedFraction(), fractions.getOverfedFraction()});
+            tableModel.addRow(new Object[]{key.size(), key.preset().toString(), key.postset().toString(), fractions.getFittingFraction(), fractions.getUnderfedFraction(), fractions.getOverfedFraction(), fractions.getRelativeFittingFraction(), fractions.getRelativeUnderfedFraction(), fractions.getRelativeOverfedFraction()});
         }
         double sum = overallFittingVariants == null ? Double.NaN : overallFittingVariants.stream()
                                                                                          .mapToDouble(variantFrequencies::getRelative)
                                                                                          .sum();
-        infoLabel.setText(String.format("Combined Fitting Traces Fraction: %f", sum));
+        infoLabel.setText(String.format("Combined Fitting Traces Fraction: %.2f", sum));
         tableModel.fireTableDataChanged();
     }
 

@@ -5,11 +5,12 @@ import com.google.common.collect.Multimap;
 import org.processmining.framework.util.ui.widgets.ProMComboBox;
 import org.processmining.framework.util.ui.widgets.ProMTable;
 import org.processmining.specpp.prom.util.Iconic;
-import org.processmining.specpp.prom.util.RoundedBorder;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.function.Function;
@@ -33,6 +34,10 @@ public class SwingFactory {
     public static JButton help(String hint, Supplier<String> contextDependentText) {
         JButton button = new JButton(Iconic.tiny_circled_questionmark);
         button.setContentAreaFilled(false);
+        button.setBorder(BorderFactory.createEmptyBorder());
+        button.setMaximumSize(new Dimension(25, 25));
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
         button.setToolTipText(hint);
         button.addActionListener(e -> {
             JOptionPane.showMessageDialog(null, contextDependentText.get(), "Help", JOptionPane.INFORMATION_MESSAGE);
@@ -52,8 +57,12 @@ public class SwingFactory {
         return new ActivatableTextBasedInputField<>(label, parseInput, activatedByDefault, textInputColumns);
     }
 
-    public static LabeledCheckboxedTextField labeledCheckboxedTextField(String label, boolean enabledByDefault, int inputTextColumns) {
-        return new LabeledCheckboxedTextField(label, enabledByDefault, inputTextColumns);
+    public static <T> CheckboxedComboBox<T> checkboxedComboBox(String label, boolean enabledByDefault, T[] values) {
+        return new CheckboxedComboBox<>(label, enabledByDefault, values);
+    }
+
+    public static CheckboxedTextField checkboxedTextField(String label, boolean enabledByDefault, int inputTextColumns) {
+        return new CheckboxedTextField(label, enabledByDefault, inputTextColumns);
     }
 
     public static JCheckBox labeledCheckBox(String label) {
@@ -66,22 +75,29 @@ public class SwingFactory {
 
     public static ProMTable proMTable(TableModel tableModel) {
         return new ProMTable(tableModel) {
+
             @Override
-            public String getToolTipText(MouseEvent event) {
-                String tip = null;
-                java.awt.Point p = event.getPoint();
-                int rowIndex = rowAtPoint(p);
-                int colIndex = columnAtPoint(p);
+            protected JTable createTable(TableModel model, TableColumnModel columnModel) {
+                return new JTable(model, columnModel) {
+                    @Override
+                    public String getToolTipText(MouseEvent event) {
+                        String tip = null;
+                        java.awt.Point p = event.getPoint();
+                        int rowIndex = rowAtPoint(p);
+                        int colIndex = columnAtPoint(p);
 
-                if (rowIndex < 0 || colIndex < 0) return null;
+                        if (rowIndex < 0 || colIndex < 0) return null;
 
-                try {
-                    tip = getValueAt(rowIndex, colIndex).toString();
-                } catch (RuntimeException ignored) {
-                }
+                        try {
+                            tip = getValueAt(rowIndex, colIndex).toString();
+                        } catch (RuntimeException ignored) {
+                        }
 
-                return tip;
+                        return tip;
+                    }
+                };
             }
+
         };
     }
 

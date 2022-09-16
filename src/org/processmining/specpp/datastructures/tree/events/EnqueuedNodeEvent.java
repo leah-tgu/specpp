@@ -4,15 +4,15 @@ import org.processmining.specpp.base.Evaluable;
 import org.processmining.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.specpp.datastructures.tree.base.traits.LocallyExpandable;
 
-public class EnqueueNodeEvent<N extends TreeNode & Evaluable & LocallyExpandable<N>> extends TreeHeuristicQueueingEvent<N> {
+public class EnqueuedNodeEvent<N extends TreeNode & Evaluable & LocallyExpandable<N>> extends TreeHeuristicQueueingEvent<N> {
 
-    public EnqueueNodeEvent(N source) {
+    public EnqueuedNodeEvent(N source) {
         super(source);
     }
 
     @Override
     public String toString() {
-        return "EnqueueNodeEvent(" + source + ")";
+        return "EnqueuedNodeEvent(" + source + ")";
     }
 
     @Override

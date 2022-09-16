@@ -1,6 +1,7 @@
 package org.processmining.specpp.prom.mvc.config;
 
 import com.google.common.collect.ImmutableList;
+import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 
 import java.time.Duration;
@@ -12,8 +13,11 @@ public class ProMConfig {
     ConfigurationPanel.TreeExpansionSetting treeExpansionSetting;
     boolean respectWiring, supportRestart;
     FrameworkBridge.BridgedHeuristics bridgedHeuristics;
-    boolean concurrentReplay, restrictToFittingSubLog;
+    boolean concurrentReplay, permitNegativeMarkingsDuringReplay;
+    ImplicitnessTestingParameters.SubLogRestriction implicitnessReplaySubLogRestriction;
     FrameworkBridge.BridgedDeltaAdaptationFunctions bridgedDelta;
+    public boolean enforceMinimumHeuristicThreshold;
+    public double minimumHeuristicThreshold;
     ConfigurationPanel.CompositionStrategy compositionStrategy;
     boolean applyCIPR;
     List<FrameworkBridge.AnnotatedPostProcessor> ppPipeline;
@@ -33,8 +37,10 @@ public class ProMConfig {
         pc.respectWiring = false;
         pc.supportRestart = false;
         pc.bridgedHeuristics = FrameworkBridge.BridgedHeuristics.BFS_Emulation;
+        pc.enforceMinimumHeuristicThreshold = false;
         pc.concurrentReplay = false;
-        pc.restrictToFittingSubLog = false;
+        pc.permitNegativeMarkingsDuringReplay = false;
+        pc.implicitnessReplaySubLogRestriction = ImplicitnessTestingParameters.SubLogRestriction.None;
         pc.bridgedDelta = FrameworkBridge.BridgedDeltaAdaptationFunctions.Constant;
         pc.compositionStrategy = ConfigurationPanel.CompositionStrategy.Standard;
         pc.applyCIPR = true;
@@ -42,6 +48,7 @@ public class ProMConfig {
         pc.tau = 1.0;
         pc.delta = -1.0;
         pc.steepness = -1;
+        pc.minimumHeuristicThreshold = -1;
         pc.depth = -1;
         pc.discoveryTimeLimit = null;
         pc.totalTimeLimit = null;
@@ -60,6 +67,7 @@ public class ProMConfig {
         outOfRange |= compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta && delta < 0;
         boolean incomplete = (supervisionSetting == null | treeExpansionSetting == null | compositionStrategy == null);
         incomplete |= treeExpansionSetting == ConfigurationPanel.TreeExpansionSetting.Heuristic && bridgedHeuristics == null;
+        incomplete |= enforceMinimumHeuristicThreshold && minimumHeuristicThreshold < 0;
         incomplete |= compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta && (bridgedDelta == null || delta < 0 || ((bridgedDelta == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear || bridgedDelta == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid) && steepness < 0));
         return !outOfRange && !incomplete;
     }

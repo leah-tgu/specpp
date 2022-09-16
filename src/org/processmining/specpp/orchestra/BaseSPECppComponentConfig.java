@@ -45,7 +45,7 @@ public class BaseSPECppComponentConfig implements SPECppComponentConfig {
     public EvaluatorConfiguration getEvaluatorConfiguration(GlobalComponentRepository gcr) {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
-                            .evaluatorProvider(AbsolutelyNoFrillsFitnessEvaluator::new)
+                            .evaluatorProvider(new AbsolutelyNoFrillsFitnessEvaluator.Builder())
                             .build(gcr);
     }
 

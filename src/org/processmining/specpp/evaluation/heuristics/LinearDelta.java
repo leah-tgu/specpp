@@ -57,4 +57,12 @@ public class LinearDelta extends AbstractDeltaAdaptationFunction {
         return s / place_depth * (d - place_depth) / (d_max - 2);
     }
 
+    @Override
+    public String toString() {
+        return "LinearDelta{" +
+                "s=" + s +
+                ", d_max=" + d_max +
+                ", delta=" + delta +
+                '}';
+    }
 }

@@ -1,7 +1,7 @@
 package org.processmining.specpp.evaluation.fitness;
 
+import org.processmining.specpp.base.Evaluator;
 import org.processmining.specpp.componenting.delegators.DelegatingEvaluator;
-import org.processmining.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.specpp.datastructures.encoding.BitMask;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.EnumCounts;
@@ -16,14 +16,25 @@ import java.util.function.IntUnaryOperator;
 
 public class MarkingHistoryBasedFitnessEvaluator extends AbstractBasicFitnessEvaluator {
 
+    private final Evaluator<? super Place, ? extends VariantMarkingHistories> historyMaker;
+
+    public MarkingHistoryBasedFitnessEvaluator(ReplayComputationParameters replayComputationParameters, Evaluator<? super Place, ? extends VariantMarkingHistories> historyMaker) {
+        super(replayComputationParameters);
+        this.historyMaker = historyMaker;
+    }
+
+    public static class Builder extends AbstractBasicFitnessEvaluator.Builder {
+        private final DelegatingEvaluator<Place, VariantMarkingHistories> historyMakerSource = new DelegatingEvaluator<>();
+
+        @Override
+        protected MarkingHistoryBasedFitnessEvaluator buildIfFullySatisfied() {
+            return new MarkingHistoryBasedFitnessEvaluator(replayComputationParametersSource.getData(), historyMakerSource.getDelegate());
+        }
+    }
+
     public static final TaskDescription basic = new TaskDescription("Basic Marking Based Fitness Evaluation");
     public static final TaskDescription detailed = new TaskDescription("Detailed Marking Based Fitness Evaluation");
 
-    private final DelegatingEvaluator<Place, VariantMarkingHistories> historyMaker = new DelegatingEvaluator<>();
-
-    public MarkingHistoryBasedFitnessEvaluator() {
-        globalComponentSystem().require(EvaluationRequirements.PLACE_MARKING_HISTORY, historyMaker);
-    }
 
     @Override
     protected BasicFitnessEvaluation basicComputation(Place place, BitMask consideredVariants) {
@@ -70,7 +81,7 @@ public class MarkingHistoryBasedFitnessEvaluator extends AbstractBasicFitnessEva
 
     @Override
     public String toString() {
-        return "MarkingBasedFitnessEvaluator(" + historyMaker.getDelegate().getClass().getSimpleName() + ")";
+        return "MarkingBasedFitnessEvaluator(" + historyMaker.getClass().getSimpleName() + ")";
     }
 
 

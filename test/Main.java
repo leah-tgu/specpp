@@ -32,6 +32,7 @@ import org.processmining.specpp.datastructures.vectorization.IVSComputations;
 import org.processmining.specpp.datastructures.vectorization.IntVectorStorage;
 import org.processmining.specpp.datastructures.vectorization.VMHComputations;
 import org.processmining.specpp.datastructures.vectorization.VariantMarkingHistories;
+import org.processmining.specpp.evaluation.fitness.AbstractBasicFitnessEvaluator;
 import org.processmining.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
 import org.processmining.specpp.orchestra.BaseSPECppConfigBundle;
@@ -208,7 +209,7 @@ public class Main {
         Map<Activity, Transition> mapping = HardcodedTestInput.setupMapping(as, ts);
 
 
-        MarkingHistoryBasedFitnessEvaluator ev = new MarkingHistoryBasedFitnessEvaluator();
+        AbstractBasicFitnessEvaluator ev = new MarkingHistoryBasedFitnessEvaluator.Builder().get();
         ev.globalComponentSystem().fulfilFrom(DataRequirements.CONSIDERED_VARIANTS.fulfilWith(() -> BitMask.of(0)));
         EvaluatorCollection ec = new EvaluatorCollection();
         ec.register(EvaluationRequirements.evaluator(Place.class, BasicFitnessEvaluation.class, ev::eval));

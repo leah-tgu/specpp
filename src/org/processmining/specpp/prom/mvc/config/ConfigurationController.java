@@ -17,15 +17,14 @@ import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.specpp.datastructures.tree.base.impls.EventingEnumeratingTree;
 import org.processmining.specpp.datastructures.tree.base.impls.VariableExpansion;
-import org.processmining.specpp.datastructures.tree.heuristic.EventingHeuristicTreeExpansion;
-import org.processmining.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
-import org.processmining.specpp.datastructures.tree.heuristic.TreeNodeScore;
+import org.processmining.specpp.datastructures.tree.heuristic.*;
 import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
-import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
-import org.processmining.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
+import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
 import org.processmining.specpp.evaluation.heuristics.PostponedPlaceScorer;
+import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
+import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.orchestra.AdaptedAlgorithmParameterConfig;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
@@ -95,10 +94,11 @@ public class ConfigurationController extends AbstractStageController {
         }
 
         // ** EVALUATION ** //
-
         EvaluatorConfiguration.Configurator evCfg = new EvaluatorConfiguration.Configurator();
         evCfg.evaluatorProvider(LogHistoryMaker::new);
-        evCfg.evaluatorProvider(pc.concurrentReplay ? ForkJoinFitnessEvaluator::new : AbsolutelyNoFrillsFitnessEvaluator::new);
+        evCfg.evaluatorProvider(pc.concurrentReplay ? FrameworkBridge.BridgedEvaluators.ForkJoinFitness.getBridge()
+                                                                                                       .getBuilder() : FrameworkBridge.BridgedEvaluators.BaseFitness.getBridge()
+                                                                                                                                                                    .getBuilder());
         if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta)
             evCfg.evaluatorProvider(pc.bridgedDelta.getBridge().getBuilder());
         else if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.Uniwired)
@@ -108,7 +108,10 @@ public class ConfigurationController extends AbstractStageController {
         if (pc.treeExpansionSetting == ConfigurationPanel.TreeExpansionSetting.Heuristic) {
             HeuristicTreeConfiguration.Configurator<Place, PlaceState, PlaceNode, TreeNodeScore> htCfg = new HeuristicTreeConfiguration.Configurator<>();
             htCfg.heuristic(pc.bridgedHeuristics.getBridge().getBuilder());
-            htCfg.heuristicExpansion(isSupervisingEvents ? EventingHeuristicTreeExpansion::new : HeuristicTreeExpansion::new);
+            if (pc.enforceMinimumHeuristicThreshold)
+                htCfg.heuristicExpansion(isSupervisingEvents ? EventingDiscriminatingHeuristicTreeExpansion::new : DiscriminatingHeuristicTreeExpansion::new);
+            else
+                htCfg.heuristicExpansion(isSupervisingEvents ? EventingHeuristicTreeExpansion::new : HeuristicTreeExpansion::new);
             htCfg.tree(isSupervisingEvents ? EventingEnumeratingTree::new : EnumeratingTree::new);
             htCfg.childGenerationLogic(new MonotonousPlaceGenerationLogic.Builder());
             etCfg = htCfg;
@@ -132,16 +135,19 @@ public class ConfigurationController extends AbstractStageController {
         ExecutionParameters exp = new ExecutionParameters(new ExecutionParameters.ExecutionTimeLimits(pc.discoveryTimeLimit, null, pc.totalTimeLimit), ExecutionParameters.ParallelizationTarget.Moderate, ExecutionParameters.PerformanceFocus.Balanced);
         PlaceGeneratorParameters pgp = new PlaceGeneratorParameters(pc.depth < 0 ? Integer.MAX_VALUE : pc.depth, true, pc.respectWiring, false, false);
 
-
         class CustomParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
             public CustomParameters() {
                 globalComponentSystem().provide(ParameterRequirements.EXECUTION_PARAMETERS.fulfilWithStatic(exp))
                                        .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(pc.supervisionSetting != ConfigurationPanel.SupervisionSetting.None ? SupervisionParameters.instrumentAll(false, logToFile) : SupervisionParameters.instrumentNone(false, logToFile)))
                                        .provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWithStatic(TauFitnessThresholds.tau(pc.tau)))
+                                       .provide(ParameterRequirements.REPLAY_COMPUTATION.fulfilWithStatic(ReplayComputationParameters.permitNegative(pc.permitNegativeMarkingsDuringReplay)))
+                                       .provide(ParameterRequirements.IMPLICITNESS_TESTING.fulfilWithStatic(new ImplicitnessTestingParameters(pc.implicitnessReplaySubLogRestriction)))
                                        .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(pgp))
                                        .provide(ParameterRequirements.OUTPUT_PATH_PARAMETERS.fulfilWithStatic(OutputPathParameters.getDefault()));
                 if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta)
                     globalComponentSystem().provide(ParameterRequirements.DELTA_PARAMETERS.fulfilWithStatic(new DeltaParameters(pc.delta, pc.steepness)));
+                if (pc.enforceMinimumHeuristicThreshold)
+                    globalComponentSystem().provide(ParameterRequirements.TREE_HEURISTIC_THRESHOLD.fulfilWithStatic(new TreeHeuristicThreshold(pc.minimumHeuristicThreshold)));
             }
         }
 

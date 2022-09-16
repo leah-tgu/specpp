@@ -48,7 +48,7 @@ public class SPECppBuilder<C extends Candidate, I extends CompositionComponent<C
         ProposerComposerConfiguration<C, I, R> pcConfig = pcConfigDelegator.getData();
         PostProcessingConfiguration<R, F> ppConfig = ppConfigDelegator.getData();
         EvaluatorConfiguration evConfig = evConfigDelegator.getData();
-        evConfig.createEvaluators();
+        evConfig.createPossiblyInstrumentedEvaluators();
         ProposerComponent<C> proposer = pcConfig.createPossiblyInstrumentedProposer();
         ComposerComponent<C, I, R> composer = pcConfig.createPossiblyInstrumentedComposer();
         PostProcessingPipeline<R, F> processor = ppConfig.createPostProcessorPipeline();

@@ -52,9 +52,11 @@ public class PostponedPlaceScorer implements Evaluator<Place, PostponedCandidate
                 Activity last = null;
                 for (Activity activity : variant) {
                     if (last != null) {
-                        Integer i = presetEncoding.encode(last);
-                        Integer j = postsetEncoding.encode(activity);
-                        counts[i][j] += f;
+                        if (presetEncoding.isInDomain(last) && postsetEncoding.isInDomain(activity)) {
+                            Integer i = presetEncoding.encode(last);
+                            Integer j = postsetEncoding.encode(activity);
+                            counts[i][j] += f;
+                        }
                     }
                     last = activity;
                 }

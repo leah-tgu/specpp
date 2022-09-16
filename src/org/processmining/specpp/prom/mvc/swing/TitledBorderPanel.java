@@ -17,7 +17,7 @@ public class TitledBorderPanel extends JPanel {
         super(new GridBagLayout());
         c = new GridBagConstraints();
         c.anchor = GridBagConstraints.WEST;
-        c.insets = new Insets(5, 5, 5, 5);
+        c.insets = new Insets(3, 3, 3, 3);
         c.gridx = 0;
         c.gridy = 0;
         makeBorder(title);

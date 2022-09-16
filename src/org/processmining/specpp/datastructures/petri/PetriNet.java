@@ -19,8 +19,10 @@ public class PetriNet implements Result {
 
     @Override
     public String toString() {
-        return "PetriNet{" +
-                "places=" + places +
-                '}';
+        return "PetriNet{" + "places=" + places + '}';
+    }
+
+    public int size() {
+        return places.size();
     }
 }

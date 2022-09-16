@@ -43,8 +43,10 @@ public class PostProcessingConfigPanel extends JPanel {
         JList<FrameworkBridge.AnnotatedPostProcessor> outList = new JList<>(availablePostProcessorsListModel);
         ProMTable proMTable = SwingFactory.proMTable(tableModel);
         proMTable.setColumnSelectionAllowed(false);
+        proMTable.getColumnModel().getColumn(0).setMaxWidth(150);
+        proMTable.getColumnModel().getColumn(1).setMaxWidth(150);
         proMTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        proMTable.setTransferHandler(new TransferHandler() {
+        proMTable.getTable().setTransferHandler(new TransferHandler() {
             @Override
             protected Transferable createTransferable(JComponent c) {
                 int i = proMTable.getSelectedRow();
@@ -71,33 +73,6 @@ public class PostProcessingConfigPanel extends JPanel {
         proMTable.getTable().setDragEnabled(true);
         proMTable.getTable().setDropMode(DropMode.INSERT);
 
-
-        outList.setDragEnabled(true);
-        outList.setDropMode(DropMode.INSERT);
-        outList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        outList.setTransferHandler(new TransferHandler() {
-            @Override
-            protected Transferable createTransferable(JComponent c) {
-                if (outList.getSelectedValue() == null) return null;
-                else return new AnnotatedPostProcessorTransferable(outList.getSelectedValue());
-            }
-
-            @Override
-            public boolean canImport(TransferSupport support) {
-                return support.isDrop() && support.isDataFlavorSupported(AnnotatedPostProcessorTransferable.myFlave);
-            }
-
-            @Override
-            public boolean importData(TransferSupport support) {
-                return canImport(support);
-            }
-
-            @Override
-            public int getSourceActions(JComponent c) {
-                return COPY;
-            }
-
-        });
         GridBagConstraints ppc = new GridBagConstraints();
         ppc.insets = new Insets(10, 15, 10, 15);
         ppc.gridx = 0;
@@ -109,9 +84,6 @@ public class PostProcessingConfigPanel extends JPanel {
         ppc.fill = GridBagConstraints.BOTH;
         ppc.weighty = 1;
         ppc.gridy++;
-        JScrollPane outListScrollPane = new JScrollPane(outList);
-        outListScrollPane.setMaximumSize(new Dimension(500, 300));
-        outListScrollPane.setPreferredSize(new Dimension(500, 300));
         proMTable.setMaximumSize(new Dimension(500, 300));
         proMTable.setPreferredSize(new Dimension(500, 300));
         add(proMTable, ppc);

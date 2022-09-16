@@ -188,6 +188,10 @@ public class SPECppController {
         myPanel.unlockStage(PluginStage.Results);
     }
 
+    public void tryAdvancingToResults() {
+        if (currentPluginStage() == PluginStage.Discovery && result != null && intermediatePostProcessingResults != null) advanceStage();
+    }
+
     protected void initCurrentPluginStage() {
         currentStageController = createCurrentStageController();
         currentStagePanel = createCurrentStagePanel();

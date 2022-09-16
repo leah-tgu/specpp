@@ -5,16 +5,27 @@ import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.EnumCounts;
 import org.processmining.specpp.datastructures.util.IndexedItem;
 import org.processmining.specpp.datastructures.util.Pair;
-import org.processmining.specpp.datastructures.util.Tuple2;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 
 import java.nio.IntBuffer;
 import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.function.IntUnaryOperator;
 
 @SuppressWarnings("duplication")
 public class AbsolutelyNoFrillsFitnessEvaluator extends AbstractBasicFitnessEvaluator {
 
+    public AbsolutelyNoFrillsFitnessEvaluator(ReplayComputationParameters replayComputationParameters) {
+        super(replayComputationParameters);
+    }
+
+    public static class Builder extends AbstractBasicFitnessEvaluator.Builder {
+
+        @Override
+        protected AbstractBasicFitnessEvaluator buildIfFullySatisfied() {
+            return new AbsolutelyNoFrillsFitnessEvaluator(replayComputationParametersSource.getData());
+        }
+    }
 
     @Override
     public BasicFitnessEvaluation basicComputation(Place place, BitMask consideredVariants) {
@@ -44,11 +55,16 @@ public class AbsolutelyNoFrillsFitnessEvaluator extends AbstractBasicFitnessEval
     }
 
     private void run(BitMask consideredVariants, Place place, ResultUpdater upd) {
+        Spliterator<IndexedItem<Pair<IntBuffer>>> spliterator = getIndexedItemSpliterator();
+        spliterator.forEachRemaining(createLambda(consideredVariants, place, upd, replayComputationParameters));
+    }
+
+    private Consumer<IndexedItem<Pair<IntBuffer>>> createLambda(BitMask consideredVariants, Place place, ResultUpdater upd, ReplayComputationParameters parameters) {
         IntUnaryOperator presetIndicator = ReplayUtils.presetIndicator(place);
         IntUnaryOperator postsetIndicator = ReplayUtils.postsetIndicator(place);
-        Spliterator<IndexedItem<Pair<IntBuffer>>> spliterator = getIndexedItemSpliterator();
         IntVector frequencies = getVariantFrequencies();
-        spliterator.forEachRemaining(ii -> {
+        boolean clipMarkingAtZero = parameters.isClipMarkingAtZero();
+        return ii -> {
             if (consideredVariants == null || consideredVariants.get(ii.getIndex())) {
                 Pair<IntBuffer> pair = ii.getItem();
                 IntBuffer presetEncodedVariant = pair.first(), postsetEncodedVariant = pair.second();
@@ -59,6 +75,7 @@ public class AbsolutelyNoFrillsFitnessEvaluator extends AbstractBasicFitnessEval
                     acc += i;
                     wentUnder |= acc < 0;
                     activated |= acc != 0;
+                    if (clipMarkingAtZero) acc = Math.max(0, acc);
                     int j = presetIndicator.applyAsInt(presetEncodedVariant.get());
                     acc += j;
                     wentOver |= acc > 1;
@@ -69,7 +86,7 @@ public class AbsolutelyNoFrillsFitnessEvaluator extends AbstractBasicFitnessEval
                 int c = frequencies.get(idx);
                 upd.update(idx, c, activated, wentUnder, wentOver, notZeroAtEnd);
             }
-        });
+        };
     }
 
     @FunctionalInterface

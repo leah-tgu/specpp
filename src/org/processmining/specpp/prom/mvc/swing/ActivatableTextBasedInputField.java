@@ -5,9 +5,11 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class ActivatableTextBasedInputField<T> extends LabeledCheckboxedTextField {
+public class ActivatableTextBasedInputField<T> extends CheckboxedTextField {
     private final Function<String, T> parseInput;
     private final InputVerifier iv;
     private final Border ogBorder;
@@ -15,10 +17,10 @@ public class ActivatableTextBasedInputField<T> extends LabeledCheckboxedTextFiel
 
     public ActivatableTextBasedInputField(String label, Function<String, T> parseInput, boolean activatedByDefault, int inputTextColumns) {
         super(label, activatedByDefault, inputTextColumns);
+        this.listeners = new LinkedList<>();
         this.parseInput = parseInput;
 
-        ogBorder =
-                field.getBorder();
+        ogBorder = field.getBorder();
 
         iv = new InputVerifier() {
             @Override
@@ -29,7 +31,7 @@ public class ActivatableTextBasedInputField<T> extends LabeledCheckboxedTextFiel
 
             @Override
             public boolean verify(JComponent input) {
-                if (permittedToBeWrong()) return true;
+                if (permittedToBeInvalid()) return true;
                 T t = tryParse();
                 return t != null;
             }
@@ -45,11 +47,19 @@ public class ActivatableTextBasedInputField<T> extends LabeledCheckboxedTextFiel
         if (isActivated) showVerificationStatus();
     }
 
-    public void showVerificationStatus() {
-        field.setBorder(iv.verify(field) ? ogBorder : BorderFactory.createLineBorder(Color.red, 2, false));
+    protected java.util.List<Consumer<Boolean>> listeners;
+
+    public void addVerificationStatusListener(Consumer<Boolean> bc) {
+        listeners.add(bc);
     }
 
-    private boolean permittedToBeWrong() {
+    public void showVerificationStatus() {
+        boolean verified = iv.verify(field);
+        field.setBorder(verified ? ogBorder : BorderFactory.createLineBorder(Color.red, 2, false));
+        listeners.forEach(bc -> bc.accept(verified));
+    }
+
+    private boolean permittedToBeInvalid() {
         return !isActivated;
     }
 
@@ -62,7 +72,7 @@ public class ActivatableTextBasedInputField<T> extends LabeledCheckboxedTextFiel
     }
 
     public T getInput() {
-        SwingUtilities.invokeLater(this::showVerificationStatus);
+        //SwingUtilities.invokeLater(this::showVerificationStatus);
         return tryParse();
     }
 

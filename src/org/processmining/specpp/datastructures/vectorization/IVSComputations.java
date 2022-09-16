@@ -173,8 +173,8 @@ public class IVSComputations {
         return vectorwiseCumulation(ivs, Integer::sum);
     }
 
-    public static IntVectorStorage zeroClippedVectorwiseCumulation(IntVectorStorage ivs) {
-        return vectorwiseCumulation(ivs, (a, b) -> Math.min(0, a + b));
+    public static IntVectorStorage vectorwiseCumulationWithNonnegativityFixing(IntVectorStorage ivs) {
+        return vectorwiseCumulation(ivs, (a, b) -> Math.max(0, a) + b);
     }
 
     public static IntVectorStorage vectorwiseCumulation(IntVectorStorage ivs, IntBinaryOperator operator) {

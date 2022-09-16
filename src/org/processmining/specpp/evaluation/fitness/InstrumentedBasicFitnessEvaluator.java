@@ -9,7 +9,7 @@ public class InstrumentedBasicFitnessEvaluator extends AbstractBasicFitnessEvalu
     private final TimeStopper timeStopper = new TimeStopper();
 
     public InstrumentedBasicFitnessEvaluator(AbstractBasicFitnessEvaluator delegate) {
-        super(null);
+        super(delegate.replayComputationParameters);
         this.delegate = delegate;
     }
 

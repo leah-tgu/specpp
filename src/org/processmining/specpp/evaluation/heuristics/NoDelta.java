@@ -27,9 +27,14 @@ public class NoDelta extends AbstractDeltaAdaptationFunction {
         super(1);
     }
 
+
     @Override
     protected double calculateModifier(int place_depth, int d) {
         return 1;
     }
 
+    @Override
+    public String toString() {
+        return "NoDelta()";
+    }
 }

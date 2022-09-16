@@ -36,4 +36,12 @@ public class SigmoidDelta extends AbstractDeltaAdaptationFunction {
     protected double calculateModifier(int place_depth, int d) {
         return 2 / (1 + Math.exp(-s / place_depth * (d - place_depth))) - 1;
     }
+
+    @Override
+    public String toString() {
+        return "SigmoidDelta{" +
+                "s=" + s +
+                ", delta=" + delta +
+                '}';
+    }
 }

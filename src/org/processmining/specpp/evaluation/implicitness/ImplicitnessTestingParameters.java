@@ -14,6 +14,10 @@ public class ImplicitnessTestingParameters implements Parameters {
         return subLogRestriction;
     }
 
+    public static ImplicitnessTestingParameters getDefault() {
+        return new ImplicitnessTestingParameters(SubLogRestriction.None);
+    }
+
     public enum SubLogRestriction {
         None, FittingOnAcceptedPlacesAndEvaluatedPlace, MerelyFittingOnEvaluatedPair
     }

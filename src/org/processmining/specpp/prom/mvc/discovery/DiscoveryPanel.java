@@ -1,5 +1,6 @@
 package org.processmining.specpp.prom.mvc.discovery;
 
+import com.fluxicon.slickerbox.factory.SlickerFactory;
 import org.processmining.specpp.base.AdvancedComposition;
 import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.datastructures.petri.PetriNet;
@@ -7,6 +8,7 @@ import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.prom.alg.LiveEvents;
 import org.processmining.specpp.prom.alg.LivePerformance;
+import org.processmining.specpp.prom.computations.ComputationEnded;
 import org.processmining.specpp.prom.computations.OngoingComputation;
 import org.processmining.specpp.prom.computations.OngoingStagedComputation;
 import org.processmining.specpp.prom.computations.StagedComputationListeningPanel;
@@ -26,10 +28,20 @@ public class DiscoveryPanel extends AbstractStagePanel<DiscoveryController> {
 
         TitledBorderPanel executionPanel = new TitledBorderPanel("Execution");
         ComputationListeningPanel<OngoingComputation> discoveryListeningPanel = new ComputationListeningPanel<>("Discovery", discoveryController.getOngoingDiscoveryComputation());
-        ComputationListeningPanel<OngoingStagedComputation> postProcessingListeningPanel = new StagedComputationListeningPanel<>("Post Processing", discoveryController.getOngoingPostProcessingComputation());
+        OngoingStagedComputation ongoingPostProcessingComputation = discoveryController.getOngoingPostProcessingComputation();
+        ComputationListeningPanel<OngoingStagedComputation> postProcessingListeningPanel = new StagedComputationListeningPanel<>("Post Processing", ongoingPostProcessingComputation);
 
         executionPanel.append(discoveryListeningPanel);
         executionPanel.append(postProcessingListeningPanel);
+
+        JButton continueToResultsButton = SlickerFactory.instance().createButton("continue to results");
+        continueToResultsButton.addActionListener(e -> discoveryController.continueToResults());
+        continueToResultsButton.setEnabled(ongoingPostProcessingComputation.hasTerminatedSuccessfully());
+        ongoingPostProcessingComputation.addObserver(e -> {
+            if (e instanceof ComputationEnded && !ongoingPostProcessingComputation.isCancelled())
+                continueToResultsButton.setEnabled(true);
+        });
+        executionPanel.append(continueToResultsButton);
         executionPanel.completeWithWhitespace();
 
         LiveCompositionPanel liveCompositionPanel = new LiveCompositionPanel(specpp.getComposer()

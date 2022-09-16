@@ -30,7 +30,7 @@ public class TauDeltaComponentConfig extends BaseSPECppComponentConfig {
     public EvaluatorConfiguration getEvaluatorConfiguration(GlobalComponentRepository gcr) {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
-                            .evaluatorProvider(AbsolutelyNoFrillsFitnessEvaluator::new)
+                            .evaluatorProvider(new AbsolutelyNoFrillsFitnessEvaluator.Builder())
                             .evaluatorProvider(new ConstantDelta.Builder())
                             .build(gcr);
     }

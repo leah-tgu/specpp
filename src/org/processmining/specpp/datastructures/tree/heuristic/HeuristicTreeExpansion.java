@@ -70,8 +70,7 @@ public class HeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpa
 
     protected void updateNode(N node, H heuristic) {
         dequeue(node);
-        putHeuristic(node, heuristic);
-        enqueue(node);
+        addNode(node, heuristic);
     }
 
     protected void removeNode(N node) {

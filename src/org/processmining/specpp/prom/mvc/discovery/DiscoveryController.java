@@ -184,4 +184,8 @@ public class DiscoveryController extends AbstractStageController implements Dest
             timer.stop();
         }
     }
+
+    public void continueToResults() {
+        if (ongoingPostProcessingComputation.hasTerminatedSuccessfully()) parentController.tryAdvancingToResults();
+    }
 }

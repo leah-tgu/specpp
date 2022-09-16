@@ -2,6 +2,7 @@ package org.processmining.specpp.config.parameters;
 
 import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.system.link.*;
+import org.processmining.specpp.evaluation.fitness.AbstractBasicFitnessEvaluator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,6 +38,7 @@ public class SupervisionParameters implements Parameters {
         s.add(ExpansionStrategyComponent.class);
         s.add(EfficientTreeComponent.class);
         s.add(ChildGenerationLogicComponent.class);
+        s.add(AbstractBasicFitnessEvaluator.class);
         s.add(SPECpp.class);
         return new SupervisionParameters(useConsole, useFiles, s);
     }

@@ -19,11 +19,11 @@ import java.util.stream.Stream;
 
 public abstract class AbstractBasicFitnessEvaluator extends AbstractFitnessEvaluator {
 
-    private  ReplayComputationParameters replayComputationParameters;
+    protected ReplayComputationParameters replayComputationParameters;
 
     public static abstract class Builder extends ComponentSystemAwareBuilder<AbstractBasicFitnessEvaluator> {
 
-        private final DelegatingDataSource<ReplayComputationParameters> replayComputationParametersSource = new DelegatingDataSource<>();
+        protected final DelegatingDataSource<ReplayComputationParameters> replayComputationParametersSource = new DelegatingDataSource<>();
 
         public Builder() {
             globalComponentSystem().require(ParameterRequirements.REPLAY_COMPUTATION, replayComputationParametersSource);
@@ -34,18 +34,14 @@ public abstract class AbstractBasicFitnessEvaluator extends AbstractFitnessEvalu
     public static final TaskDescription BASIC_EVALUATION = new TaskDescription("Basic Fitness Evaluation");
     public static final TaskDescription DETAILED_EVALUATION = new TaskDescription("Detailed Fitness Evaluation");
 
-    public AbstractBasicFitnessEvaluator() {
+    public AbstractBasicFitnessEvaluator(ReplayComputationParameters replayComputationParameters) {
+        this.replayComputationParameters = replayComputationParameters;
         globalComponentSystem().provide(EvaluationRequirements.evaluator(Place.class, BasicFitnessEvaluation.class, this::eval))
                                .provide(EvaluationRequirements.evaluator(Place.class, DetailedFitnessEvaluation.class, this::detailedEval))
                                .provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), BasicFitnessEvaluation.class, this::subsetEval))
                                .provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), DetailedFitnessEvaluation.class, this::detailedSubsetEval));
 
 
-    }
-
-    public AbstractBasicFitnessEvaluator(ReplayComputationParameters replayComputationParameters) {
-        // TODO cont here
-        this.replayComputationParameters = replayComputationParameters;
     }
 
     protected Spliterator<IndexedItem<Pair<IntBuffer>>> getIndexedItemSpliterator() {

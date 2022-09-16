@@ -13,25 +13,31 @@ import java.util.stream.Stream;
 
 public class ForkJoinFitnessEvaluator extends AbstractBasicFitnessEvaluator {
 
+    public ForkJoinFitnessEvaluator(ReplayComputationParameters replayComputationParameters) {
+        super(replayComputationParameters);
+    }
+
+    public static class Builder extends AbstractBasicFitnessEvaluator.Builder {
+
+        @Override
+        protected ForkJoinFitnessEvaluator buildIfFullySatisfied() {
+            return new ForkJoinFitnessEvaluator(replayComputationParametersSource.getData());
+        }
+    }
+
 
     @Override
     public BasicFitnessEvaluation basicComputation(Place place, BitMask consideredVariants) {
-        timeStopper.start(BASIC_EVALUATION);
         Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator = prepareSpliterator(place, consideredVariants);
         AbstractEnumSetReplayTask<ReplayUtils.ReplayOutcomes, BasicFitnessEvaluation> simpleReplayTask = ReplayUtils.createBasicReplayTask(spliterator, getVariantFrequencies()::get);
-        BasicFitnessEvaluation result = ReplayUtils.computeHere(simpleReplayTask);
-        timeStopper.stop(BASIC_EVALUATION);
-        return result;
+        return ReplayUtils.computeHere(simpleReplayTask);
     }
 
     @Override
     public DetailedFitnessEvaluation detailedComputation(Place place, BitMask consideredVariants) {
-        timeStopper.start(DETAILED_EVALUATION);
         Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator = prepareSpliterator(place, consideredVariants);
         AbstractEnumSetReplayTask<ReplayUtils.ReplayOutcomes, DetailedFitnessEvaluation> simpleReplayTask = ReplayUtils.createDetailedReplayTask(spliterator, getVariantFrequencies()::get);
-        DetailedFitnessEvaluation result = ReplayUtils.computeHere(simpleReplayTask);
-        timeStopper.stop(DETAILED_EVALUATION);
-        return result;
+        return ReplayUtils.computeHere(simpleReplayTask);
     }
 
     private Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> prepareSpliterator(Place place, BitMask consideredVariants) {
