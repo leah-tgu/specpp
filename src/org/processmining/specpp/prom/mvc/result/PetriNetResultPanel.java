@@ -8,17 +8,19 @@ import org.processmining.specpp.datastructures.encoding.BitMask;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.specpp.datastructures.util.Tuple2;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 import org.processmining.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.specpp.evaluation.fitness.DetailedFitnessEvaluation;
 import org.processmining.specpp.prom.mvc.discovery.LivePlacesGraph;
+import org.processmining.specpp.prom.mvc.swing.HorizontalJPanel;
 import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -28,10 +30,13 @@ public class PetriNetResultPanel extends JSplitPane {
     private final DefaultTableModel tableModel;
     private final JLabel infoLabel;
     private final IntVector variantFrequencies;
+    private final boolean addOriginalIdColumn;
+    private final ImmutableMultimap<Class<?>, Integer> columnTypeMap;
 
-    public PetriNetResultPanel(PetriNet petriNet, Evaluator<Place, DetailedFitnessEvaluation> evaluator, IntVector variantFrequencies) {
+    public PetriNetResultPanel(PetriNet petriNet, Evaluator<Place, DetailedFitnessEvaluation> evaluator, IntVector variantFrequencies, boolean addOriginalIdColumn) {
         super(JSplitPane.HORIZONTAL_SPLIT);
         this.variantFrequencies = variantFrequencies;
+        this.addOriginalIdColumn = addOriginalIdColumn;
 
         JPanel left = new JPanel(new BorderLayout());
         left.add(Box.createHorizontalStrut(400), BorderLayout.PAGE_END);
@@ -39,24 +44,38 @@ public class PetriNetResultPanel extends JSplitPane {
         String overfedSymbol = "\u25B3(L)";
         String underfedSymbol = "\u25BD(L)";
         String fittingSymbol = "\u25A1(L)";
-        String rel = "^r";
-        tableModel = SwingFactory.readOnlyTableModel(new String[]{"Size", "Preset", "Postset", fittingSymbol, underfedSymbol, overfedSymbol, fittingSymbol + rel, underfedSymbol + rel, overfedSymbol + rel}, ImmutableMultimap.<Class<?>, Integer>builder()
-                                                                                                                                                                                                                               .putAll(String.class, 1, 2)
-                                                                                                                                                                                                                               .putAll(Integer.class, 0)
-                                                                                                                                                                                                                               .putAll(Double.class, 3, 4, 5, 6, 7, 8)
-                                                                                                                                                                                                                               .build());
+        String rel = "_rel";
+        String[] columnNames;
+        if (addOriginalIdColumn) {
+            columnNames = new String[]{"Original Id", "Size", "Preset", "Postset", fittingSymbol, underfedSymbol, overfedSymbol, fittingSymbol + rel, underfedSymbol + rel, overfedSymbol + rel};
+            columnTypeMap = ImmutableMultimap.<Class<?>, Integer>builder()
+                                             .putAll(Integer.class, 0, 1)
+                                             .putAll(String.class, 2, 3)
+                                             .putAll(Double.class, 4, 5, 6, 7, 8, 9)
+                                             .build();
+        } else {
+            columnNames = new String[]{"Size", "Preset", "Postset", fittingSymbol, underfedSymbol, overfedSymbol, fittingSymbol + rel, underfedSymbol + rel, overfedSymbol + rel};
+            columnTypeMap = ImmutableMultimap.<Class<?>, Integer>builder()
+                                             .put(Integer.class, 0)
+                                             .putAll(String.class, 1, 2)
+                                             .putAll(Double.class, 3, 4, 5, 6, 7, 8)
+                                             .build();
+        }
+        tableModel = SwingFactory.readOnlyTableModel(columnNames, columnTypeMap);
         ProMTable proMTable = SwingFactory.proMTable(tableModel);
-        proMTable.getColumnModel().getColumn(0).setMaxWidth(50);
-        proMTable.getColumnModel().getColumn(3).setMaxWidth(80);
-        proMTable.getColumnModel().getColumn(4).setMaxWidth(80);
-        proMTable.getColumnModel().getColumn(5).setMaxWidth(80);
+        for (Integer i : columnTypeMap.get(Integer.class)) {
+            proMTable.getColumnModel().getColumn(i).setMaxWidth(50);
+        }
+        for (Integer i : columnTypeMap.get(Double.class)) {
+            proMTable.getColumnModel().getColumn(i).setMaxWidth(80);
+        }
+        proMTable.setAutoCreateRowSorter(true);
         JPanel right = new JPanel(new BorderLayout());
         right.add(proMTable, BorderLayout.CENTER);
-        JPanel bottomLine = new JPanel();
-        bottomLine.setLayout(new BoxLayout(bottomLine, BoxLayout.LINE_AXIS));
-        bottomLine.add(SlickerFactory.instance().createLabel(String.format("Size: %d", petriNet.size())));
+        HorizontalJPanel bottomLine = new HorizontalJPanel();
+        bottomLine.add(SlickerFactory.instance().createLabel(String.format("Count: %d", petriNet.size())));
         infoLabel = SlickerFactory.instance().createLabel("not yet computed");
-        bottomLine.add(infoLabel);
+        bottomLine.addSpaced(infoLabel);
         right.add(bottomLine, BorderLayout.PAGE_END);
         setRightComponent(right);
 
@@ -81,43 +100,45 @@ public class PetriNetResultPanel extends JSplitPane {
             }
         }.execute();
 
-        new SwingWorker<Map<Place, DetailedFitnessEvaluation>, Tuple2<Place, DetailedFitnessEvaluation>>() {
+        new SwingWorker<List<Tuple2<Place, DetailedFitnessEvaluation>>, Tuple2<Place, DetailedFitnessEvaluation>>() {
 
             @Override
-            protected Map<Place, DetailedFitnessEvaluation> doInBackground() throws Exception {
-                return petriNet.getPlaces().stream().collect(Collectors.toMap(p -> p, evaluator));
+            protected List<Tuple2<Place, DetailedFitnessEvaluation>> doInBackground() throws Exception {
+                return petriNet.getPlaces()
+                               .stream()
+                               .map(p -> new ImmutableTuple2<>(p, evaluator.apply(p)))
+                               .collect(Collectors.toList());
             }
 
             @Override
             protected void done() {
                 try {
-                    Map<Place, DetailedFitnessEvaluation> map = get();
+                    List<Tuple2<Place, DetailedFitnessEvaluation>> map = get();
                     if (!isCancelled()) {
                         updateTable(map);
                     }
                 } catch (InterruptedException | ExecutionException ignored) {
-                    ignored.printStackTrace();
                 }
             }
         }.execute();
     }
 
-    private void updateTable(Map<Place, DetailedFitnessEvaluation> map) {
-        if (map == null) {
+    private void updateTable(List<Tuple2<Place, DetailedFitnessEvaluation>> list) {
+        if (list == null) {
             infoLabel.setText("computation failed");
             return;
         }
-
         tableModel.setRowCount(0);
         BitMask overallFittingVariants = null;
-        for (Map.Entry<Place, DetailedFitnessEvaluation> entry : map.entrySet()) {
-            Place key = entry.getKey();
-            DetailedFitnessEvaluation value = entry.getValue();
+        for (int i = 0; i < list.size(); i++) {
+            Place key = list.get(i).getT1();
+            DetailedFitnessEvaluation value = list.get(i).getT2();
             BitMask fittingVariants = value.getFittingVariants();
             if (overallFittingVariants == null) overallFittingVariants = fittingVariants;
             else overallFittingVariants.intersection(fittingVariants);
             BasicFitnessEvaluation fractions = value.getFractionalEvaluation();
-            tableModel.addRow(new Object[]{key.size(), key.preset().toString(), key.postset().toString(), fractions.getFittingFraction(), fractions.getUnderfedFraction(), fractions.getOverfedFraction(), fractions.getRelativeFittingFraction(), fractions.getRelativeUnderfedFraction(), fractions.getRelativeOverfedFraction()});
+            Object[] rowData = createRow(i, key, fractions);
+            tableModel.addRow(rowData);
         }
         double sum = overallFittingVariants == null ? Double.NaN : overallFittingVariants.stream()
                                                                                          .mapToDouble(variantFrequencies::getRelative)
@@ -126,5 +147,13 @@ public class PetriNetResultPanel extends JSplitPane {
         tableModel.fireTableDataChanged();
     }
 
+    private Object[] createRow(int id, Place key, BasicFitnessEvaluation fractions) {
+        if (addOriginalIdColumn) {
+            return new Object[]{id, key.size(), key.preset().toString(), key.postset().toString(), fractions.getFittingFraction(), fractions.getUnderfedFraction(), fractions.getOverfedFraction(), fractions.getRelativeFittingFraction(), fractions.getRelativeUnderfedFraction(), fractions.getRelativeOverfedFraction()};
 
+        } else {
+            return new Object[]{key.size(), key.preset().toString(), key.postset().toString(), fractions.getFittingFraction(), fractions.getUnderfedFraction(), fractions.getOverfedFraction(), fractions.getRelativeFittingFraction(), fractions.getRelativeUnderfedFraction(), fractions.getRelativeOverfedFraction()};
+
+        }
+    }
 }

@@ -5,7 +5,7 @@ import org.processmining.specpp.base.impls.EventingPlaceComposerWithCIPR;
 import org.processmining.specpp.base.impls.EventingPlaceFitnessFilter;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
-import org.processmining.specpp.composition.PlaceCollection;
+import org.processmining.specpp.composition.TrackingPlaceCollection;
 import org.processmining.specpp.config.*;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
@@ -18,6 +18,7 @@ import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGener
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
+import org.processmining.specpp.evaluation.implicitness.LPBasedImplicitnessCalculator;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.postprocessing.PlaceExporter;
 import org.processmining.specpp.postprocessing.ProMConverter;
@@ -46,6 +47,7 @@ public class BaseSPECppComponentConfig implements SPECppComponentConfig {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
                             .evaluatorProvider(new AbsolutelyNoFrillsFitnessEvaluator.Builder())
+                            .evaluatorProvider(new LPBasedImplicitnessCalculator.Builder())
                             .build(gcr);
     }
 
@@ -53,7 +55,7 @@ public class BaseSPECppComponentConfig implements SPECppComponentConfig {
     public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(GlobalComponentRepository gcr) {
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new RestartablePlaceProposer.Builder())
-                            .composition(PlaceCollection::new)
+                            .composition(TrackingPlaceCollection::new)
                             .terminalComposer(EventingPlaceComposerWithCIPR::new)
                             .composerChain(EventingPlaceFitnessFilter::new)
                             .build(gcr);

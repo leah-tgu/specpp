@@ -10,7 +10,7 @@ import org.processmining.specpp.componenting.evaluation.EvaluatorCollection;
 import org.processmining.specpp.componenting.supervision.FulfilledObservableRequirement;
 import org.processmining.specpp.componenting.supervision.ObservableRequirement;
 import org.processmining.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.specpp.composition.PlaceCollection;
+import org.processmining.specpp.composition.TrackingPlaceCollection;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.datastructures.encoding.*;
 import org.processmining.specpp.datastructures.log.Activity;
@@ -220,7 +220,7 @@ public class Main {
         System.out.println(ev.eval(p4));
         System.out.println(ev.eval(p5));
 
-        PlaceCollection comp = new PlaceCollection();
+        TrackingPlaceCollection comp = new TrackingPlaceCollection();
         comp.accept(p1);
         comp.accept(p2);
         comp.accept(p3);
@@ -231,7 +231,7 @@ public class Main {
 
         ev.setConsideredVariants(BitMask.of(0));
         Place pprime = maker.preset(ta, tb).postset(tc, td).get();
-        PlaceCollection c2 = new PlaceCollection();
+        TrackingPlaceCollection c2 = new TrackingPlaceCollection();
         c2.globalComponentSystem().fulfilFrom(ec);
         c2.accept(p1);
         System.out.println(c2.rateImplicitness(pprime));
@@ -239,7 +239,7 @@ public class Main {
         Place ptiny = maker.preset(ta).postset(td).get();
         Place psmaller = maker.preset(ta, tb).postset(tb, td).get();
         Place pbigger = maker.preset(ta, tb, tc).postset(tb, tc, td).get();
-        PlaceCollection c3 = new PlaceCollection();
+        TrackingPlaceCollection c3 = new TrackingPlaceCollection();
         c3.globalComponentSystem().fulfilFrom(ec);
         c3.accept(pbigger);
         System.out.println(c3.rateImplicitness(psmaller));
@@ -273,7 +273,7 @@ public class Main {
         System.out.println(bundle.getTransitionEncodings());
         System.out.println(bundle.getMapping());
 
-        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
+        SPECpp<Place, TrackingPlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
 
         execute(specPP, true);
 
@@ -286,7 +286,7 @@ public class Main {
         System.out.println(bundle.getTransitionEncodings());
         System.out.println(bundle.getMapping());
 
-        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
+        SPECpp<Place, TrackingPlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
 
         execute(specPP, true);
     }

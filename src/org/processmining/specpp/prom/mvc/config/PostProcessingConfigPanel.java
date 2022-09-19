@@ -2,9 +2,11 @@ package org.processmining.specpp.prom.mvc.config;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
 import org.processmining.framework.plugin.PluginContext;
+import org.processmining.framework.util.ui.widgets.ProMList;
 import org.processmining.framework.util.ui.widgets.ProMTable;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 import org.processmining.specpp.prom.alg.ProMPostProcessor;
+import org.processmining.specpp.prom.mvc.swing.HorizontalJPanel;
 import org.processmining.specpp.prom.mvc.swing.MyListModel;
 import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import org.processmining.specpp.prom.util.AnnotatedPostProcessorTransferable;
@@ -80,7 +82,11 @@ public class PostProcessingConfigPanel extends JPanel {
         ppc.weightx = 1;
         ppc.weighty = 0;
         ppc.anchor = GridBagConstraints.WEST;
-        add(SwingFactory.createHeader("Available Post Processors"), ppc);
+        JLabel leftHeaderLabel = SwingFactory.createHeader("Available Post Processors");
+        HorizontalJPanel leftHeader = new HorizontalJPanel();
+        leftHeader.add(leftHeaderLabel);
+        leftHeader.addSpaced(SwingFactory.help(null, SwingFactory.html("The left table lists all available post processing step implementations.<br>The right list contains the currently configured post processing pipeline.<br>Use drag & drop to add, remove and reorder the postprocessing steps as desired.<br>The pipeline is executed in top-to-bottom, so all in & output types need to be compatible. A type check is displayed below the list.<br>A technical note on the types \"PetriNet\" and \"ProMPetrinetWrapper\": this plugin internally uses the former class for discovery and provides the latter for <it>theoretical</it> interoperability with arbitrary ProM plugins used as post processors.")));
+        add(leftHeader, ppc);
         ppc.fill = GridBagConstraints.BOTH;
         ppc.weighty = 1;
         ppc.gridy++;
@@ -88,8 +94,8 @@ public class PostProcessingConfigPanel extends JPanel {
         proMTable.setPreferredSize(new Dimension(500, 300));
         add(proMTable, ppc);
         ppc.fill = GridBagConstraints.NONE;
-
-        JList<FrameworkBridge.AnnotatedPostProcessor> inList = new JList<>(ppPipelineModel);
+        ProMList<FrameworkBridge.AnnotatedPostProcessor> proMList = new ProMList<>("Selected Post Processing Steps", ppPipelineModel);
+        JList<FrameworkBridge.AnnotatedPostProcessor> inList = proMList.getList();
         inList.setDragEnabled(true);
         inList.setDropMode(DropMode.INSERT);
         inList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -203,10 +209,12 @@ public class PostProcessingConfigPanel extends JPanel {
         ppc.weighty = 1;
         ppc.gridy++;
         ppc.fill = GridBagConstraints.BOTH;
-        JScrollPane inListScrollPane = new JScrollPane(inList);
-        inListScrollPane.setMaximumSize(new Dimension(500, 300));
-        inListScrollPane.setPreferredSize(new Dimension(500, 300));
-        add(inListScrollPane, ppc);
+        //JScrollPane inListScrollPane = new JScrollPane(inList);
+        //inListScrollPane.setMaximumSize(new Dimension(500, 300));
+        //inListScrollPane.setPreferredSize(new Dimension(500, 300));
+        proMList.setMaximumSize(new Dimension(500, 300));
+        proMList.setPreferredSize(new Dimension(500, 300));
+        add(proMList, ppc);
         JButton importPostProcessorButton = SlickerFactory.instance().createButton("import from ProM");
         importPostProcessorButton.addActionListener(e -> ProMPostProcessor.createPluginFinderWindow(pc, this::importAnnotatedPostProcessor));
         ppc.fill = GridBagConstraints.NONE;

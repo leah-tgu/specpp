@@ -17,6 +17,7 @@ import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 import org.processmining.specpp.traits.ZeroOneBounded;
 
+import java.util.Comparator;
 import java.util.PrimitiveIterator;
 
 public class InterestingnessHeuristic implements HeuristicStrategy<PlaceNode, TreeNodeScore>, ZeroOneBounded, SubtreeMonotonicity.Decreasing {
@@ -113,4 +114,10 @@ public class InterestingnessHeuristic implements HeuristicStrategy<PlaceNode, Tr
         assert min < Integer.MAX_VALUE;
         return new TreeNodeScore(min);
     }
+
+    @Override
+    public Comparator<TreeNodeScore> heuristicValuesComparator() {
+        return Comparator.reverseOrder();
+    }
+
 }

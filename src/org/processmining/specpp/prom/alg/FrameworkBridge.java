@@ -24,21 +24,32 @@ import org.processmining.specpp.preprocessing.orderings.ActivityOrderingStrategy
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class FrameworkBridge {
 
-    public static final List<BridgedActivityOrderingStrategies> ORDERING_STRATEGIES = Arrays.asList(BridgedActivityOrderingStrategies.values());
-    public static final List<BridgedHeuristics> HEURISTICS = Arrays.asList(BridgedHeuristics.values());
-    public static final List<BridgedEvaluators> EVALUATORS = Arrays.asList(BridgedEvaluators.values());
-    public static final List<BridgedDeltaAdaptationFunctions> DELTA_FUNCTIONS = Arrays.asList(BridgedDeltaAdaptationFunctions.values());
+    public static final List<AnnotatedActivityOrderingStrategy> ORDERING_STRATEGIES = Arrays.stream(BridgedActivityOrderingStrategies.values())
+                                                                                            .map(BridgedActivityOrderingStrategies::getBridge)
+                                                                                            .collect(Collectors.toList());
+    ;
+    public static final List<AnnotatedTreeHeuristic> HEURISTICS = Arrays.stream(BridgedHeuristics.values())
+                                                                        .map(BridgedHeuristics::getBridge)
+                                                                        .collect(Collectors.toList());
+    public static final List<AnnotatedEvaluator> EVALUATORS = Arrays.stream(BridgedEvaluators.values())
+                                                                    .map(BridgedEvaluators::getBridge)
+                                                                    .collect(Collectors.toList());
+    public static final List<AnnotatedEvaluator> DELTA_FUNCTIONS = Arrays.stream(BridgedDeltaAdaptationFunctions.values())
+                                                                         .map(BridgedDeltaAdaptationFunctions::getBridge)
+                                                                         .collect(Collectors.toList());
+
     public static final List<AnnotatedPostProcessor> POST_PROCESSORS = Arrays.asList(BridgedPostProcessors.ReplayBasedImplicitPlaceRemoval.getBridge(), BridgedPostProcessors.LPBasedImplicitPlaceRemoval.getBridge(), BridgedPostProcessors.SelfLoopPlacesMerging.getBridge(), BridgedPostProcessors.ProMPetrinetConversion.getBridge());
 
     public enum BridgedHeuristics {
-        PlaceInterestingness(new BridgedTreeHeuristic("Place Interestingness", InterestingnessHeuristic.Builder::new)), BFS_Emulation(new BridgedTreeHeuristic("BFS Emulation", () -> HeuristicUtils::bfs)), DFS_Emulation(new BridgedTreeHeuristic("DFS Emulation", () -> HeuristicUtils::dfs));
+        PlaceInterestingness(new AnnotatedTreeHeuristic("Place Interestingness", InterestingnessHeuristic.Builder::new)), BFS_Emulation(new AnnotatedTreeHeuristic("BFS Emulation", () -> HeuristicUtils::bfs)), DFS_Emulation(new AnnotatedTreeHeuristic("DFS Emulation", () -> HeuristicUtils::dfs));
 
-        private final BridgedTreeHeuristic bth;
+        private final AnnotatedTreeHeuristic bth;
 
-        BridgedHeuristics(BridgedTreeHeuristic bth) {
+        BridgedHeuristics(AnnotatedTreeHeuristic bth) {
             this.bth = bth;
         }
 
@@ -47,7 +58,7 @@ public class FrameworkBridge {
             return bth.toString();
         }
 
-        public BridgedTreeHeuristic getBridge() {
+        public AnnotatedTreeHeuristic getBridge() {
             return bth;
         }
     }
@@ -72,15 +83,15 @@ public class FrameworkBridge {
     }
 
     public enum BridgedEvaluators {
-        BaseFitness(new BridgedEvaluator("Base Fitness Evaluator", AbsolutelyNoFrillsFitnessEvaluator.Builder::new)), ForkJoinFitness(new BridgedEvaluator("Concurrent Fitness Evaluator", ForkJoinFitnessEvaluator.Builder::new)), MarkingHistoryBasedFitness(new BridgedEvaluator("Marking History Based Fitness Evaluator", MarkingHistoryBasedFitnessEvaluator.Builder::new)), MarkingHistory(new BridgedEvaluator("Marking History Computer", () -> LogHistoryMaker::new));
+        BaseFitness(new AnnotatedEvaluator("Base Fitness Evaluator", AbsolutelyNoFrillsFitnessEvaluator.Builder::new)), ForkJoinFitness(new AnnotatedEvaluator("Concurrent Fitness Evaluator", ForkJoinFitnessEvaluator.Builder::new)), MarkingHistoryBasedFitness(new AnnotatedEvaluator("Marking History Based Fitness Evaluator", MarkingHistoryBasedFitnessEvaluator.Builder::new)), MarkingHistory(new AnnotatedEvaluator("Marking History Computer", () -> LogHistoryMaker::new));
 
-        private final BridgedEvaluator be;
+        private final AnnotatedEvaluator be;
 
-        BridgedEvaluators(BridgedEvaluator be) {
+        BridgedEvaluators(AnnotatedEvaluator be) {
             this.be = be;
         }
 
-        public BridgedEvaluator getBridge() {
+        public AnnotatedEvaluator getBridge() {
             return be;
         }
 
@@ -92,15 +103,15 @@ public class FrameworkBridge {
     }
 
     public enum BridgedDeltaAdaptationFunctions {
-        None(new BridgedEvaluator("None", NoDelta.Builder::new)), Constant(new BridgedEvaluator("Constant Delta", ConstantDelta.Builder::new)), Linear(new BridgedEvaluator("Linear Delta", LinearDelta.Builder::new)), Sigmoid(new BridgedEvaluator("Sigmoid Delta", SigmoidDelta.Builder::new));
+        None(new AnnotatedEvaluator("None", NoDelta.Builder::new)), Constant(new AnnotatedEvaluator("Constant Delta", ConstantDelta.Builder::new)), Linear(new AnnotatedEvaluator("Linear Delta", LinearDelta.Builder::new)), Sigmoid(new AnnotatedEvaluator("Sigmoid Delta", SigmoidDelta.Builder::new));
 
-        private final BridgedEvaluator be;
+        private final AnnotatedEvaluator be;
 
-        BridgedDeltaAdaptationFunctions(BridgedEvaluator be) {
+        BridgedDeltaAdaptationFunctions(AnnotatedEvaluator be) {
             this.be = be;
         }
 
-        public BridgedEvaluator getBridge() {
+        public AnnotatedEvaluator getBridge() {
             return be;
         }
 
@@ -119,6 +130,10 @@ public class FrameworkBridge {
             this.strategy = strategy;
         }
 
+        public AnnotatedActivityOrderingStrategy getBridge() {
+            return strategy;
+        }
+
         public Class<? extends ActivityOrderingStrategy> getStrategyClass() {
             return strategy.getStrategyClass();
         }
@@ -129,11 +144,11 @@ public class FrameworkBridge {
         }
     }
 
-    public static class Bridged<T> {
+    public static class Annotated<T> {
         private final String printableName;
         private final Supplier<SimpleBuilder<? extends T>> builderSupplier;
 
-        Bridged(String printableName, Supplier<SimpleBuilder<? extends T>> builderSupplier) {
+        Annotated(String printableName, Supplier<SimpleBuilder<? extends T>> builderSupplier) {
             this.printableName = printableName;
             this.builderSupplier = builderSupplier;
         }
@@ -152,17 +167,17 @@ public class FrameworkBridge {
         }
     }
 
-    public static class BridgedEvaluator extends Bridged<ProvidesEvaluators> {
+    public static class AnnotatedEvaluator extends Annotated<ProvidesEvaluators> {
 
-        BridgedEvaluator(String printableName, Supplier<SimpleBuilder<? extends ProvidesEvaluators>> simpleBuilderSupplier) {
+        AnnotatedEvaluator(String printableName, Supplier<SimpleBuilder<? extends ProvidesEvaluators>> simpleBuilderSupplier) {
             super(printableName, simpleBuilderSupplier);
         }
 
     }
 
-    public static class BridgedTreeHeuristic extends Bridged<HeuristicStrategy<PlaceNode, TreeNodeScore>> {
+    public static class AnnotatedTreeHeuristic extends Annotated<HeuristicStrategy<PlaceNode, TreeNodeScore>> {
 
-        BridgedTreeHeuristic(String printableName, Supplier<SimpleBuilder<? extends HeuristicStrategy<PlaceNode, TreeNodeScore>>> simpleBuilderSupplier) {
+        AnnotatedTreeHeuristic(String printableName, Supplier<SimpleBuilder<? extends HeuristicStrategy<PlaceNode, TreeNodeScore>>> simpleBuilderSupplier) {
             super(printableName, simpleBuilderSupplier);
         }
     }
@@ -187,7 +202,7 @@ public class FrameworkBridge {
         }
     }
 
-    public static class AnnotatedPostProcessor extends Bridged<PostProcessor<?, ?>> {
+    public static class AnnotatedPostProcessor extends Annotated<PostProcessor<?, ?>> {
 
         private final Class<?> inType;
         private final Class<?> outType;

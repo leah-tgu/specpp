@@ -4,17 +4,17 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 
 import javax.swing.*;
 
-public class LabeledTextField extends JPanel {
+public class LabeledTextField extends HorizontalJPanel {
 
     protected final JTextField field;
 
     public LabeledTextField(String label, int inputTextColumns) {
-        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-
         add(SlickerFactory.instance().createLabel(label));
-        add(Box.createHorizontalStrut(20));
         field = new JTextField(inputTextColumns);
-        add(field);
+        addSpaced(field);
+    }
+    public LabeledTextField(JTextField field) {
+        this.field = field;
     }
 
     public JTextField getTextField() {

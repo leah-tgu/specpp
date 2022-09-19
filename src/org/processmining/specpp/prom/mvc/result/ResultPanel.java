@@ -25,22 +25,25 @@ public class ResultPanel extends AbstractStagePanel<ResultController> {
         SlickerTabbedPane tabbedPane = SlickerFactory.instance().createTabbedPane("Results");
 
         tabTitles = new ArrayList<>();
-        int i = 1;
         int size = intermediatePostProcessingResults.size();
-        for (Result r : intermediatePostProcessingResults) {
+        for (int i = 0; i < intermediatePostProcessingResults.size(); i++) {
+            Result r = intermediatePostProcessingResults.get(i);
             JComponent comp;
             if (r instanceof PetriNet) {
-                comp = new PetriNetResultPanel(((PetriNet) r), controller.getFitnessEvaluator(), controller.getVariantFrequencies());
+                comp = new PetriNetResultPanel(((PetriNet) r), controller.getFitnessEvaluator(), controller.getVariantFrequencies(), i == 0);
             } else if (r instanceof ProMPetrinetWrapper) {
                 comp = new ProMPetrinetResultPanel((ProMPetrinetWrapper) r);
             } else {
                 comp = new MessagePanel(Objects.toString(r));
             }
-            String s = "Post Processing Step " + i;
-            if (i == size) s += " (final result)";
+            String s;
+            if (i == 0) s = "Initial Result";
+            else {
+                s = "Post Processing Step " + i;
+                if (i >= size - 1) s += " (final result)";
+            }
             tabbedPane.addTab(s, comp);
             tabTitles.add(s);
-            i++;
         }
 
         TitledBorderPanel infoPanel = new TitledBorderPanel("Final Result Info");

@@ -5,7 +5,7 @@ import org.processmining.plugins.graphviz.visualisation.DotPanel;
 import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
-import org.processmining.specpp.composition.PlaceCollection;
+import org.processmining.specpp.composition.TrackingPlaceCollection;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.PetrinetVisualization;
@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 public class PostSpecOps {
 
 
-    static void postExecution(SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowPrinting, boolean allowVisualOutput, boolean allowSaving) {
+    static void postExecution(SPECpp<Place, TrackingPlaceCollection, PetriNet, ProMPetrinetWrapper> specPP, boolean allowPrinting, boolean allowVisualOutput, boolean allowSaving) {
         if (allowPrinting) {
             System.out.println("// ========================================= //");
             System.out.println("Executed " + specPP.currentStepCount() + " ProposalEvaluationComposition cycles.");

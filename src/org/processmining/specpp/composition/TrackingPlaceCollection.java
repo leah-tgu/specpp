@@ -1,7 +1,7 @@
 package org.processmining.specpp.composition;
 
 import org.processmining.specpp.base.Evaluator;
-import org.processmining.specpp.base.impls.LightweightPlaceCollection;
+import org.processmining.specpp.base.impls.BasePlaceCollection;
 import org.processmining.specpp.base.impls.PlaceCollectionLocalInfo;
 import org.processmining.specpp.componenting.data.DataRequirements;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
@@ -15,8 +15,10 @@ import org.processmining.specpp.datastructures.encoding.NonMutatingSetOperations
 import org.processmining.specpp.datastructures.encoding.WeightedBitMask;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.ComputingCache;
+import org.processmining.specpp.datastructures.util.EvaluationParameterTuple2;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 import org.processmining.specpp.datastructures.vectorization.VariantMarkingHistories;
+import org.processmining.specpp.evaluation.implicitness.BooleanImplicitness;
 import org.processmining.specpp.evaluation.implicitness.ImplicitnessRating;
 import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
 import org.processmining.specpp.evaluation.implicitness.ReplayBasedImplicitnessCalculator;
@@ -25,11 +27,12 @@ import org.processmining.specpp.supervision.observations.performance.TaskDescrip
 import org.processmining.specpp.supervision.observations.performance.TimeStopper;
 import org.processmining.specpp.util.JavaTypingUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class PlaceCollection extends LightweightPlaceCollection implements PlaceCollectionLocalInfo {
+public class TrackingPlaceCollection extends BasePlaceCollection implements PlaceCollectionLocalInfo {
     public static final TaskDescription REPLAY_BASED_CONCURRENT_IMPLICITNESS = new TaskDescription("Concurrent Replay Based Implicitness");
     protected final Evaluator<Place, VariantMarkingHistories> historyMaker;
     protected final Map<Place, VariantMarkingHistories> histories;
@@ -40,10 +43,11 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
     protected WeightedBitMask currentlySupportedVariants;
     protected final DelegatingDataSource<BitMask> consideredVariants = new DelegatingDataSource<>();
     protected final DelegatingDataSource<IntVector> variantFrequencies = new DelegatingDataSource<>();
+    protected final DelegatingEvaluator<EvaluationParameterTuple2<Place, Collection<Place>>, BooleanImplicitness> externalImplicitnessCalculator = new DelegatingEvaluator<>();
 
     protected final TimeStopper timeStopper = new TimeStopper();
 
-    public PlaceCollection() {
+    public TrackingPlaceCollection() {
         histories = new HashMap<>();
         locallySupportedVariants = new HashMap<>();
         DelegatingEvaluator<Place, VariantMarkingHistories> pureEvaluator = new DelegatingEvaluator<>();
@@ -51,6 +55,7 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
                                .require(EvaluationRequirements.PLACE_MARKING_HISTORY, pureEvaluator)
                                .require(DataRequirements.CONSIDERED_VARIANTS, consideredVariants)
                                .require(DataRequirements.VARIANT_FREQUENCIES, variantFrequencies)
+                               .require(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), BooleanImplicitness.class), externalImplicitnessCalculator)
                                .provide(SupervisionRequirements.observable("concurrent_implicitness.performance", PerformanceEvent.class, timeStopper));
         ComputingCache<Place, VariantMarkingHistories> cache = new ComputingCache<>(100, pureEvaluator);
         historyMaker = cache::get;
@@ -63,27 +68,38 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
     @Override
     public void initSelf() {
         ImplicitnessTestingParameters params = implicitnessTestingParameters.getData();
-        switch (params.getSubLogRestriction()) {
-            case None:
-                implicitnessRater = p -> {
-                    VariantMarkingHistories h = historyMaker.eval(p);
-                    return ReplayBasedImplicitnessCalculator.replaySubregionImplicitness(p, h, histories);
-                };
-                break;
-            case FittingOnAcceptedPlacesAndEvaluatedPlace:
-                implicitnessRater = p -> {
-                    VariantMarkingHistories h = historyMaker.eval(p);
-                    BitMask intersection = NonMutatingSetOperations.intersection(getCurrentlySupportedVariants(), h.getPerfectlyFittingVariants());
-                    return ReplayBasedImplicitnessCalculator.replaySubregionImplicitnessOn(intersection, p, h, histories);
-                };
-                break;
-            case MerelyFittingOnEvaluatedPair:
-                implicitnessRater = p -> {
-                    VariantMarkingHistories h = historyMaker.eval(p);
-                    return ReplayBasedImplicitnessCalculator.replaySubregionImplicitnessLocally(p, h, histories);
-                };
-                break;
-        }
+        if (params.getVersion() == ImplicitnessTestingParameters.CIPRVersion.ReplayBased) {
+            Evaluator<Place, ImplicitnessRating> temp = null;
+            switch (params.getSubLogRestriction()) {
+                case None:
+                    temp = p -> {
+                        VariantMarkingHistories h = historyMaker.eval(p);
+                        return ReplayBasedImplicitnessCalculator.replaySubregionImplicitness(p, h, histories);
+                    };
+                    break;
+                case FittingOnAcceptedPlacesAndEvaluatedPlace:
+                    temp = p -> {
+                        VariantMarkingHistories h = historyMaker.eval(p);
+                        BitMask intersection = NonMutatingSetOperations.intersection(getCurrentlySupportedVariants(), h.getPerfectlyFittingVariants());
+                        return ReplayBasedImplicitnessCalculator.replaySubregionImplicitnessOn(intersection, p, h, histories);
+                    };
+                    break;
+                case MerelyFittingOnEvaluatedPair:
+                    temp = p -> {
+                        VariantMarkingHistories h = historyMaker.eval(p);
+                        return ReplayBasedImplicitnessCalculator.replaySubregionImplicitnessLocally(p, h, histories);
+                    };
+                    break;
+            }
+            Evaluator<Place, ImplicitnessRating> finalTemp = temp;
+            implicitnessRater = p -> {
+                timeStopper.start(REPLAY_BASED_CONCURRENT_IMPLICITNESS);
+                ImplicitnessRating rating = finalTemp.apply(p);
+                timeStopper.stop(REPLAY_BASED_CONCURRENT_IMPLICITNESS);
+                return rating;
+            };
+        } else if (params.getVersion() == ImplicitnessTestingParameters.CIPRVersion.LPBased)
+            implicitnessRater = p -> externalImplicitnessCalculator.eval(new EvaluationParameterTuple2<>(p, candidates));
 
         resetCurrentlySupportedVariants(consideredVariants.getData());
     }
@@ -110,10 +126,7 @@ public class PlaceCollection extends LightweightPlaceCollection implements Place
 
     @Override
     public ImplicitnessRating rateImplicitness(Place place) {
-        timeStopper.start(REPLAY_BASED_CONCURRENT_IMPLICITNESS);
-        ImplicitnessRating implicitnessRating = implicitnessRater.eval(place);
-        timeStopper.stop(REPLAY_BASED_CONCURRENT_IMPLICITNESS);
-        return implicitnessRating;
+        return implicitnessRater.eval(place);
     }
 
     @Override

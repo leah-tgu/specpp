@@ -34,6 +34,7 @@ public class ResultEvaluationPanel extends AbstractStagePanel<ResultController> 
                                                                                                                                    .size(), proMPetrinetWrapper.getPlaces()
                                                                                                                                                                .size(), proMPetrinetWrapper.getEdges()
                                                                                                                                                                                            .size())));
+        add(Box.createHorizontalStrut(10));
         fitnessLabel = SlickerFactory.instance().createLabel("Alignment-Based Fitness: ?");
         add(fitnessLabel);
 

@@ -8,10 +8,12 @@ import org.processmining.specpp.datastructures.tree.base.TreeNode;
 import org.processmining.specpp.datastructures.tree.base.traits.LocallyExpandable;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
 
+import java.util.function.Predicate;
+
 public class DiscriminatingHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends DoubleScore> extends HeuristicTreeExpansion<N, H> {
 
     protected DelegatingDataSource<TreeHeuristicThreshold> treeHeuristicThresholdSource = new DelegatingDataSource<>();
-    private DoubleScore lambda;
+    private Predicate<H> thresholdPredicate;
 
     public DiscriminatingHeuristicTreeExpansion(HeuristicStrategy<? super N, H> heuristicStrategy) {
         super(heuristicStrategy);
@@ -21,7 +23,27 @@ public class DiscriminatingHeuristicTreeExpansion<N extends TreeNode & Evaluable
     @Override
     protected void initSelf() {
         TreeHeuristicThreshold parameters = treeHeuristicThresholdSource.getData();
-        lambda = parameters.getLambda();
+        DoubleScore lambda = parameters.getLambda();
+        switch (parameters.getComparisonRelation()) {
+            case lt:
+                thresholdPredicate = h -> lambda.compareTo(h) < 0;
+                break;
+            case gt:
+                thresholdPredicate = h -> lambda.compareTo(h) > 0;
+                break;
+            case ltEq:
+                thresholdPredicate = h -> lambda.compareTo(h) <= 0;
+                break;
+            case gtEq:
+                thresholdPredicate = h -> lambda.compareTo(h) >= 0;
+                break;
+            case eq:
+                thresholdPredicate = h -> lambda.compareTo(h) == 0;
+                break;
+            case neq:
+                thresholdPredicate = h -> lambda.compareTo(h) != 0;
+                break;
+        }
     }
 
     @Override
@@ -30,7 +52,7 @@ public class DiscriminatingHeuristicTreeExpansion<N extends TreeNode & Evaluable
     }
 
     protected boolean meetsThreshold(H heuristic) {
-        return lambda.compareTo(heuristic) <= 0;
+        return thresholdPredicate.test(heuristic);
     }
 
 }

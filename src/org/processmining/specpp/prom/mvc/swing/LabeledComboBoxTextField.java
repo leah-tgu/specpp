@@ -4,17 +4,20 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 
 import javax.swing.*;
 
-public class LabeledComboBox<T> extends HorizontalJPanel {
+public class LabeledComboBoxTextField<T> extends LabeledTextField {
 
-    private final JComboBox<T> comboBox;
+    protected final JComboBox<T> comboBox;
 
-    public LabeledComboBox(String label, T[] values) {
+    public LabeledComboBoxTextField(String label, T[] values, int inputTextColumns) {
+        super(new JTextField(inputTextColumns));
         add(SlickerFactory.instance().createLabel(label));
         comboBox = SlickerFactory.instance().createComboBox(values);
-        add(comboBox);
+        addSpaced(comboBox);
+        addSpaced(field);
     }
 
     public JComboBox<T> getComboBox() {
         return comboBox;
     }
+
 }

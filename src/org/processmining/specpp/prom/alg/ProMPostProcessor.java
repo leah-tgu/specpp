@@ -1,5 +1,6 @@
 package org.processmining.specpp.prom.alg;
 
+import com.fluxicon.slickerbox.factory.SlickerFactory;
 import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginDescriptor;
@@ -63,29 +64,20 @@ public class ProMPostProcessor {
         JFrame jf = new JFrame("ProM (accepting) Petri net transforming plugin search");
         ProMTable table = SwingFactory.proMTable(model);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    int row = table.getSelectedRow();
-                    if (row >= 0) handleImport(pc, consumer, jf, pnTransformers, apnTransformers, row);
-                }
-            }
-        });
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int row = table.rowAtPoint(e.getPoint());
                 if (row >= 0 && e.getClickCount() == 2) {
                     int i = table.getRowSorter().convertRowIndexToModel(row);
-                    consumer.accept(wrapPlugin(pc, pnTransformers, apnTransformers, i));
+                    handleImport(pc, consumer, jf, pnTransformers, apnTransformers, i);
                 }
             }
         });
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
-        JTextField field = new JTextField();
-        field.getDocument().addDocumentListener(new DocumentListener() {
+        JTextField searchField = new JTextField(300);
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 filter();
@@ -102,14 +94,35 @@ public class ProMPostProcessor {
 
             private void filter() {
                 try {
-                    RowFilter<Object, Object> rf = RowFilter.regexFilter(field.getText(), 0);
+                    RowFilter<Object, Object> rf = RowFilter.regexFilter(searchField.getText(), 0);
                     sorter.setRowFilter(rf);
                 } catch (PatternSyntaxException ignored) {
                 }
             }
         });
-        jf.getContentPane().add(table, BorderLayout.CENTER);
-        jf.getContentPane().add(field, BorderLayout.PAGE_END);
+        jf.add(SlickerFactory.instance()
+                             .createLabel(SwingFactory.html("<h4>Plugins loaded in ProM that transform (Accepting) Petri nets into (Accepting) Petri nets</h4>")), BorderLayout.PAGE_START);
+        jf.add(table, BorderLayout.CENTER);
+        JPanel bottomLine = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridy = 0;
+        c.gridx = 0;
+        bottomLine.add(SlickerFactory.instance().createLabel("Search"), c);
+        c.gridx++;
+        c.weightx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        bottomLine.add(searchField);
+        c.weightx = 0;
+        c.gridx++;
+        JButton importButton = SlickerFactory.instance().createButton("import currently selected");
+        importButton.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) handleImport(pc, consumer, jf, pnTransformers, apnTransformers, row);
+        });
+        c.fill = GridBagConstraints.NONE;
+        bottomLine.add(importButton, c);
+
+        jf.add(bottomLine, BorderLayout.PAGE_END);
         jf.setPreferredSize(new Dimension(650, 450));
         jf.pack();
         jf.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

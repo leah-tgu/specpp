@@ -7,6 +7,7 @@ import org.processmining.specpp.base.impls.UniwiredComposer;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.specpp.composition.ConstrainingPlaceCollection;
+import org.processmining.specpp.composition.TrackingPlaceCollection;
 import org.processmining.specpp.config.Configurators;
 import org.processmining.specpp.config.EfficientTreeConfiguration;
 import org.processmining.specpp.config.PostProcessingConfiguration;
@@ -42,7 +43,7 @@ public class UniwiredComponentConfig extends BaseSPECppComponentConfig {
     public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(GlobalComponentRepository gcr) {
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new RestartablePlaceProposer.Builder())
-                            .composition(ConstrainingPlaceCollection::new)
+                            .nestedComposition(TrackingPlaceCollection::new, ConstrainingPlaceCollection::new)
                             .terminalComposer(PlaceAccepter::new)
                             .composerChain(PlaceFitnessFilter::new, UniwiredComposer::new)
                             .build(gcr);

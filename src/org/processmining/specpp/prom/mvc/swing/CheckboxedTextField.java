@@ -4,22 +4,17 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 
 import javax.swing.*;
 
-public class CheckboxedTextField extends JPanel {
+public class CheckboxedTextField extends HorizontalJPanel {
 
     protected final JTextField field;
     protected final JCheckBox checkBox;
 
     public CheckboxedTextField(String label, boolean enabledByDefault, int inputTextColumns) {
-        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-
         checkBox = SlickerFactory.instance().createCheckBox(label, enabledByDefault);
         checkBox.addActionListener(e -> updateTextFieldState());
         add(checkBox);
-        add(Box.createHorizontalStrut(15));
         field = new JTextField(inputTextColumns);
-
-        add(field);
-
+        addSpaced(field);
         updateTextFieldState();
     }
 
@@ -38,5 +33,6 @@ public class CheckboxedTextField extends JPanel {
     public String getText() {
         return checkBox.isEnabled() ? field.getText() : null;
     }
+
 
 }

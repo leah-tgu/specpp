@@ -4,31 +4,27 @@ import org.processmining.specpp.componenting.system.link.PetriNetPostProcessor;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class SelfLoopPlaceMerger implements PetriNetPostProcessor {
     @Override
     public PetriNet postProcess(PetriNet input) {
-        Set<Place> places = input.getPlaces();
         Set<Place> result = new HashSet<>();
 
-        LinkedList<Place> list = new LinkedList<>(places);
+        LinkedList<Place> todo = new LinkedList<>(input.getPlaces());
 
-        while (list.size() > 1) {
-            Place first = list.removeFirst();
+        while (todo.size() > 1) {
+            Place first = todo.removeFirst();
             Place noSelfLoops = first.nonSelfLoops();
-            Optional<Place> optional = list.stream().filter(p -> noSelfLoops.setEquality(p.nonSelfLoops())).findFirst();
+            Optional<Place> optional = todo.stream().filter(p -> noSelfLoops.setEquality(p.nonSelfLoops())).findFirst();
 
             if (optional.isPresent()) {
                 Place other = optional.get();
-                list.remove(other);
-                list.addFirst(first.union(other));
+                todo.remove(other);
+                todo.addFirst(first.union(other));
             } else result.add(first);
         }
-        if (!list.isEmpty()) result.add(list.remove());
+        if (!todo.isEmpty()) result.add(todo.remove());
 
         return new PetriNet(result);
     }

@@ -13,24 +13,27 @@ import javax.swing.*;
 public class ResultExportPanel extends AbstractStagePanel<ResultController> {
 
     private final PluginContext context;
+    private final JButton saveProMPetriButton;
+    private final JButton saveConfigButton;
 
     public ResultExportPanel(ResultController controller) {
         super(controller);
+        context = this.controller.getContext();
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
-        JButton saveProMPetriButton = SlickerFactory.instance().createButton("save Petri net to workspace");
+        saveProMPetriButton = SlickerFactory.instance().createButton("save Petri net to workspace");
         saveProMPetriButton.addActionListener(e -> saveProMPetri());
         add(saveProMPetriButton);
-        JButton saveConfigButton = SlickerFactory.instance().createButton("save config to workspace");
-        saveProMPetriButton.addActionListener(e -> saveConfig());
+        saveConfigButton = SlickerFactory.instance().createButton("save config to workspace");
+        saveConfigButton.addActionListener(e -> saveConfig());
         add(saveConfigButton);
-        context = this.controller.getContext();
     }
 
     private void saveProMPetri() {
         // TODO figure out how to favorite these
         context.getProvidedObjectManager()
                .createProvidedObject("Petrinet", controller.getResult(), AcceptingPetriNet.class, context);
+        saveProMPetriButton.setEnabled(false);
     }
 
     private void saveConfig() {
@@ -38,6 +41,7 @@ public class ResultExportPanel extends AbstractStagePanel<ResultController> {
         PreProcessingParameters preProcessingParameters = controller.getParentController().getPreProcessingParameters();
         context.getProvidedObjectManager()
                .createProvidedObject("Config", new ProMSPECppConfig(preProcessingParameters, proMConfig), ProMSPECppConfig.class, context);
+        saveConfigButton.setEnabled(false);
     }
 
 

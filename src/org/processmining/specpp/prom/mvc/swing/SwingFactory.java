@@ -31,8 +31,13 @@ public class SwingFactory {
         return new LabeledComboBox<>(label, values);
     }
 
+    public static JButton help(String hint, String contextIndependentText) {
+        return help(hint, () -> contextIndependentText);
+    }
+
     public static JButton help(String hint, Supplier<String> contextDependentText) {
         JButton button = new JButton(Iconic.tiny_circled_questionmark);
+        button.setRolloverIcon(Iconic.tiny_circled_questionmark_hovered);
         button.setContentAreaFilled(false);
         button.setBorder(BorderFactory.createEmptyBorder());
         button.setMaximumSize(new Dimension(25, 25));
@@ -47,6 +52,10 @@ public class SwingFactory {
 
     public static LabeledTextField labeledTextField(String label, int inputTextColumns) {
         return new LabeledTextField(label, inputTextColumns);
+    }
+
+    public static <T, K> ComboBoxAndTextBasedInputField<T, K> comboBoxAndTextBasedInputField(String label, K[] values, Function<String, T> parseInput, int inputTextColumns) {
+        return new ComboBoxAndTextBasedInputField<>(label, values, parseInput, inputTextColumns);
     }
 
     public static <T> TextBasedInputField<T> textBasedInputField(String label, Function<String, T> parseInput, int inputTextColumns) {
@@ -136,5 +145,9 @@ public class SwingFactory {
                 return columnClasses[columnIndex];
             }
         };
+    }
+
+    public static String html(String s) {
+        return "<html>" + s + "</html>";
     }
 }

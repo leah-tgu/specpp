@@ -8,7 +8,7 @@ import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.specpp.composition.ConstrainingPlaceCollection;
-import org.processmining.specpp.composition.PlaceCollection;
+import org.processmining.specpp.composition.TrackingPlaceCollection;
 import org.processmining.specpp.config.*;
 import org.processmining.specpp.config.parameters.*;
 import org.processmining.specpp.datastructures.petri.PetriNet;
@@ -25,6 +25,7 @@ import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
 import org.processmining.specpp.evaluation.heuristics.PostponedPlaceScorer;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
 import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
+import org.processmining.specpp.evaluation.implicitness.LPBasedImplicitnessCalculator;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.orchestra.AdaptedAlgorithmParameterConfig;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
@@ -54,7 +55,7 @@ public class ConfigurationController extends AbstractStageController {
         boolean logToFile = pc.logToFile;
         SupervisionConfiguration.Configurator svCfg = new SupervisionConfiguration.Configurator();
         svCfg.supervisor(BaseSupervisor::new);
-        boolean isSupervisingEvents = pc.supervisionSetting == ConfigurationPanel.SupervisionSetting.Full;
+        boolean isSupervisingEvents = pc.supervisionSetting == ProMConfig.SupervisionSetting.Full;
         switch (pc.supervisionSetting) {
             case None:
                 break;
@@ -73,12 +74,18 @@ public class ConfigurationController extends AbstractStageController {
         ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, PetriNet> pcCfg = new ProposerComposerConfiguration.Configurator<>();
         if (pc.supportRestart) pcCfg.proposer(new RestartablePlaceProposer.Builder());
         else pcCfg.proposer(new ConstrainablePlaceProposer.Builder());
-        if (pc.respectWiring || pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.Uniwired)
-            pcCfg.composition(ConstrainingPlaceCollection::new);
-        else if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta || pc.applyCIPR)
-            pcCfg.composition(PlaceCollection::new);
-        else pcCfg.composition(LightweightPlaceCollection::new);
-        if (pc.applyCIPR)
+        boolean compositionConstraintsRequired = pc.respectWiring || pc.compositionStrategy == ProMConfig.CompositionStrategy.Uniwired;
+        boolean compositionStateRequired = pc.compositionStrategy == ProMConfig.CompositionStrategy.TauDelta;
+        if (compositionStateRequired) {
+            if (compositionConstraintsRequired)
+                pcCfg.nestedComposition(TrackingPlaceCollection::new, ConstrainingPlaceCollection::new);
+            else pcCfg.composition(TrackingPlaceCollection::new);
+        } else {
+            if (compositionConstraintsRequired)
+                pcCfg.nestedComposition(LightweightPlaceCollection::new, ConstrainingPlaceCollection::new);
+            else pcCfg.composition(LightweightPlaceCollection::new);
+        }
+        if (pc.ciprVariant != ProMConfig.CIPRVariant.None)
             pcCfg.terminalComposer(isSupervisingEvents ? EventingPlaceComposerWithCIPR::new : PlaceComposerWithCIPR::new);
         else pcCfg.terminalComposer(PlaceAccepter::new);
         switch (pc.compositionStrategy) {
@@ -96,19 +103,20 @@ public class ConfigurationController extends AbstractStageController {
         // ** EVALUATION ** //
         EvaluatorConfiguration.Configurator evCfg = new EvaluatorConfiguration.Configurator();
         evCfg.evaluatorProvider(LogHistoryMaker::new);
+        evCfg.evaluatorProvider(new LPBasedImplicitnessCalculator.Builder());
         evCfg.evaluatorProvider(pc.concurrentReplay ? FrameworkBridge.BridgedEvaluators.ForkJoinFitness.getBridge()
                                                                                                        .getBuilder() : FrameworkBridge.BridgedEvaluators.BaseFitness.getBridge()
                                                                                                                                                                     .getBuilder());
-        if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta)
-            evCfg.evaluatorProvider(pc.bridgedDelta.getBridge().getBuilder());
-        else if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.Uniwired)
+        if (pc.compositionStrategy == ProMConfig.CompositionStrategy.TauDelta)
+            evCfg.evaluatorProvider(pc.bridgedDelta.getBuilder());
+        else if (pc.compositionStrategy == ProMConfig.CompositionStrategy.Uniwired)
             evCfg.evaluatorProvider(new PostponedPlaceScorer.Builder());
 
         EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg;
-        if (pc.treeExpansionSetting == ConfigurationPanel.TreeExpansionSetting.Heuristic) {
+        if (pc.treeExpansionSetting == ProMConfig.TreeExpansionSetting.Heuristic) {
             HeuristicTreeConfiguration.Configurator<Place, PlaceState, PlaceNode, TreeNodeScore> htCfg = new HeuristicTreeConfiguration.Configurator<>();
-            htCfg.heuristic(pc.bridgedHeuristics.getBridge().getBuilder());
-            if (pc.enforceMinimumHeuristicThreshold)
+            htCfg.heuristic(pc.bridgedHeuristics.getBuilder());
+            if (pc.enforceHeuristicThreshold)
                 htCfg.heuristicExpansion(isSupervisingEvents ? EventingDiscriminatingHeuristicTreeExpansion::new : DiscriminatingHeuristicTreeExpansion::new);
             else
                 htCfg.heuristicExpansion(isSupervisingEvents ? EventingHeuristicTreeExpansion::new : HeuristicTreeExpansion::new);
@@ -118,7 +126,7 @@ public class ConfigurationController extends AbstractStageController {
         } else {
             etCfg = new EfficientTreeConfiguration.Configurator<>();
             etCfg.tree(isSupervisingEvents ? EventingEnumeratingTree::new : EnumeratingTree::new);
-            etCfg.expansionStrategy(pc.treeExpansionSetting == ConfigurationPanel.TreeExpansionSetting.BFS ? VariableExpansion::bfs : VariableExpansion::dfs);
+            etCfg.expansionStrategy(pc.treeExpansionSetting == ProMConfig.TreeExpansionSetting.BFS ? VariableExpansion::bfs : VariableExpansion::dfs);
             etCfg.childGenerationLogic(new MonotonousPlaceGenerationLogic.Builder());
         }
 
@@ -138,16 +146,16 @@ public class ConfigurationController extends AbstractStageController {
         class CustomParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
             public CustomParameters() {
                 globalComponentSystem().provide(ParameterRequirements.EXECUTION_PARAMETERS.fulfilWithStatic(exp))
-                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(pc.supervisionSetting != ConfigurationPanel.SupervisionSetting.None ? SupervisionParameters.instrumentAll(false, logToFile) : SupervisionParameters.instrumentNone(false, logToFile)))
+                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(pc.supervisionSetting != ProMConfig.SupervisionSetting.None ? SupervisionParameters.instrumentAll(false, logToFile) : SupervisionParameters.instrumentNone(false, logToFile)))
                                        .provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWithStatic(TauFitnessThresholds.tau(pc.tau)))
                                        .provide(ParameterRequirements.REPLAY_COMPUTATION.fulfilWithStatic(ReplayComputationParameters.permitNegative(pc.permitNegativeMarkingsDuringReplay)))
-                                       .provide(ParameterRequirements.IMPLICITNESS_TESTING.fulfilWithStatic(new ImplicitnessTestingParameters(pc.implicitnessReplaySubLogRestriction)))
+                                       .provide(ParameterRequirements.IMPLICITNESS_TESTING.fulfilWithStatic(new ImplicitnessTestingParameters(pc.ciprVariant.bridge(), pc.implicitnessReplaySubLogRestriction)))
                                        .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(pgp))
                                        .provide(ParameterRequirements.OUTPUT_PATH_PARAMETERS.fulfilWithStatic(OutputPathParameters.getDefault()));
-                if (pc.compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta)
+                if (pc.compositionStrategy == ProMConfig.CompositionStrategy.TauDelta)
                     globalComponentSystem().provide(ParameterRequirements.DELTA_PARAMETERS.fulfilWithStatic(new DeltaParameters(pc.delta, pc.steepness)));
-                if (pc.enforceMinimumHeuristicThreshold)
-                    globalComponentSystem().provide(ParameterRequirements.TREE_HEURISTIC_THRESHOLD.fulfilWithStatic(new TreeHeuristicThreshold(pc.minimumHeuristicThreshold)));
+                if (pc.enforceHeuristicThreshold)
+                    globalComponentSystem().provide(ParameterRequirements.TREE_HEURISTIC_THRESHOLD.fulfilWithStatic(new TreeHeuristicThreshold(pc.heuristicThreshold, pc.heuristicThresholdRelation)));
             }
         }
 

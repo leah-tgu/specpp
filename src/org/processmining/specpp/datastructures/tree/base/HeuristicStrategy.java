@@ -4,7 +4,8 @@ import org.processmining.specpp.base.Evaluable;
 import org.processmining.specpp.base.Evaluator;
 import org.processmining.specpp.datastructures.tree.heuristic.HeuristicValue;
 
-@FunctionalInterface
+import java.util.Comparator;
+
 public interface HeuristicStrategy<N extends TreeNode & Evaluable, H extends HeuristicValue<? super H>> extends Evaluator<N, H> {
 
     H computeHeuristic(N node);
@@ -12,6 +13,10 @@ public interface HeuristicStrategy<N extends TreeNode & Evaluable, H extends Heu
     @Override
     default H eval(N input) {
         return computeHeuristic(input);
+    }
+
+    default Comparator<H> heuristicValuesComparator() {
+        return Comparator.naturalOrder();
     }
 
 }

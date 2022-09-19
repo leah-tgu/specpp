@@ -19,9 +19,9 @@ public class ParametersPanel extends JPanel {
 
     private final PreProcessingController controller;
     private final JComboBox<XEventClassifier> classifierComboBox;
-    private final JComboBox<FrameworkBridge.BridgedActivityOrderingStrategies> orderingComboBox;
+    private final JComboBox<FrameworkBridge.AnnotatedActivityOrderingStrategy> orderingComboBox;
     private final JCheckBox artificialTransitionsCheckBox;
-    private final List<FrameworkBridge.BridgedActivityOrderingStrategies> availableOrderings;
+    private final List<FrameworkBridge.AnnotatedActivityOrderingStrategy> availableOrderings;
     private final ImmutableList<XEventClassifier> availableEventClassifiers;
     private final JButton previewButton;
 
@@ -39,7 +39,7 @@ public class ParametersPanel extends JPanel {
         classifierComboBox.setSelectedItem(defaultParameters.getEventClassifier());
 
         availableOrderings = FrameworkBridge.ORDERING_STRATEGIES;
-        LabeledComboBox<FrameworkBridge.BridgedActivityOrderingStrategies> orderingStrategyBox = SwingFactory.labeledComboBox("Ordering Strategy", availableOrderings.toArray(new FrameworkBridge.BridgedActivityOrderingStrategies[0]));
+        LabeledComboBox<FrameworkBridge.AnnotatedActivityOrderingStrategy> orderingStrategyBox = SwingFactory.labeledComboBox("Ordering Strategy", availableOrderings.toArray(new FrameworkBridge.AnnotatedActivityOrderingStrategy[0]));
         orderingComboBox = orderingStrategyBox.getComboBox();
         orderingComboBox.setMinimumSize(new Dimension(250, 25));
         orderingComboBox.setPreferredSize(new Dimension(250, 25));
@@ -94,17 +94,17 @@ public class ParametersPanel extends JPanel {
         artificialTransitionsCheckBox.setSelected(preProcessingParameters.isAddStartEndTransitions());
     }
 
-    private FrameworkBridge.BridgedActivityOrderingStrategies findEnum(Class<? extends ActivityOrderingStrategy> strategyClass) {
-        Optional<FrameworkBridge.BridgedActivityOrderingStrategies> first = availableOrderings.stream()
-                                                                                              .filter(baos -> baos.getStrategyClass()
+    private FrameworkBridge.AnnotatedActivityOrderingStrategy findEnum(Class<? extends ActivityOrderingStrategy> strategyClass) {
+        Optional<FrameworkBridge.AnnotatedActivityOrderingStrategy> first = availableOrderings.stream()
+                                                                                              .filter(ans -> ans.getStrategyClass()
                                                                                                                   .equals(strategyClass))
                                                                                               .findFirst();
-        return first.orElse(FrameworkBridge.BridgedActivityOrderingStrategies.AverageFirstOccurrenceIndex);
+        return first.orElse(FrameworkBridge.BridgedActivityOrderingStrategies.AverageFirstOccurrenceIndex.getBridge());
     }
 
     public PreProcessingParameters collectParameters() {
         XEventClassifier eventClassifier = availableEventClassifiers.get(classifierComboBox.getSelectedIndex());
-        Class<? extends ActivityOrderingStrategy> orderingStrategy = ((FrameworkBridge.BridgedActivityOrderingStrategies) orderingComboBox.getSelectedItem()).getStrategyClass();
+        Class<? extends ActivityOrderingStrategy> orderingStrategy = ((FrameworkBridge.AnnotatedActivityOrderingStrategy) orderingComboBox.getSelectedItem()).getStrategyClass();
         boolean introduceArtificialTransitions = artificialTransitionsCheckBox.isSelected();
         return new PreProcessingParameters(eventClassifier, introduceArtificialTransitions, orderingStrategy);
     }

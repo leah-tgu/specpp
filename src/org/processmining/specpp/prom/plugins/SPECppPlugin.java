@@ -9,7 +9,7 @@ import org.processmining.models.connections.petrinets.behavioral.FinalMarkingCon
 import org.processmining.models.connections.petrinets.behavioral.InitialMarkingConnection;
 import org.processmining.models.graphbased.directed.petrinet.Petrinet;
 import org.processmining.specpp.base.impls.SPECpp;
-import org.processmining.specpp.composition.PlaceCollection;
+import org.processmining.specpp.composition.TrackingPlaceCollection;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
@@ -29,7 +29,7 @@ public class SPECppPlugin {
 
         XLogBasedInputDataBundle dataBundle = XLogBasedInputDataBundle.fromXLog(log, PreProcessingParameters.getDefault());
 
-        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specpp = SPECppOperations.configureAndExecute(ProMSPECppConfigBundle::new, dataBundle, true, false, false);
+        SPECpp<Place, TrackingPlaceCollection, PetriNet, ProMPetrinetWrapper> specpp = SPECppOperations.configureAndExecute(ProMSPECppConfigBundle::new, dataBundle, true, false, false);
 
         ProMPetrinetWrapper pnWrapper = specpp.getPostProcessedResult();
 

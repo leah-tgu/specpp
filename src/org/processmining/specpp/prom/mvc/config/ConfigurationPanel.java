@@ -2,9 +2,11 @@ package org.processmining.specpp.prom.mvc.config;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.processmining.specpp.componenting.data.DataSource;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.specpp.datastructures.vectorization.OrderingRelation;
 import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 import org.processmining.specpp.prom.mvc.AbstractStagePanel;
@@ -16,32 +18,35 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static org.processmining.specpp.prom.mvc.swing.SwingFactory.html;
 
 public class ConfigurationPanel extends AbstractStagePanel<ConfigurationController> {
 
 
     private final JComboBox<Preset> presetComboBox;
-    private final JComboBox<SupervisionSetting> supervisionComboBox;
+    private final JComboBox<ProMConfig.SupervisionSetting> supervisionComboBox;
     private final JCheckBox trackCandidateTreeCheckBox;
-    private final JComboBox<TreeExpansionSetting> expansionStrategyComboBox;
-    private final JComboBox<FrameworkBridge.BridgedHeuristics> heuristicComboBox;
+    private final JComboBox<ProMConfig.TreeExpansionSetting> expansionStrategyComboBox;
+    private final JComboBox<FrameworkBridge.AnnotatedTreeHeuristic> heuristicComboBox;
     private final JCheckBox respectWiringCheckBox;
     private final JCheckBox supportRestartCheckBox;
     private final JCheckBox concurrentReplayCheckBox;
-    private final JComboBox<FrameworkBridge.BridgedDeltaAdaptationFunctions> deltaAdaptationFunctionComboBox;
-    private final JComboBox<CompositionStrategy> compositionStrategyComboBox;
-    private final JCheckBox applyCIPRCheckBox;
+    private final JComboBox<FrameworkBridge.AnnotatedEvaluator> deltaAdaptationFunctionComboBox;
+    private final JComboBox<ProMConfig.CompositionStrategy> compositionStrategyComboBox;
     private final MyListModel<FrameworkBridge.AnnotatedPostProcessor> ppPipelineModel;
     private final JTextField tauField;
     private final JTextField deltaField;
     private final JTextField steepnessField;
     private final JTextField depthField;
-    private final LabeledComboBox<FrameworkBridge.BridgedHeuristics> bridgedHeuristicsLabeledComboBox;
-    private final LabeledComboBox<FrameworkBridge.BridgedDeltaAdaptationFunctions> deltaAdaptationLabeledComboBox;
+    private final LabeledComboBox<FrameworkBridge.AnnotatedTreeHeuristic> bridgedHeuristicsLabeledComboBox;
+    private final LabeledComboBox<FrameworkBridge.AnnotatedEvaluator> deltaAdaptationLabeledComboBox;
     private static final Predicate<JTextField> zeroOneDoublePredicate = input -> {
         try {
             double v = Double.parseDouble(input.getText());
@@ -55,6 +60,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         double v = Double.parseDouble(s);
         return (0.0 <= v && v <= 1.0) ? v : null;
     };
+    private static final Function<String, Double> doubleFunc = Double::parseDouble;
     private static final Function<String, Integer> posIntFunc = s -> {
         int v = Integer.parseInt(s);
         return (v > 0) ? v : null;
@@ -90,8 +96,9 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     private final JCheckBox logToFileCheckBox;
     private final CheckboxedComboBox<ImplicitnessReplayRestriction> restrictReplayBasedImplicitnessInput;
     private final JCheckBox permitNegativeMarkingsCheckBox;
-    private final JCheckBox enforceMinimumHeuristicScoreThresholdCheckBox;
-    private final TextBasedInputField<Double> minimumHeuristicScoreInput;
+    private final JCheckBox enforceHeuristicScoreThresholdCheckBox;
+    private final ComboBoxAndTextBasedInputField<Double, OrderingRelation> heuristicThresholdInput;
+    private final CheckboxedComboBox<ProMConfig.CIPRVariant> ciprVariantCheckboxedComboBox;
 
     public ConfigurationPanel(ConfigurationController controller) {
         super(controller, new GridBagLayout());
@@ -99,18 +106,23 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         // ** SUPERVISION ** //
 
         TitledBorderPanel supervision = new TitledBorderPanel("Preset & Supervision");
-        LabeledComboBox<Preset> presetLabeledComboBox = SwingFactory.labeledComboBox("Configuration Preset", Preset.values());
+        Preset[] availablePresets = Preset.values();
+        if (controller.getParentController().getLoadedConfig() == null)
+            availablePresets = Arrays.copyOf(Preset.values(), Preset.values().length - 1);
+        LabeledComboBox<Preset> presetLabeledComboBox = SwingFactory.labeledComboBox("Configuration Preset", availablePresets);
         presetComboBox = presetLabeledComboBox.getComboBox();
         presetComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedPreset();
         });
+        presetLabeledComboBox.addSpaced(SwingFactory.help("A preset resets all subsequently configured options.", () -> "Default - the default\nLightweight - a config with which sacrifices supervision against performance\nLast - the previously executed config\nLoaded - (optional) available if this plugin was applied to a log AND previously exported config"));
         supervision.append(presetLabeledComboBox);
-        LabeledComboBox<SupervisionSetting> supervisionSettingLabeledComboBox = SwingFactory.labeledComboBox("Level of Detail of Supervision", SupervisionSetting.values());
+        LabeledComboBox<ProMConfig.SupervisionSetting> supervisionSettingLabeledComboBox = SwingFactory.labeledComboBox("Level of Detail of Supervision", ProMConfig.SupervisionSetting.values());
         supervisionComboBox = supervisionSettingLabeledComboBox.getComboBox();
         supervisionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedSupervisionSettings();
         });
         supervision.append(supervisionSettingLabeledComboBox);
+        supervisionSettingLabeledComboBox.addSpaced(SwingFactory.help(null, "Determines whether event generating implementations of the subsequent configured components will be used.\nEvent generation increases overhead but greatly benefits behavior analysis of the configured algorithm."));
         logToFileCheckBox = SwingFactory.labeledCheckBox("log to file");
 
         String s = OutputPathParameters.getDefault().getFilePath(PathTools.OutputFileType.MAIN_LOG, "main");
@@ -125,40 +137,45 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         // ** PROPOSAL ** //
 
         TitledBorderPanel proposal = new TitledBorderPanel("Proposal");
-        LabeledComboBox<TreeExpansionSetting> candidate_enumeration = SwingFactory.labeledComboBox("Candidate Enumeration", TreeExpansionSetting.values());
-        expansionStrategyComboBox = candidate_enumeration.getComboBox();
-        proposal.append(candidate_enumeration);
-        bridgedHeuristicsLabeledComboBox = SwingFactory.labeledComboBox("Heuristic", FrameworkBridge.HEURISTICS.toArray(new FrameworkBridge.BridgedHeuristics[0]));
+        LabeledComboBox<ProMConfig.TreeExpansionSetting> candidateEnumerationLabeledComboBox = SwingFactory.labeledComboBox("Place Enumeration", ProMConfig.TreeExpansionSetting.values());
+        expansionStrategyComboBox = candidateEnumerationLabeledComboBox.getComboBox();
+        candidateEnumerationLabeledComboBox.addSpaced(SwingFactory.help("The strategy by which the place candidate tree is traversed.", "BFS - breadth first search\nDFS - depth first search\nHeuristic - using the subsequently configured heuristic"));
+        proposal.append(candidateEnumerationLabeledComboBox);
+        bridgedHeuristicsLabeledComboBox = SwingFactory.labeledComboBox("Heuristic", FrameworkBridge.HEURISTICS.toArray(new FrameworkBridge.AnnotatedTreeHeuristic[0]));
         heuristicComboBox = bridgedHeuristicsLabeledComboBox.getComboBox();
         heuristicComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedProposalSettings();
         });
         bridgedHeuristicsLabeledComboBox.setVisible(false);
+        bridgedHeuristicsLabeledComboBox.addSpaced(SwingFactory.help(null, html("Place Interestingness - based on eventually follows relation of activities (see <a href=\"https://dx.doi.org/10.1007/978-3-030-66498-5_25\">Improving the State-Space Traversal of the eST-Miner by Exploiting Underlying Log Structures</a>)<br>BFS Emulation - equals depth(place)<br>DFS Emulation - equals -depth(place)")));
         proposal.append(bridgedHeuristicsLabeledComboBox);
-        enforceMinimumHeuristicScoreThresholdCheckBox = SwingFactory.labeledCheckBox("enforce minimum heuristic score threshold");
-        enforceMinimumHeuristicScoreThresholdCheckBox.addActionListener(e -> updatedProposalSettings());
-        enforceMinimumHeuristicScoreThresholdCheckBox.setVisible(false);
-        proposal.append(enforceMinimumHeuristicScoreThresholdCheckBox);
+        enforceHeuristicScoreThresholdCheckBox = SwingFactory.labeledCheckBox("enforce minimum heuristic score threshold");
+        enforceHeuristicScoreThresholdCheckBox.addActionListener(e -> updatedProposalSettings());
+        enforceHeuristicScoreThresholdCheckBox.setVisible(false);
+        enforceHeuristicScoreThresholdCheckBox.setToolTipText("Whether to discard places in the candidate tree, and thus also their subtrees, which do not meet the threshold.");
+        proposal.append(enforceHeuristicScoreThresholdCheckBox);
         permitSubtreeCutoffCheckBox = SwingFactory.labeledCheckBox("Permit over/underfed subtree cutoff");
         permitSubtreeCutoffCheckBox.addChangeListener(e -> updatedProposalSettings());
         // proposal.append(permitSubtreeCutoffCheckBox)
         respectWiringCheckBox = SwingFactory.labeledCheckBox("respect wiring constraints");
         respectWiringCheckBox.addChangeListener(e -> updatedProposalSettings());
+        respectWiringCheckBox.setToolTipText("Whether to integrate wiring constraints into the candidate tree traversal.");
         proposal.append(respectWiringCheckBox);
         supportRestartCheckBox = SwingFactory.labeledCheckBox("use restartable implementation");
         supportRestartCheckBox.addChangeListener(e -> updatedProposalSettings());
-        proposal.append(supportRestartCheckBox);
         proposal.completeWithWhitespace();
 
         // ** EVALUATION ** //
 
         TitledBorderPanel evaluation = new TitledBorderPanel("Evaluation");
-        concurrentReplayCheckBox = SwingFactory.labeledCheckBox("use concurrent replay implementation");
+        concurrentReplayCheckBox = SwingFactory.labeledCheckBox("use parallel replay implementation");
         concurrentReplayCheckBox.addChangeListener(e -> updatedEvaluationSettings());
+        concurrentReplayCheckBox.setToolTipText("Whether to favor a parallel (over variants) replay implementation. Influences performance.");
         evaluation.append(concurrentReplayCheckBox);
 
         permitNegativeMarkingsCheckBox = SwingFactory.labeledCheckBox("permit negative markings during token-based replay");
         permitNegativeMarkingsCheckBox.addChangeListener(e -> updatedEvaluationSettings());
+        permitNegativeMarkingsCheckBox.setToolTipText("Whether the token count during replay is clipped at zero, thus changing the overfed semantics.");
         evaluation.append(permitNegativeMarkingsCheckBox);
 
         restrictReplayBasedImplicitnessInput = SwingFactory.checkboxedComboBox("restrict replay-based implicitness testing", false, ImplicitnessReplayRestriction.values());
@@ -166,29 +183,41 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         restrictReplayBasedImplicitnessInput.getComboBox().addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedEvaluationSettings();
         });
+        restrictReplayBasedImplicitnessInput.getComboBox()
+                                            .setRenderer(createTooltippedListCellRenderer(ImmutableMap.of(ImplicitnessReplayRestriction.FittingOnAcceptedPlaces, "Replay is restricted to the variants which all previously accepted places, plus the new candidate, are replayable on.", ImplicitnessReplayRestriction.FittingOnEvaluatedPair, "Replay is restricted to the variants on which the new candidate and the singular place it is compared to are replayable on.")));
+        restrictReplayBasedImplicitnessInput.getCheckBox()
+                                            .setToolTipText("When replay is restricted to a fitting sub log, more places will be marked as implicit.");
         evaluation.append(restrictReplayBasedImplicitnessInput);
 
-        deltaAdaptationLabeledComboBox = SwingFactory.labeledComboBox("Delta Adaptation Function", FrameworkBridge.DELTA_FUNCTIONS.toArray(new FrameworkBridge.BridgedDeltaAdaptationFunctions[0]));
+        deltaAdaptationLabeledComboBox = SwingFactory.labeledComboBox("Delta Adaptation Function", FrameworkBridge.DELTA_FUNCTIONS.toArray(new FrameworkBridge.AnnotatedEvaluator[0]));
         deltaAdaptationFunctionComboBox = deltaAdaptationLabeledComboBox.getComboBox();
         deltaAdaptationFunctionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedEvaluationSettings();
         });
         deltaAdaptationLabeledComboBox.setVisible(false);
+        String tauDeltaLinkHtml = "<a href=\"https://www.researchgate.net/publication/359791457_Discovering_Process_Models_With_Long-Term_Dependencies_While_Providing_Guarantees_and_Handling_Infrequent_Behavior\">\"Discovering Process Models With Long-Term Dependencies While Providing Guarantees and Handling Infrequent Behavior\"</a>";
+        deltaAdaptationLabeledComboBox.addSpaced(SwingFactory.help(null, html("None - equal to delta=1<br>Constant - delta is not adapted<br>Linear - delta is adapted linearly along the maximum tree depth using the steepness parameter<br>Sigmoid - delta is adapted using a sigmoid function parameterized by the steepness<br>see " + tauDeltaLinkHtml + " for details")));
         evaluation.append(deltaAdaptationLabeledComboBox);
         evaluation.completeWithWhitespace();
 
         // ** COMPOSITION ** //
 
         TitledBorderPanel composition = new TitledBorderPanel("Composition");
-        LabeledComboBox<CompositionStrategy> compositionStrategyLabeledComboBox = SwingFactory.labeledComboBox("Variant", CompositionStrategy.values());
+        LabeledComboBox<ProMConfig.CompositionStrategy> compositionStrategyLabeledComboBox = SwingFactory.labeledComboBox("Variant", ProMConfig.CompositionStrategy.values());
         compositionStrategyComboBox = compositionStrategyLabeledComboBox.getComboBox();
         compositionStrategyComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedCompositionSettings();
         });
+        compositionStrategyLabeledComboBox.addSpaced(SwingFactory.help("Determines the composition strategy.", html("Standard - Candidate places are simply filtered according to the fitness threshold tau<br>Tau-Delta - see " + tauDeltaLinkHtml + " <br>Uniwired - see <a href=\"https://dx.doi.org/10.1007/978-3-030-37453-2_19\">Finding Uniwired Petri Nets Using eST-Miner</a>")));
         composition.append(compositionStrategyLabeledComboBox);
-        applyCIPRCheckBox = SwingFactory.labeledCheckBox("apply replay-based concurrent implicit place removal");
-        applyCIPRCheckBox.addChangeListener(e -> updatedCompositionSettings());
-        composition.append(applyCIPRCheckBox);
+        ciprVariantCheckboxedComboBox = SwingFactory.checkboxedComboBox("apply concurrent implicit place removal", true, new ProMConfig.CIPRVariant[]{ProMConfig.CIPRVariant.ReplayBased, ProMConfig.CIPRVariant.LPBased});
+        ciprVariantCheckboxedComboBox.getCheckBox().addChangeListener(e -> updatedCompositionSettings());
+        ciprVariantCheckboxedComboBox.getComboBox().addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) updatedCompositionSettings();
+        });
+        ciprVariantCheckboxedComboBox.getComboBox()
+                                     .setRenderer(createTooltippedListCellRenderer(ImmutableMap.of(ProMConfig.CIPRVariant.ReplayBased, "uses subregion implicitness on the markings obtained from replay", ProMConfig.CIPRVariant.LPBased, "uses lp optimization based structural implicitness")));
+        composition.append(ciprVariantCheckboxedComboBox);
         composition.completeWithWhitespace();
 
         // ** POST PROCESSING ** //
@@ -202,25 +231,29 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         TitledBorderPanel parameters = new TitledBorderPanel("Parameters");
         parameters.setFocusable(true); // focus is still not lost on click outside
         tauInput = SwingFactory.textBasedInputField("tau", zeroOneDoubleFunc, 10);
+        tauInput.getTextField().setToolTipText("Minimal place fitness threshold in [0, 1].");
         tauField = tauInput.getTextField();
         Consumer<Boolean> listener = b -> updatedParameters();
         tauInput.addVerificationStatusListener(listener);
         parameters.append(tauInput);
         deltaInput = SwingFactory.textBasedInputField("delta", zeroOneDoubleFunc, 10);
+        deltaInput.getTextField().setToolTipText("Delta parameter in [0,1].");
         deltaField = deltaInput.getTextField();
         deltaInput.addVerificationStatusListener(listener);
         deltaInput.setVisible(false);
         parameters.append(deltaInput);
         steepnessInput = SwingFactory.textBasedInputField("steepness", posIntFunc, 10);
+        steepnessInput.setToolTipText("Steepness parameter in {1,...}.");
         steepnessInput.addVerificationStatusListener(listener);
         steepnessField = steepnessInput.getTextField();
         steepnessInput.setVisible(false);
         parameters.append(steepnessInput);
-        minimumHeuristicScoreInput = SwingFactory.textBasedInputField("minimum heuristic score", zeroOneDoubleFunc, 10);
-        minimumHeuristicScoreInput.addVerificationStatusListener(listener);
-        minimumHeuristicScoreInput.setVisible(false);
-        parameters.append(minimumHeuristicScoreInput);
+        heuristicThresholdInput = SwingFactory.comboBoxAndTextBasedInputField("heuristic threshold", OrderingRelation.values(), doubleFunc, 10);
+        heuristicThresholdInput.addVerificationStatusListener(listener);
+        heuristicThresholdInput.setVisible(false);
+        parameters.append(heuristicThresholdInput);
         depthInput = SwingFactory.activatableTextBasedInputField("max depth", false, posIntFunc, 10);
+        depthInput.setToolTipText("Max depth to traverse candidate tree to in {1,...}.");
         depthField = depthInput.getTextField();
         depthInput.addVerificationStatusListener(listener);
         parameters.append(depthInput);
@@ -231,11 +264,15 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         TitledBorderPanel execution = new TitledBorderPanel("Execution");
         execution.setFocusable(true);
         discoveryTimeLimitInput = SwingFactory.activatableTextBasedInputField("discovery time limit", false, durationFunc, 25);
+        discoveryTimeLimitInput.getCheckBox()
+                               .setToolTipText("Real time limit for place discovery. Gracefully continues to post processing with intermediate result.");
         discoveryTimeLimitInput.getTextField()
                                .setToolTipText("<html>ISO-8601 format: P<it>x</it>DT<it>x</it>H<it>x</it>M<it>x</it>.<it>x</it>S</html>");
         discoveryTimeLimitInput.addVerificationStatusListener(listener);
         execution.append(discoveryTimeLimitInput);
         totalTimeLimitInput = SwingFactory.activatableTextBasedInputField("total time limit", false, durationFunc, 25);
+        totalTimeLimitInput.getCheckBox()
+                           .setToolTipText("Real time limit over entire computation (discovery + post processing). Stops abruptly.");
         totalTimeLimitInput.getTextField()
                            .setToolTipText("<html>ISO-8601 format: P<it>x</it>DT<it>x</it>H<it>x</it>M<it>x</it>.<it>x</it>S</html>");
         totalTimeLimitInput.addVerificationStatusListener(listener);
@@ -260,6 +297,8 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         add(evaluation, c);
         c.gridy++;
         add(composition, c);
+        c.gridy++;
+        add(Box.createHorizontalStrut(650), c);
         c.gridy = 0;
         c.gridx = 1;
         c.gridheight = 2;
@@ -270,6 +309,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         c.gridy++;
         add(execution, c);
 
+
         if (controller.getParentController().getProMConfig() != null) presetComboBox.setSelectedItem(Preset.Last);
         else if (controller.getParentController().getLoadedProMConfig() != null)
             presetComboBox.setSelectedItem(Preset.Loaded);
@@ -278,6 +318,17 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
             updatedPreset();
         }
 
+    }
+
+    private static DefaultListCellRenderer createTooltippedListCellRenderer(Map<Object, String> tooltips) {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (tooltips.containsKey(value)) list.setToolTipText(tooltips.get(value));
+                return comp;
+            }
+        };
     }
 
     public static boolean validatePostProcessingPipeline(MyListModel<FrameworkBridge.AnnotatedPostProcessor> ppPipelineModel) {
@@ -298,32 +349,30 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         respectWiringCheckBox.setSelected(pc.respectWiring);
         supportRestartCheckBox.setSelected(pc.supportRestart);
         heuristicComboBox.setSelectedItem(pc.bridgedHeuristics);
-        enforceMinimumHeuristicScoreThresholdCheckBox.setSelected(pc.enforceMinimumHeuristicThreshold);
-        minimumHeuristicScoreInput.setText(pc.enforceMinimumHeuristicThreshold ? Double.toString(pc.minimumHeuristicThreshold) : null);
+        enforceHeuristicScoreThresholdCheckBox.setSelected(pc.enforceHeuristicThreshold);
         concurrentReplayCheckBox.setSelected(pc.concurrentReplay);
         permitNegativeMarkingsCheckBox.setSelected(pc.permitNegativeMarkingsDuringReplay);
-        switch (pc.implicitnessReplaySubLogRestriction) {
-            case None:
-                restrictReplayBasedImplicitnessInput.getCheckBox().setSelected(false);
-                break;
-            case FittingOnAcceptedPlacesAndEvaluatedPlace:
-                restrictReplayBasedImplicitnessInput.getCheckBox().setSelected(true);
-                restrictReplayBasedImplicitnessInput.getComboBox()
-                                                    .setSelectedItem(ImplicitnessReplayRestriction.FittingOnAcceptedPlaces);
-                break;
-            case MerelyFittingOnEvaluatedPair:
-                restrictReplayBasedImplicitnessInput.getCheckBox().setSelected(true);
-                restrictReplayBasedImplicitnessInput.getComboBox()
-                                                    .setSelectedItem(ImplicitnessReplayRestriction.FittingOnEvaluatedPair);
-                break;
-        }
+
+        restrictReplayBasedImplicitnessInput.getCheckBox()
+                                            .setSelected(pc.implicitnessReplaySubLogRestriction != ImplicitnessTestingParameters.SubLogRestriction.None);
+        if (pc.implicitnessReplaySubLogRestriction == ImplicitnessTestingParameters.SubLogRestriction.FittingOnAcceptedPlacesAndEvaluatedPlace)
+            restrictReplayBasedImplicitnessInput.getComboBox()
+                                                .setSelectedItem(ImplicitnessReplayRestriction.FittingOnAcceptedPlaces);
+        else if (pc.implicitnessReplaySubLogRestriction == ImplicitnessTestingParameters.SubLogRestriction.MerelyFittingOnEvaluatedPair)
+            restrictReplayBasedImplicitnessInput.getComboBox()
+                                                .setSelectedItem(ImplicitnessReplayRestriction.FittingOnEvaluatedPair);
         compositionStrategyComboBox.setSelectedItem(pc.compositionStrategy);
-        applyCIPRCheckBox.setSelected(pc.applyCIPR);
+        ciprVariantCheckboxedComboBox.getCheckBox().setSelected(pc.ciprVariant != ProMConfig.CIPRVariant.None);
+        ciprVariantCheckboxedComboBox.getComboBox()
+                                     .setSelectedItem(pc.ciprVariant != ProMConfig.CIPRVariant.None ? pc.ciprVariant : ProMConfig.CIPRVariant.ReplayBased);
         ppPipelineModel.clear();
         pc.ppPipeline.forEach(ppPipelineModel::append);
         tauInput.setText(Double.toString(pc.tau));
         deltaInput.setText(pc.delta < 0 ? null : Double.toString(pc.delta));
         steepnessInput.setText(pc.steepness < 0 ? null : Integer.toString(pc.steepness));
+        if (pc.enforceHeuristicThreshold)
+            heuristicThresholdInput.setBoth(pc.heuristicThresholdRelation, Double.toString(pc.heuristicThreshold));
+        else heuristicThresholdInput.setBoth(OrderingRelation.gt, null);
         if (pc.depth >= 0) {
             depthInput.setText(Integer.toString(pc.depth));
             depthInput.activate();
@@ -337,19 +386,21 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
             totalTimeLimitInput.setText(pc.totalTimeLimit.toString());
             totalTimeLimitInput.activate();
         } else totalTimeLimitInput.deactivate();
+
+        revalidate();
         updateReadinessState();
     }
 
     public ProMConfig collectConfig() {
         ProMConfig pc = new ProMConfig();
 
-        pc.supervisionSetting = (SupervisionSetting) supervisionComboBox.getSelectedItem();
+        pc.supervisionSetting = (ProMConfig.SupervisionSetting) supervisionComboBox.getSelectedItem();
         pc.logToFile = logToFileCheckBox.isSelected();
-        pc.treeExpansionSetting = (TreeExpansionSetting) expansionStrategyComboBox.getSelectedItem();
+        pc.treeExpansionSetting = (ProMConfig.TreeExpansionSetting) expansionStrategyComboBox.getSelectedItem();
         pc.respectWiring = respectWiringCheckBox.isSelected();
         pc.supportRestart = supportRestartCheckBox.isSelected();
-        pc.bridgedHeuristics = (FrameworkBridge.BridgedHeuristics) heuristicComboBox.getSelectedItem();
-        pc.enforceMinimumHeuristicThreshold = enforceMinimumHeuristicScoreThresholdCheckBox.isSelected();
+        pc.bridgedHeuristics = (FrameworkBridge.AnnotatedTreeHeuristic) heuristicComboBox.getSelectedItem();
+        pc.enforceHeuristicThreshold = enforceHeuristicScoreThresholdCheckBox.isSelected();
         pc.concurrentReplay = concurrentReplayCheckBox.isSelected();
         pc.permitNegativeMarkingsDuringReplay = permitNegativeMarkingsCheckBox.isSelected();
         boolean selected = restrictReplayBasedImplicitnessInput.getCheckBox().isSelected();
@@ -366,9 +417,11 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
                     break;
             }
         } else pc.implicitnessReplaySubLogRestriction = ImplicitnessTestingParameters.SubLogRestriction.None;
-        pc.bridgedDelta = (FrameworkBridge.BridgedDeltaAdaptationFunctions) deltaAdaptationFunctionComboBox.getSelectedItem();
-        pc.compositionStrategy = (CompositionStrategy) compositionStrategyComboBox.getSelectedItem();
-        pc.applyCIPR = applyCIPRCheckBox.isSelected();
+        pc.bridgedDelta = (FrameworkBridge.AnnotatedEvaluator) deltaAdaptationFunctionComboBox.getSelectedItem();
+        pc.compositionStrategy = (ProMConfig.CompositionStrategy) compositionStrategyComboBox.getSelectedItem();
+        pc.ciprVariant = ciprVariantCheckboxedComboBox.getCheckBox()
+                                                      .isSelected() ? (ProMConfig.CIPRVariant) ciprVariantCheckboxedComboBox.getComboBox()
+                                                                                                                            .getSelectedItem() : ProMConfig.CIPRVariant.None;
         if (!validatePostProcessingPipeline(ppPipelineModel)) return null;
         pc.ppPipeline = ImmutableList.copyOf(ppPipelineModel.iterator());
         Double rawTau = tauInput.getInput();
@@ -378,8 +431,9 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         Integer rawSteepness = steepnessInput.getInput();
         pc.steepness = rawSteepness != null ? rawSteepness : -1;
         Integer rawDepthLimit = depthInput.getInput();
-        Double rawMinimumHeuristic = minimumHeuristicScoreInput.getInput();
-        pc.minimumHeuristicThreshold = rawMinimumHeuristic != null ? rawMinimumHeuristic : -1;
+        Double rawMinimumHeuristic = heuristicThresholdInput.getInput();
+        pc.heuristicThreshold = rawMinimumHeuristic != null ? rawMinimumHeuristic : -1;
+        pc.heuristicThresholdRelation = heuristicThresholdInput.getSelectedItem();
         pc.depth = rawDepthLimit != null ? rawDepthLimit : -1;
         pc.discoveryTimeLimit = discoveryTimeLimitInput.getInput();
         pc.totalTimeLimit = totalTimeLimitInput.getInput();
@@ -405,21 +459,28 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     private void updatedCompositionSettings() {
-        deltaAdaptationLabeledComboBox.setVisible(compositionStrategyComboBox.getSelectedItem() == CompositionStrategy.TauDelta);
-        deltaInput.setVisible(compositionStrategyComboBox.getSelectedItem() == CompositionStrategy.TauDelta && deltaAdaptationFunctionComboBox.getSelectedItem() != FrameworkBridge.BridgedDeltaAdaptationFunctions.None);
-        steepnessInput.setVisible(compositionStrategyComboBox.getSelectedItem() == CompositionStrategy.TauDelta && (deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear || deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid));
+        ciprVariantCheckboxedComboBox.getComboBox()
+                                     .setVisible(ciprVariantCheckboxedComboBox.getCheckBox().isSelected());
+        deltaAdaptationLabeledComboBox.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta);
+        deltaInput.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta && deltaAdaptationFunctionComboBox.getSelectedItem() != FrameworkBridge.BridgedDeltaAdaptationFunctions.None.getBridge());
+        steepnessInput.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta && (deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear.getBridge() || deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid.getBridge()));
         revalidate();
         updateReadinessState();
     }
 
     private void updatedEvaluationSettings() {
+        steepnessInput.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta && (deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear.getBridge() || deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid.getBridge()));
+        restrictReplayBasedImplicitnessInput.getComboBox()
+                                            .setVisible(restrictReplayBasedImplicitnessInput.getCheckBox()
+                                                                                            .isSelected());
+        revalidate();
         updateReadinessState();
     }
 
     private void updatedProposalSettings() {
-        bridgedHeuristicsLabeledComboBox.setVisible(expansionStrategyComboBox.getSelectedItem() == TreeExpansionSetting.Heuristic);
-        enforceMinimumHeuristicScoreThresholdCheckBox.setVisible(expansionStrategyComboBox.getSelectedItem() == TreeExpansionSetting.Heuristic);
-        minimumHeuristicScoreInput.setVisible(expansionStrategyComboBox.getSelectedItem() == TreeExpansionSetting.Heuristic && enforceMinimumHeuristicScoreThresholdCheckBox.isSelected());
+        bridgedHeuristicsLabeledComboBox.setVisible(expansionStrategyComboBox.getSelectedItem() == ProMConfig.TreeExpansionSetting.Heuristic);
+        enforceHeuristicScoreThresholdCheckBox.setVisible(expansionStrategyComboBox.getSelectedItem() == ProMConfig.TreeExpansionSetting.Heuristic);
+        heuristicThresholdInput.setVisible(expansionStrategyComboBox.getSelectedItem() == ProMConfig.TreeExpansionSetting.Heuristic && enforceHeuristicScoreThresholdCheckBox.isSelected());
         revalidate();
         updateReadinessState();
     }
@@ -450,10 +511,6 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         });
     }
 
-    public enum SupervisionSetting {
-        None, PerformanceOnly, Full
-    }
-
     public enum Preset {
         Default(ProMConfig::getDefault), Lightweight(ProMConfig::getLightweight), Last(null), Loaded(null);
 
@@ -468,33 +525,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         }
     }
 
-    public enum TreeExpansionSetting {
-        BFS, DFS, Heuristic
-    }
-
-    public enum CompositionStrategy {
-        Standard("Standard", ""), TauDelta("Tau-Delta", ""), Uniwired("Uniwired", "");
-
-        private final String printableName;
-        private final String description;
-
-        CompositionStrategy(String printableName, String description) {
-            this.printableName = printableName;
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        @Override
-        public String toString() {
-            return printableName;
-        }
-    }
-
     public enum ImplicitnessReplayRestriction {
         FittingOnAcceptedPlaces, FittingOnEvaluatedPair
     }
-
 }

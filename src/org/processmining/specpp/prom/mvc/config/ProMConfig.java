@@ -1,6 +1,7 @@
 package org.processmining.specpp.prom.mvc.config;
 
 import com.google.common.collect.ImmutableList;
+import org.processmining.specpp.datastructures.vectorization.OrderingRelation;
 import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 
@@ -8,18 +9,19 @@ import java.time.Duration;
 import java.util.List;
 
 public class ProMConfig {
-    ConfigurationPanel.SupervisionSetting supervisionSetting;
+    SupervisionSetting supervisionSetting;
     boolean logToFile;
-    ConfigurationPanel.TreeExpansionSetting treeExpansionSetting;
+    TreeExpansionSetting treeExpansionSetting;
     boolean respectWiring, supportRestart;
-    FrameworkBridge.BridgedHeuristics bridgedHeuristics;
+    FrameworkBridge.AnnotatedTreeHeuristic bridgedHeuristics;
     boolean concurrentReplay, permitNegativeMarkingsDuringReplay;
     ImplicitnessTestingParameters.SubLogRestriction implicitnessReplaySubLogRestriction;
-    FrameworkBridge.BridgedDeltaAdaptationFunctions bridgedDelta;
-    public boolean enforceMinimumHeuristicThreshold;
-    public double minimumHeuristicThreshold;
-    ConfigurationPanel.CompositionStrategy compositionStrategy;
-    boolean applyCIPR;
+    FrameworkBridge.AnnotatedEvaluator bridgedDelta;
+    public boolean enforceHeuristicThreshold;
+    public double heuristicThreshold;
+    public OrderingRelation heuristicThresholdRelation;
+    CompositionStrategy compositionStrategy;
+    CIPRVariant ciprVariant;
     List<FrameworkBridge.AnnotatedPostProcessor> ppPipeline;
     double tau, delta;
     public int steepness;
@@ -31,24 +33,24 @@ public class ProMConfig {
 
     public static ProMConfig getDefault() {
         ProMConfig pc = new ProMConfig();
-        pc.supervisionSetting = ConfigurationPanel.SupervisionSetting.Full;
+        pc.supervisionSetting = SupervisionSetting.Full;
         pc.logToFile = true;
-        pc.treeExpansionSetting = ConfigurationPanel.TreeExpansionSetting.Heuristic;
+        pc.treeExpansionSetting = TreeExpansionSetting.Heuristic;
         pc.respectWiring = false;
         pc.supportRestart = false;
-        pc.bridgedHeuristics = FrameworkBridge.BridgedHeuristics.BFS_Emulation;
-        pc.enforceMinimumHeuristicThreshold = false;
+        pc.bridgedHeuristics = FrameworkBridge.BridgedHeuristics.BFS_Emulation.getBridge();
+        pc.enforceHeuristicThreshold = false;
         pc.concurrentReplay = false;
         pc.permitNegativeMarkingsDuringReplay = false;
         pc.implicitnessReplaySubLogRestriction = ImplicitnessTestingParameters.SubLogRestriction.None;
-        pc.bridgedDelta = FrameworkBridge.BridgedDeltaAdaptationFunctions.Constant;
-        pc.compositionStrategy = ConfigurationPanel.CompositionStrategy.Standard;
-        pc.applyCIPR = true;
-        pc.ppPipeline = ImmutableList.of(FrameworkBridge.BridgedPostProcessors.ReplayBasedImplicitPlaceRemoval.getBridge(), FrameworkBridge.BridgedPostProcessors.SelfLoopPlacesMerging.getBridge(), FrameworkBridge.BridgedPostProcessors.ProMPetrinetConversion.getBridge());
+        pc.bridgedDelta = FrameworkBridge.BridgedDeltaAdaptationFunctions.Constant.getBridge();
+        pc.compositionStrategy = CompositionStrategy.Standard;
+        pc.ciprVariant = CIPRVariant.ReplayBased;
+        pc.ppPipeline = ImmutableList.of(FrameworkBridge.BridgedPostProcessors.LPBasedImplicitPlaceRemoval.getBridge(), FrameworkBridge.BridgedPostProcessors.ProMPetrinetConversion.getBridge());
         pc.tau = 1.0;
         pc.delta = -1.0;
         pc.steepness = -1;
-        pc.minimumHeuristicThreshold = -1;
+        pc.heuristicThreshold = -1;
         pc.depth = -1;
         pc.discoveryTimeLimit = null;
         pc.totalTimeLimit = null;
@@ -57,19 +59,62 @@ public class ProMConfig {
 
     public static ProMConfig getLightweight() {
         ProMConfig pc = getDefault();
-        pc.supervisionSetting = ConfigurationPanel.SupervisionSetting.None;
-        pc.treeExpansionSetting = ConfigurationPanel.TreeExpansionSetting.DFS;
+        pc.supervisionSetting = SupervisionSetting.None;
+        pc.treeExpansionSetting = TreeExpansionSetting.DFS;
         return pc;
     }
 
     public boolean validate() {
         boolean outOfRange = tau < 0 || tau > 1.0;
-        outOfRange |= compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta && delta < 0;
+        outOfRange |= compositionStrategy == CompositionStrategy.TauDelta && delta < 0;
         boolean incomplete = (supervisionSetting == null | treeExpansionSetting == null | compositionStrategy == null);
-        incomplete |= treeExpansionSetting == ConfigurationPanel.TreeExpansionSetting.Heuristic && bridgedHeuristics == null;
-        incomplete |= enforceMinimumHeuristicThreshold && minimumHeuristicThreshold < 0;
-        incomplete |= compositionStrategy == ConfigurationPanel.CompositionStrategy.TauDelta && (bridgedDelta == null || delta < 0 || ((bridgedDelta == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear || bridgedDelta == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid) && steepness < 0));
+        incomplete |= treeExpansionSetting == TreeExpansionSetting.Heuristic && bridgedHeuristics == null;
+        incomplete |= enforceHeuristicThreshold && (heuristicThreshold < 0 || heuristicThresholdRelation == null);
+        incomplete |= compositionStrategy == CompositionStrategy.TauDelta && (bridgedDelta == null || delta < 0 || ((bridgedDelta == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear.getBridge() || bridgedDelta == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid.getBridge()) && steepness < 0));
         return !outOfRange && !incomplete;
+    }
+
+    public enum SupervisionSetting {
+        None, PerformanceOnly, Full
+    }
+
+    public enum TreeExpansionSetting {
+        BFS, DFS, Heuristic
+    }
+
+    public enum CompositionStrategy {
+        Standard("Standard", ""), TauDelta("Tau-Delta", ""), Uniwired("Uniwired", "");
+
+        private final String printableName;
+        private final String description;
+
+        CompositionStrategy(String printableName, String description) {
+            this.printableName = printableName;
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public String toString() {
+            return printableName;
+        }
+    }
+
+    public enum CIPRVariant {
+        None(ImplicitnessTestingParameters.CIPRVersion.None), ReplayBased(ImplicitnessTestingParameters.CIPRVersion.ReplayBased), LPBased(ImplicitnessTestingParameters.CIPRVersion.LPBased);
+
+        private final ImplicitnessTestingParameters.CIPRVersion bridge;
+
+        CIPRVariant(ImplicitnessTestingParameters.CIPRVersion bridge) {
+            this.bridge = bridge;
+        }
+
+        public ImplicitnessTestingParameters.CIPRVersion bridge() {
+            return bridge;
+        }
     }
 
 }

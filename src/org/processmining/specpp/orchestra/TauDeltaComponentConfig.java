@@ -6,7 +6,7 @@ import org.processmining.specpp.base.impls.PlaceFitnessFilter;
 import org.processmining.specpp.base.impls.QueueingDeltaComposer;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
-import org.processmining.specpp.composition.PlaceCollection;
+import org.processmining.specpp.composition.TrackingPlaceCollection;
 import org.processmining.specpp.config.Configurators;
 import org.processmining.specpp.config.EfficientTreeConfiguration;
 import org.processmining.specpp.config.ProposerComposerConfiguration;
@@ -39,7 +39,7 @@ public class TauDeltaComponentConfig extends BaseSPECppComponentConfig {
     public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, PetriNet> getProposerComposerConfiguration(GlobalComponentRepository gcr) {
         return Configurators.<Place, AdvancedComposition<Place>, PetriNet>proposerComposer()
                             .proposer(new ConstrainablePlaceProposer.Builder())
-                            .composition(PlaceCollection::new)
+                            .composition(TrackingPlaceCollection::new)
                             .terminalComposer(PlaceAccepter::new)
                             .composerChain(PlaceFitnessFilter::new, QueueingDeltaComposer::new)
                             .build(gcr);
