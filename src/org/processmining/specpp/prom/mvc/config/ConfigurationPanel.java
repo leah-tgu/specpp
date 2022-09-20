@@ -99,6 +99,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     private final JCheckBox enforceHeuristicScoreThresholdCheckBox;
     private final ComboBoxAndTextBasedInputField<Double, OrderingRelation> heuristicThresholdInput;
     private final CheckboxedComboBox<ProMConfig.CIPRVariant> ciprVariantCheckboxedComboBox;
+    private final JCheckBox logHeuristicsCheckBox;
 
     public ConfigurationPanel(ConfigurationController controller) {
         super(controller, new GridBagLayout());
@@ -114,7 +115,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         presetComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedPreset();
         });
-        presetLabeledComboBox.addSpaced(SwingFactory.help("A preset resets all subsequently configured options.", () -> "Default - the default\nLightweight - a config with which sacrifices supervision against performance\nLast - the previously executed config\nLoaded - (optional) available if this plugin was applied to a log AND previously exported config"));
+        presetLabeledComboBox.add(SwingFactory.help("A preset resets all subsequently configured options.", () -> "Default - the default\nLightweight - a config with which sacrifices supervision against performance\nLast - the previously executed config\nLoaded - (optional) available if this plugin was applied to a log AND previously exported config"));
         supervision.append(presetLabeledComboBox);
         LabeledComboBox<ProMConfig.SupervisionSetting> supervisionSettingLabeledComboBox = SwingFactory.labeledComboBox("Level of Detail of Supervision", ProMConfig.SupervisionSetting.values());
         supervisionComboBox = supervisionSettingLabeledComboBox.getComboBox();
@@ -122,13 +123,18 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
             if (e.getStateChange() == ItemEvent.SELECTED) updatedSupervisionSettings();
         });
         supervision.append(supervisionSettingLabeledComboBox);
-        supervisionSettingLabeledComboBox.addSpaced(SwingFactory.help(null, "Determines whether event generating implementations of the subsequent configured components will be used.\nEvent generation increases overhead but greatly benefits behavior analysis of the configured algorithm."));
+        supervisionSettingLabeledComboBox.add(SwingFactory.help(null, "Determines whether event generating implementations of the subsequent configured components will be used.\nEvent generation increases overhead but greatly benefits behavior analysis of the configured algorithm."));
         logToFileCheckBox = SwingFactory.labeledCheckBox("log to file");
-
         String s = OutputPathParameters.getDefault().getFilePath(PathTools.OutputFileType.MAIN_LOG, "main");
         logToFileCheckBox.setToolTipText(String.format("Whether to setup a file logger to \"%s\"", s));
         logToFileCheckBox.addChangeListener(e -> updatedSupervisionSettings());
-        supervision.append(logToFileCheckBox);
+        HorizontalJPanel logToWhatPanel = new HorizontalJPanel();
+        logHeuristicsCheckBox = SwingFactory.labeledCheckBox("log heuristics");
+        logHeuristicsCheckBox.addChangeListener(e -> updatedSupervisionSettings());
+        logHeuristicsCheckBox.setVisible(false);
+        logToWhatPanel.add(logToFileCheckBox);
+        logToWhatPanel.add(logHeuristicsCheckBox);
+        supervision.append(logToWhatPanel);
         trackCandidateTreeCheckBox = SwingFactory.labeledCheckBox("track candidate tree");
         trackCandidateTreeCheckBox.addChangeListener(e -> updatedSupervisionSettings());
         //supervision.append(trackCandidateTreeCheckBox);
@@ -139,7 +145,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         TitledBorderPanel proposal = new TitledBorderPanel("Proposal");
         LabeledComboBox<ProMConfig.TreeExpansionSetting> candidateEnumerationLabeledComboBox = SwingFactory.labeledComboBox("Place Enumeration", ProMConfig.TreeExpansionSetting.values());
         expansionStrategyComboBox = candidateEnumerationLabeledComboBox.getComboBox();
-        candidateEnumerationLabeledComboBox.addSpaced(SwingFactory.help("The strategy by which the place candidate tree is traversed.", "BFS - breadth first search\nDFS - depth first search\nHeuristic - using the subsequently configured heuristic"));
+        candidateEnumerationLabeledComboBox.add(SwingFactory.help("The strategy by which the place candidate tree is traversed.", "BFS - breadth first search\nDFS - depth first search\nHeuristic - using the subsequently configured heuristic"));
         proposal.append(candidateEnumerationLabeledComboBox);
         bridgedHeuristicsLabeledComboBox = SwingFactory.labeledComboBox("Heuristic", FrameworkBridge.HEURISTICS.toArray(new FrameworkBridge.AnnotatedTreeHeuristic[0]));
         heuristicComboBox = bridgedHeuristicsLabeledComboBox.getComboBox();
@@ -147,7 +153,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
             if (e.getStateChange() == ItemEvent.SELECTED) updatedProposalSettings();
         });
         bridgedHeuristicsLabeledComboBox.setVisible(false);
-        bridgedHeuristicsLabeledComboBox.addSpaced(SwingFactory.help(null, html("Place Interestingness - based on eventually follows relation of activities (see <a href=\"https://dx.doi.org/10.1007/978-3-030-66498-5_25\">Improving the State-Space Traversal of the eST-Miner by Exploiting Underlying Log Structures</a>)<br>BFS Emulation - equals depth(place)<br>DFS Emulation - equals -depth(place)")));
+        bridgedHeuristicsLabeledComboBox.add(SwingFactory.help(null, html("Place Interestingness - based on eventually follows relation of activities (see <a href=\"https://dx.doi.org/10.1007/978-3-030-66498-5_25\">Improving the State-Space Traversal of the eST-Miner by Exploiting Underlying Log Structures</a>)<br>BFS Emulation - equals depth(place)<br>DFS Emulation - equals -depth(place)")));
         proposal.append(bridgedHeuristicsLabeledComboBox);
         enforceHeuristicScoreThresholdCheckBox = SwingFactory.labeledCheckBox("enforce heuristic score threshold");
         enforceHeuristicScoreThresholdCheckBox.addActionListener(e -> updatedProposalSettings());
@@ -196,7 +202,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         });
         deltaAdaptationLabeledComboBox.setVisible(false);
         String tauDeltaLinkHtml = "<a href=\"https://www.researchgate.net/publication/359791457_Discovering_Process_Models_With_Long-Term_Dependencies_While_Providing_Guarantees_and_Handling_Infrequent_Behavior\">Discovering Process Models With Long-Term Dependencies While Providing Guarantees and Handling Infrequent Behavior</a>";
-        deltaAdaptationLabeledComboBox.addSpaced(SwingFactory.help(null, html("None - equal to delta=1<br>Constant - delta is not adapted<br>Linear - delta is adapted linearly along the maximum tree depth using the steepness parameter<br>Sigmoid - delta is adapted using a sigmoid function parameterized by the steepness<br>see " + tauDeltaLinkHtml + " for details")));
+        deltaAdaptationLabeledComboBox.add(SwingFactory.help(null, html("None - equal to delta=1<br>Constant - delta is not adapted<br>Linear - delta is adapted linearly along the maximum tree depth using the steepness parameter<br>Sigmoid - delta is adapted using a sigmoid function parameterized by the steepness<br>see " + tauDeltaLinkHtml + " for details")));
         evaluation.append(deltaAdaptationLabeledComboBox);
         evaluation.completeWithWhitespace();
 
@@ -208,7 +214,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         compositionStrategyComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedCompositionSettings();
         });
-        compositionStrategyLabeledComboBox.addSpaced(SwingFactory.help("Determines the composition strategy.", html("Standard - Candidate places are simply filtered according to the fitness threshold tau<br>Tau-Delta - see " + tauDeltaLinkHtml + " <br>Uniwired - see <a href=\"https://dx.doi.org/10.1007/978-3-030-37453-2_19\">Finding Uniwired Petri Nets Using eST-Miner</a>")));
+        compositionStrategyLabeledComboBox.add(SwingFactory.help("Determines the composition strategy.", html("Standard - Candidate places are simply filtered according to the fitness threshold tau<br>Tau-Delta - see " + tauDeltaLinkHtml + " <br>Uniwired - see <a href=\"https://dx.doi.org/10.1007/978-3-030-37453-2_19\">Finding Uniwired Petri Nets Using eST-Miner</a>")));
         composition.append(compositionStrategyLabeledComboBox);
         ciprVariantCheckboxedComboBox = SwingFactory.checkboxedComboBox("apply concurrent implicit place removal", true, new ProMConfig.CIPRVariant[]{ProMConfig.CIPRVariant.ReplayBased, ProMConfig.CIPRVariant.LPBased});
         ciprVariantCheckboxedComboBox.getCheckBox().addChangeListener(e -> updatedCompositionSettings());
@@ -509,6 +515,12 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     private void updatedSupervisionSettings() {
+        if (logToFileCheckBox.isSelected()) {
+            logHeuristicsCheckBox.setVisible(true);
+        } else {
+            logHeuristicsCheckBox.setSelected(false);
+            logHeuristicsCheckBox.setVisible(false);
+        }
         updateReadinessState();
     }
 

@@ -4,6 +4,7 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 import com.google.common.collect.Multimap;
 import org.processmining.framework.util.ui.widgets.ProMComboBox;
 import org.processmining.framework.util.ui.widgets.ProMTable;
+import org.processmining.specpp.prom.mvc.config.ProMConfig;
 import org.processmining.specpp.prom.util.Iconic;
 
 import javax.swing.*;
@@ -13,6 +14,7 @@ import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -149,5 +151,20 @@ public class SwingFactory {
 
     public static String html(String s) {
         return "<html>" + s + "</html>";
+    }
+
+    public static DefaultListCellRenderer getMyListCellRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel comp = ((JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus));
+                if (value instanceof ProMConfig.DisplayableEnum) {
+                    ProMConfig.DisplayableEnum displayableEnum = (ProMConfig.DisplayableEnum) value;
+                    comp.setText(displayableEnum.getDisplayText());
+                    comp.setToolTipText(displayableEnum.getDescription());
+                } else comp.setToolTipText(Objects.toString(value));
+                return comp;
+            }
+        };
     }
 }

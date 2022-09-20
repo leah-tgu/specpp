@@ -85,7 +85,7 @@ public class PostProcessingConfigPanel extends JPanel {
         JLabel leftHeaderLabel = SwingFactory.createHeader("Available Post Processors");
         HorizontalJPanel leftHeader = new HorizontalJPanel();
         leftHeader.add(leftHeaderLabel);
-        leftHeader.addSpaced(SwingFactory.help(null, SwingFactory.html("The left table lists all available post processing step implementations.<br>The right list contains the currently configured post processing pipeline.<br>Use drag & drop to add, remove and reorder the postprocessing steps as desired.<br>The pipeline is executed in top-to-bottom, so all in & output types need to be compatible. A type check is displayed below the list.<br>A technical note on the types \"PetriNet\" and \"ProMPetrinetWrapper\": this plugin internally uses the former class for discovery and provides the latter for <it>theoretical</it> interoperability with arbitrary ProM plugins used as post processors.")));
+        leftHeader.add(SwingFactory.help(null, SwingFactory.html("The left table lists all available post processing step implementations.<br>The right list contains the currently configured post processing pipeline.<br>Use drag & drop to add, remove and reorder the postprocessing steps as desired.<br>The pipeline is executed in top-to-bottom, so all in & output types need to be compatible. A type check is displayed below the list.<br>A technical note on the types \"PetriNet\" and \"ProMPetrinetWrapper\": this plugin internally uses the former class for discovery and provides the latter for <it>theoretical</it> interoperability with arbitrary ProM plugins used as post processors.")));
         add(leftHeader, ppc);
         ppc.fill = GridBagConstraints.BOTH;
         ppc.weighty = 1;

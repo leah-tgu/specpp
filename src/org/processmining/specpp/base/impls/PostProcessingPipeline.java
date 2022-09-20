@@ -2,6 +2,7 @@ package org.processmining.specpp.base.impls;
 
 import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.base.Result;
+import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,6 @@ public class PostProcessingPipeline<R extends Result, F extends Result> implemen
         Result r = result;
         for (PostProcessor postProcessor : line) {
             r = postProcessor.postProcess(r);
-            results.add(r);
         }
         return (F) r;
     }
@@ -54,6 +54,15 @@ public class PostProcessingPipeline<R extends Result, F extends Result> implemen
             callback.accept(r);
         }
         return (F) r;
+    }
+
+    protected static <I extends Result, O extends Result> O tryme(PostProcessor<I, O> pp, I r) {
+        try {
+            return pp.postProcess(r);
+        } catch (Exception e) {
+            DebuggingSupervisor.debug("Post Processing Pipeline", "Execution of " + pp + "failed with:\n" + e.getMessage());
+        }
+        return null;
     }
 
     public int getPipelineLength() {

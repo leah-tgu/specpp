@@ -52,6 +52,8 @@ public class LPBasedImplicitnessCalculator extends AbstractGlobalComponentSystem
     }
 
     public boolean isImplicitAmong(Place placeToTest, Collection<Place> existingPlaces) {
+        if (existingPlaces.isEmpty()) return false;
+
         ArrayList<Place> places = new ArrayList<>(1 + existingPlaces.size());
         places.add(placeToTest);
         places.addAll(existingPlaces);

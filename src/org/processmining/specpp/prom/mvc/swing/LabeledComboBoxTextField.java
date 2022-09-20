@@ -12,6 +12,7 @@ public class LabeledComboBoxTextField<T> extends LabeledTextField {
         super(new JTextField(inputTextColumns));
         add(SlickerFactory.instance().createLabel(label));
         comboBox = SlickerFactory.instance().createComboBox(values);
+        comboBox.setRenderer(SwingFactory.getMyListCellRenderer());
         addSpaced(comboBox);
         addSpaced(field);
     }

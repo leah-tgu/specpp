@@ -183,13 +183,15 @@ public class SPECppController {
     }
 
     public void discoveryCompleted(ProMPetrinetWrapper result, List<Result> intermediatePostProcessingResults) {
+        if (result == null) return;
         this.result = result;
         this.intermediatePostProcessingResults = intermediatePostProcessingResults;
         myPanel.unlockStage(PluginStage.Results);
     }
 
     public void tryAdvancingToResults() {
-        if (currentPluginStage() == PluginStage.Discovery && result != null && intermediatePostProcessingResults != null) advanceStage();
+        if (currentPluginStage() == PluginStage.Discovery && result != null && intermediatePostProcessingResults != null)
+            advanceStage();
     }
 
     protected void initCurrentPluginStage() {

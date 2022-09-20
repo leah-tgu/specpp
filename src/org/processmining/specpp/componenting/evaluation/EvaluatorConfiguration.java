@@ -28,8 +28,8 @@ public class EvaluatorConfiguration extends Configuration {
     }
 
     public ProvidesEvaluators createPossiblyInstrumented(SimpleBuilder<? extends ProvidesEvaluators> builder) {
-        ProvidesEvaluators from = createFrom(builder);
-        return (from instanceof AbstractBasicFitnessEvaluator && shouldBeInstrumented(from)) ? checkout(new InstrumentedBasicFitnessEvaluator((AbstractBasicFitnessEvaluator) from)) : from;
+        ProvidesEvaluators from = checkout(builder).build();
+        return (from instanceof AbstractBasicFitnessEvaluator && shouldBeInstrumented(from)) ? checkout(new InstrumentedBasicFitnessEvaluator((AbstractBasicFitnessEvaluator) from)) : checkout(from);
     }
 
     public List<ProvidesEvaluators> createEvaluators() {

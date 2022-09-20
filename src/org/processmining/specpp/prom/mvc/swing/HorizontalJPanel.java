@@ -4,7 +4,7 @@ import javax.swing.*;
 
 public class HorizontalJPanel extends JPanel {
     public void addSpaced(JComponent component) {
-        add(Box.createHorizontalStrut(10));
+        add(Box.createHorizontalStrut(5));
         add(component);
     }
 }

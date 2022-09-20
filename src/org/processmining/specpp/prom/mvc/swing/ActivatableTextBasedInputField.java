@@ -73,7 +73,7 @@ public class ActivatableTextBasedInputField<T> extends CheckboxedTextField {
 
     public T getInput() {
         //SwingUtilities.invokeLater(this::showVerificationStatus);
-        return tryParse();
+        return isActivated ? tryParse() : null;
     }
 
     public void setText(String text) {

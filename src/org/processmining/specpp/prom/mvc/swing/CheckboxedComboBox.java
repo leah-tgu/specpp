@@ -1,6 +1,7 @@
 package org.processmining.specpp.prom.mvc.swing;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
+import org.processmining.specpp.prom.mvc.config.ProMConfig;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,6 +18,7 @@ public class CheckboxedComboBox<T> extends HorizontalJPanel {
         comboBox = SlickerFactory.instance().createComboBox(values);
         comboBox.setMinimumSize(new Dimension(135, 25));
         comboBox.setPreferredSize(new Dimension(135, 25));
+        comboBox.setRenderer(SwingFactory.getMyListCellRenderer());
         addSpaced(comboBox);
         updateTextFieldState();
     }

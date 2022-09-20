@@ -14,6 +14,7 @@ import org.processmining.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.specpp.componenting.system.link.ProposerComponent;
 import org.processmining.specpp.config.Configuration;
 import org.processmining.specpp.supervision.Supervisor;
+import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.specpp.traits.Joinable;
 import org.processmining.specpp.traits.StartStoppable;
 
@@ -135,12 +136,20 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     }
 
     public final F executePostProcessing() {
-        finalResult = postProcessor.postProcess(result);
+        try {
+            finalResult = postProcessor.postProcess(result);
+        } catch (Exception e) {
+            DebuggingSupervisor.debug("Post Processing", "Post Processing failed with\n" + e.getMessage());
+        }
         return finalResult;
     }
 
     public final F executePostProcessing(Consumer<Result> intermediateResultCallback) {
-        finalResult = postProcessor.postProcess(result, intermediateResultCallback);
+        try {
+            finalResult = postProcessor.postProcess(result, intermediateResultCallback);
+        } catch (Exception e) {
+            DebuggingSupervisor.debug("Post Processing", "Post Processing failed with\n" + e.getMessage());
+        }
         return finalResult;
     }
 

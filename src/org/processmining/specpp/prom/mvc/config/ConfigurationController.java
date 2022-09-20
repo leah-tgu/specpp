@@ -55,14 +55,14 @@ public class ConfigurationController extends AbstractStageController {
         boolean logToFile = pc.logToFile;
         SupervisionConfiguration.Configurator svCfg = new SupervisionConfiguration.Configurator();
         svCfg.supervisor(BaseSupervisor::new);
-        boolean isSupervisingEvents = pc.supervisionSetting == ProMConfig.SupervisionSetting.Full;
+        boolean isSupervisingEvents = pc.supervisionSetting == ProMConfig.SupervisionSetting.PerformanceAndEvents;
         switch (pc.supervisionSetting) {
-            case None:
+            case Nothing:
                 break;
             case PerformanceOnly:
                 svCfg.supervisor(LivePerformance::new);
                 break;
-            case Full:
+            case PerformanceAndEvents:
                 svCfg.supervisor(LivePerformance::new);
                 svCfg.supervisor(LiveEvents::new);
                 //svCfg.supervisor(DetailedHeuristicsSupervisor::new);
@@ -147,7 +147,7 @@ public class ConfigurationController extends AbstractStageController {
         class CustomParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
             public CustomParameters() {
                 globalComponentSystem().provide(ParameterRequirements.EXECUTION_PARAMETERS.fulfilWithStatic(exp))
-                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(pc.supervisionSetting != ProMConfig.SupervisionSetting.None ? SupervisionParameters.instrumentAll(false, logToFile) : SupervisionParameters.instrumentNone(false, logToFile)))
+                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(pc.supervisionSetting != ProMConfig.SupervisionSetting.Nothing ? SupervisionParameters.instrumentAll(false, logToFile) : SupervisionParameters.instrumentNone(false, logToFile)))
                                        .provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWithStatic(TauFitnessThresholds.tau(pc.tau)))
                                        .provide(ParameterRequirements.REPLAY_COMPUTATION.fulfilWithStatic(ReplayComputationParameters.permitNegative(pc.permitNegativeMarkingsDuringReplay)))
                                        .provide(ParameterRequirements.IMPLICITNESS_TESTING.fulfilWithStatic(new ImplicitnessTestingParameters(pc.ciprVariant.bridge(), pc.implicitnessReplaySubLogRestriction)))

@@ -56,7 +56,9 @@ public class CSVWriter<O extends Observation> implements AsyncObserver<O>, Buffe
 
     @Override
     public void stop() {
+        flushBuffer();
         try {
+            csvWriter.flush();
             csvWriter.close();
         } catch (IOException ignored) {
         }

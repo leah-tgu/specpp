@@ -33,7 +33,7 @@ public class ProMConfig {
 
     public static ProMConfig getDefault() {
         ProMConfig pc = new ProMConfig();
-        pc.supervisionSetting = SupervisionSetting.Full;
+        pc.supervisionSetting = SupervisionSetting.PerformanceAndEvents;
         pc.logToFile = true;
         pc.treeExpansionSetting = TreeExpansionSetting.Heuristic;
         pc.respectWiring = false;
@@ -59,7 +59,7 @@ public class ProMConfig {
 
     public static ProMConfig getLightweight() {
         ProMConfig pc = getDefault();
-        pc.supervisionSetting = SupervisionSetting.None;
+        pc.supervisionSetting = SupervisionSetting.Nothing;
         pc.treeExpansionSetting = TreeExpansionSetting.DFS;
         return pc;
     }
@@ -74,23 +74,54 @@ public class ProMConfig {
         return !outOfRange && !incomplete;
     }
 
-    public enum SupervisionSetting {
-        None, PerformanceOnly, Full
+    public interface DisplayableEnum {
+
+        String getDisplayText();
+        String getDescription();
+
+    }
+
+    public enum SupervisionSetting implements DisplayableEnum {
+        Nothing("Nothing", "Nothing is tracked. Least amount of overhead."), PerformanceOnly("Performance Only", "Component's performance is logged."), PerformanceAndEvents("Performance & Events", "Utilizes event-generating implementations in addition to performance logging.");
+
+
+        private final String displayName, description;
+
+        SupervisionSetting(String displayName, String description) {
+            this.displayName = displayName;
+            this.description = description;
+        }
+
+        @Override
+        public String getDisplayText() {
+            return displayName;
+        }
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
     }
 
     public enum TreeExpansionSetting {
         BFS, DFS, Heuristic
     }
 
-    public enum CompositionStrategy {
+    public enum CompositionStrategy implements DisplayableEnum {
         Standard("Standard", ""), TauDelta("Tau-Delta", ""), Uniwired("Uniwired", "");
 
-        private final String printableName;
+        private final String displayName;
         private final String description;
 
-        CompositionStrategy(String printableName, String description) {
-            this.printableName = printableName;
+        CompositionStrategy(String displayName, String description) {
+            this.displayName = displayName;
             this.description = description;
+        }
+
+        @Override
+        public String getDisplayText() {
+            return displayName;
         }
 
         public String getDescription() {
@@ -99,7 +130,7 @@ public class ProMConfig {
 
         @Override
         public String toString() {
-            return printableName;
+            return displayName;
         }
     }
 
