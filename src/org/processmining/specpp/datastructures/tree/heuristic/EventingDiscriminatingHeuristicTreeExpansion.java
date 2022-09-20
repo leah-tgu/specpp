@@ -9,9 +9,11 @@ import org.processmining.specpp.datastructures.tree.base.traits.LocallyExpandabl
 import org.processmining.specpp.datastructures.tree.events.RejectedNodeEvent;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
 
+import java.util.function.Predicate;
+
 public class EventingDiscriminatingHeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpandable<N>, H extends DoubleScore> extends EventingHeuristicTreeExpansion<N, H> {
     protected DelegatingDataSource<TreeHeuristicThreshold> treeHeuristicThresholdSource = new DelegatingDataSource<>();
-    private DoubleScore lambda;
+    private Predicate<H> thresholdPredicate;
 
     public EventingDiscriminatingHeuristicTreeExpansion(HeuristicStrategy<? super N, H> heuristicStrategy) {
         super(heuristicStrategy);
@@ -20,8 +22,7 @@ public class EventingDiscriminatingHeuristicTreeExpansion<N extends TreeNode & E
 
     @Override
     protected void initSelf() {
-        TreeHeuristicThreshold parameters = treeHeuristicThresholdSource.getData();
-        lambda = parameters.getLambda();
+        thresholdPredicate = treeHeuristicThresholdSource.getData().getPredicate();
     }
 
     @Override
@@ -35,7 +36,7 @@ public class EventingDiscriminatingHeuristicTreeExpansion<N extends TreeNode & E
     }
 
     protected boolean meetsThreshold(H heuristic) {
-        return lambda.compareTo(heuristic) <= 0;
+        return thresholdPredicate.test(heuristic);
     }
 
 }

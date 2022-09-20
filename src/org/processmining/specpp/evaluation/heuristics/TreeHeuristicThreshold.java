@@ -4,6 +4,8 @@ import org.processmining.specpp.config.parameters.Parameters;
 import org.processmining.specpp.datastructures.tree.heuristic.DoubleScore;
 import org.processmining.specpp.datastructures.vectorization.OrderingRelation;
 
+import java.util.function.Predicate;
+
 public class TreeHeuristicThreshold implements Parameters {
     private final DoubleScore lambda;
     private final OrderingRelation comparisonRelation;
@@ -21,6 +23,31 @@ public class TreeHeuristicThreshold implements Parameters {
         return lambda;
     }
 
+
+    public <H extends DoubleScore> Predicate<H> getPredicate() {
+        Predicate<H> thresholdPredicate = null;
+        switch (comparisonRelation) {
+            case lt:
+                thresholdPredicate = h -> h.compareTo(lambda) < 0;
+                break;
+            case gt:
+                thresholdPredicate = h -> h.compareTo(lambda) > 0;
+                break;
+            case ltEq:
+                thresholdPredicate = h -> h.compareTo(lambda) <= 0;
+                break;
+            case gtEq:
+                thresholdPredicate = h -> h.compareTo(lambda) >= 0;
+                break;
+            case eq:
+                thresholdPredicate = h -> h.compareTo(lambda) == 0;
+                break;
+            case neq:
+                thresholdPredicate = h -> h.compareTo(lambda) != 0;
+                break;
+        }
+        return thresholdPredicate;
+    }
 
     @Override
     public String toString() {

@@ -22,28 +22,7 @@ public class DiscriminatingHeuristicTreeExpansion<N extends TreeNode & Evaluable
 
     @Override
     protected void initSelf() {
-        TreeHeuristicThreshold parameters = treeHeuristicThresholdSource.getData();
-        DoubleScore lambda = parameters.getLambda();
-        switch (parameters.getComparisonRelation()) {
-            case lt:
-                thresholdPredicate = h -> lambda.compareTo(h) < 0;
-                break;
-            case gt:
-                thresholdPredicate = h -> lambda.compareTo(h) > 0;
-                break;
-            case ltEq:
-                thresholdPredicate = h -> lambda.compareTo(h) <= 0;
-                break;
-            case gtEq:
-                thresholdPredicate = h -> lambda.compareTo(h) >= 0;
-                break;
-            case eq:
-                thresholdPredicate = h -> lambda.compareTo(h) == 0;
-                break;
-            case neq:
-                thresholdPredicate = h -> lambda.compareTo(h) != 0;
-                break;
-        }
+        thresholdPredicate = treeHeuristicThresholdSource.getData().getPredicate();
     }
 
     @Override

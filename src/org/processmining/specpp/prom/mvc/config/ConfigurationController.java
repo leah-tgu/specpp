@@ -65,6 +65,7 @@ public class ConfigurationController extends AbstractStageController {
             case Full:
                 svCfg.supervisor(LivePerformance::new);
                 svCfg.supervisor(LiveEvents::new);
+                //svCfg.supervisor(DetailedHeuristicsSupervisor::new);
                 break;
         }
         svCfg.supervisor(TerminalSupervisor::new);
@@ -108,14 +109,14 @@ public class ConfigurationController extends AbstractStageController {
                                                                                                        .getBuilder() : FrameworkBridge.BridgedEvaluators.BaseFitness.getBridge()
                                                                                                                                                                     .getBuilder());
         if (pc.compositionStrategy == ProMConfig.CompositionStrategy.TauDelta)
-            evCfg.evaluatorProvider(pc.bridgedDelta.getBuilder());
+            evCfg.evaluatorProvider(pc.deltaAdaptationFunction.getBuilder());
         else if (pc.compositionStrategy == ProMConfig.CompositionStrategy.Uniwired)
             evCfg.evaluatorProvider(new PostponedPlaceScorer.Builder());
 
         EfficientTreeConfiguration.Configurator<Place, PlaceState, PlaceNode> etCfg;
         if (pc.treeExpansionSetting == ProMConfig.TreeExpansionSetting.Heuristic) {
             HeuristicTreeConfiguration.Configurator<Place, PlaceState, PlaceNode, TreeNodeScore> htCfg = new HeuristicTreeConfiguration.Configurator<>();
-            htCfg.heuristic(pc.bridgedHeuristics.getBuilder());
+            htCfg.heuristic(pc.treeHeuristic.getBuilder());
             if (pc.enforceHeuristicThreshold)
                 htCfg.heuristicExpansion(isSupervisingEvents ? EventingDiscriminatingHeuristicTreeExpansion::new : DiscriminatingHeuristicTreeExpansion::new);
             else

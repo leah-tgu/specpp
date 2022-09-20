@@ -25,6 +25,8 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
 
     private final DelegatingAdHocObservable<HeuristicStatsEvent> heuristicStats = new DelegatingAdHocObservable<>();
     private final DelegatingObservable<TreeHeuristicsEvent> heuristicsEvents = new DelegatingObservable<>();
+    private CSVWriter<TreeHeuristicQueueingEvent<PlaceNode>> queueSizeExporter;
+    private CSVWriter<TimedObservation<HeuristicComputationEvent<DoubleScore>>> heuristicsExporter;
 
     public DetailedHeuristicsSupervisor() {
         globalComponentSystem().require(SupervisionRequirements.observable("heuristics.events", JavaTypingUtils.<HeuristicComputationEvent<DoubleScore>>castClass(HeuristicComputationEvent.class)), heuristicsEvents)
@@ -36,12 +38,12 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
     public void instantiateObservationHandlingFullySatisfied() {
         OutputPathParameters outputPathParameters = pathParametersSource.getData();
 
-        CSVWriter<TreeHeuristicQueueingEvent<PlaceNode>> queueSizeExporter = new CSVWriter<>(outputPathParameters.getFilePath(PathTools.OutputFileType.CSV_EXPORT, "queue"), new String[]{"time", "place", "change", "queue.size delta"}, e -> new String[]{LocalDateTime.now().toString(), e.getSource()
-                                                                                                                                                                                                                                                                                             .getProperties().toString(), e.getClass().getSimpleName(), Integer.toString(e.getDelta())});
+        queueSizeExporter = new CSVWriter<>(outputPathParameters.getFilePath(PathTools.OutputFileType.CSV_EXPORT, "queue"), new String[]{"time", "place", "change", "queue.size delta"}, e -> new String[]{LocalDateTime.now().toString(), e.getSource()
+                                                                                                                                                                                                                                            .getProperties().toString(), e.getClass().getSimpleName(), Integer.toString(e.getDelta())});
 
-        CSVWriter<TimedObservation<HeuristicComputationEvent<DoubleScore>>> heuristicsExporter = new CSVWriter<>(outputPathParameters.getFilePath(PathTools.OutputFileType.CSV_EXPORT, "heuristics"), new String[]{"time", "candidate", "score"}, e -> new String[]{e.getLocalDateTime().toString(), e.getObservation()
-                                                                                                                                                                                                                                                                                                      .getSource().toString(), e.getObservation()
-                                                                                                                                                                                                                                                                                                                                .getHeuristic().toString()});
+        heuristicsExporter = new CSVWriter<>(outputPathParameters.getFilePath(PathTools.OutputFileType.CSV_EXPORT, "heuristics"), new String[]{"time", "candidate", "score"}, e -> new String[]{e.getLocalDateTime().toString(), e.getObservation()
+                                                                                                                                                                                                                                  .getSource().toString(), e.getObservation()
+                                                                                                                                                                                                                                                            .getHeuristic().toString()});
 
         MessageLogger heuristicsLogger = PipeWorks.fileLogger("heuristics", outputPathParameters.getFilePath(PathTools.OutputFileType.SUB_LOG, "heuristics"));
 
@@ -64,6 +66,15 @@ public class DetailedHeuristicsSupervisor extends MonitoringSupervisor {
                      .schedule(Duration.ofMillis(100))
                      .apply();
 
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+        queueSizeExporter.flushBuffer();
+        heuristicsExporter.flushBuffer();
+        queueSizeExporter.stop();
+        heuristicsExporter.stop();
     }
 
 }

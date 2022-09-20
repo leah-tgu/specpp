@@ -43,7 +43,7 @@ public class SwingFactory {
         button.setMaximumSize(new Dimension(25, 25));
         button.setBorderPainted(false);
         button.setFocusPainted(false);
-        button.setToolTipText(hint);
+        button.setToolTipText(hint == null ? "click me" : hint);
         button.addActionListener(e -> {
             JOptionPane.showMessageDialog(null, contextDependentText.get(), "Help", JOptionPane.INFORMATION_MESSAGE);
         });

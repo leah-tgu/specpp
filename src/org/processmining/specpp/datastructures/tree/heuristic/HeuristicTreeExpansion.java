@@ -22,7 +22,7 @@ public class HeuristicTreeExpansion<N extends TreeNode & Evaluable & LocallyExpa
     public HeuristicTreeExpansion(HeuristicStrategy<? super N, H> heuristicStrategy) {
         this.heuristicStrategy = heuristicStrategy;
         this.nodeHeuristics = new HashMap<>();
-        this.priorityQueue = new PriorityQueue<>(Comparator.comparing(nodeHeuristics::get));
+        this.priorityQueue = new PriorityQueue<>(Comparator.comparing(nodeHeuristics::get, heuristicStrategy.heuristicValuesComparator()));
     }
 
     public HeuristicStrategy<? super N, H> getHeuristicStrategy() {

@@ -21,5 +21,5 @@ public class Iconic {
     public static Icon questionmark = new ImageIcon(ImageLoader.load("questionmark.png"));
     public static Icon circled_questionmark = new ImageIcon(ImageLoader.load("circled_questionmark.png"));
     public static Icon tiny_circled_questionmark = new ImageIcon(ImageLoader.load("tiny_circled_questionmark.png"));
-    public static Icon tiny_circled_questionmark_hovered = new ImageIcon(ImageLoader.load("tiny_circled_questionmark_hovered.png"));
+    public static Icon tiny_circled_questionmark_hovered = new ImageIcon(ImageLoader.load("tiny_circled_questionmark_hovered_2.png"));
 }

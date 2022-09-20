@@ -149,7 +149,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         bridgedHeuristicsLabeledComboBox.setVisible(false);
         bridgedHeuristicsLabeledComboBox.addSpaced(SwingFactory.help(null, html("Place Interestingness - based on eventually follows relation of activities (see <a href=\"https://dx.doi.org/10.1007/978-3-030-66498-5_25\">Improving the State-Space Traversal of the eST-Miner by Exploiting Underlying Log Structures</a>)<br>BFS Emulation - equals depth(place)<br>DFS Emulation - equals -depth(place)")));
         proposal.append(bridgedHeuristicsLabeledComboBox);
-        enforceHeuristicScoreThresholdCheckBox = SwingFactory.labeledCheckBox("enforce minimum heuristic score threshold");
+        enforceHeuristicScoreThresholdCheckBox = SwingFactory.labeledCheckBox("enforce heuristic score threshold");
         enforceHeuristicScoreThresholdCheckBox.addActionListener(e -> updatedProposalSettings());
         enforceHeuristicScoreThresholdCheckBox.setVisible(false);
         enforceHeuristicScoreThresholdCheckBox.setToolTipText("Whether to discard places in the candidate tree, and thus also their subtrees, which do not meet the threshold.");
@@ -195,7 +195,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
             if (e.getStateChange() == ItemEvent.SELECTED) updatedEvaluationSettings();
         });
         deltaAdaptationLabeledComboBox.setVisible(false);
-        String tauDeltaLinkHtml = "<a href=\"https://www.researchgate.net/publication/359791457_Discovering_Process_Models_With_Long-Term_Dependencies_While_Providing_Guarantees_and_Handling_Infrequent_Behavior\">\"Discovering Process Models With Long-Term Dependencies While Providing Guarantees and Handling Infrequent Behavior\"</a>";
+        String tauDeltaLinkHtml = "<a href=\"https://www.researchgate.net/publication/359791457_Discovering_Process_Models_With_Long-Term_Dependencies_While_Providing_Guarantees_and_Handling_Infrequent_Behavior\">Discovering Process Models With Long-Term Dependencies While Providing Guarantees and Handling Infrequent Behavior</a>";
         deltaAdaptationLabeledComboBox.addSpaced(SwingFactory.help(null, html("None - equal to delta=1<br>Constant - delta is not adapted<br>Linear - delta is adapted linearly along the maximum tree depth using the steepness parameter<br>Sigmoid - delta is adapted using a sigmoid function parameterized by the steepness<br>see " + tauDeltaLinkHtml + " for details")));
         evaluation.append(deltaAdaptationLabeledComboBox);
         evaluation.completeWithWhitespace();
@@ -348,11 +348,10 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         expansionStrategyComboBox.setSelectedItem(pc.treeExpansionSetting);
         respectWiringCheckBox.setSelected(pc.respectWiring);
         supportRestartCheckBox.setSelected(pc.supportRestart);
-        heuristicComboBox.setSelectedItem(pc.bridgedHeuristics);
+        heuristicComboBox.setSelectedItem(pc.treeHeuristic);
         enforceHeuristicScoreThresholdCheckBox.setSelected(pc.enforceHeuristicThreshold);
         concurrentReplayCheckBox.setSelected(pc.concurrentReplay);
         permitNegativeMarkingsCheckBox.setSelected(pc.permitNegativeMarkingsDuringReplay);
-
         restrictReplayBasedImplicitnessInput.getCheckBox()
                                             .setSelected(pc.implicitnessReplaySubLogRestriction != ImplicitnessTestingParameters.SubLogRestriction.None);
         if (pc.implicitnessReplaySubLogRestriction == ImplicitnessTestingParameters.SubLogRestriction.FittingOnAcceptedPlacesAndEvaluatedPlace)
@@ -361,6 +360,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         else if (pc.implicitnessReplaySubLogRestriction == ImplicitnessTestingParameters.SubLogRestriction.MerelyFittingOnEvaluatedPair)
             restrictReplayBasedImplicitnessInput.getComboBox()
                                                 .setSelectedItem(ImplicitnessReplayRestriction.FittingOnEvaluatedPair);
+        deltaAdaptationFunctionComboBox.setSelectedItem(pc.deltaAdaptationFunction);
         compositionStrategyComboBox.setSelectedItem(pc.compositionStrategy);
         ciprVariantCheckboxedComboBox.getCheckBox().setSelected(pc.ciprVariant != ProMConfig.CIPRVariant.None);
         ciprVariantCheckboxedComboBox.getComboBox()
@@ -387,8 +387,13 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
             totalTimeLimitInput.activate();
         } else totalTimeLimitInput.deactivate();
 
-        revalidate();
-        updateReadinessState();
+        SwingUtilities.invokeLater(() -> {
+            updatedCompositionSettings();
+            updatedProposalSettings();
+            updatedEvaluationSettings();
+            updatedParameters();
+            updateReadinessState();
+        });
     }
 
     public ProMConfig collectConfig() {
@@ -399,7 +404,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         pc.treeExpansionSetting = (ProMConfig.TreeExpansionSetting) expansionStrategyComboBox.getSelectedItem();
         pc.respectWiring = respectWiringCheckBox.isSelected();
         pc.supportRestart = supportRestartCheckBox.isSelected();
-        pc.bridgedHeuristics = (FrameworkBridge.AnnotatedTreeHeuristic) heuristicComboBox.getSelectedItem();
+        pc.treeHeuristic = (FrameworkBridge.AnnotatedTreeHeuristic) heuristicComboBox.getSelectedItem();
         pc.enforceHeuristicThreshold = enforceHeuristicScoreThresholdCheckBox.isSelected();
         pc.concurrentReplay = concurrentReplayCheckBox.isSelected();
         pc.permitNegativeMarkingsDuringReplay = permitNegativeMarkingsCheckBox.isSelected();
@@ -417,7 +422,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
                     break;
             }
         } else pc.implicitnessReplaySubLogRestriction = ImplicitnessTestingParameters.SubLogRestriction.None;
-        pc.bridgedDelta = (FrameworkBridge.AnnotatedEvaluator) deltaAdaptationFunctionComboBox.getSelectedItem();
+        pc.deltaAdaptationFunction = (FrameworkBridge.AnnotatedEvaluator) deltaAdaptationFunctionComboBox.getSelectedItem();
         pc.compositionStrategy = (ProMConfig.CompositionStrategy) compositionStrategyComboBox.getSelectedItem();
         pc.ciprVariant = ciprVariantCheckboxedComboBox.getCheckBox()
                                                       .isSelected() ? (ProMConfig.CIPRVariant) ciprVariantCheckboxedComboBox.getComboBox()
@@ -462,14 +467,18 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         ciprVariantCheckboxedComboBox.getComboBox()
                                      .setVisible(ciprVariantCheckboxedComboBox.getCheckBox().isSelected());
         deltaAdaptationLabeledComboBox.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta);
-        deltaInput.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta && deltaAdaptationFunctionComboBox.getSelectedItem() != FrameworkBridge.BridgedDeltaAdaptationFunctions.None.getBridge());
-        steepnessInput.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta && (deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear.getBridge() || deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid.getBridge()));
+        changeDeltaParametersVisibility();
         revalidate();
         updateReadinessState();
     }
 
-    private void updatedEvaluationSettings() {
+    private void changeDeltaParametersVisibility() {
+        deltaInput.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta && deltaAdaptationFunctionComboBox.getSelectedItem() != FrameworkBridge.BridgedDeltaAdaptationFunctions.None.getBridge());
         steepnessInput.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta && (deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear.getBridge() || deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid.getBridge()));
+    }
+
+    private void updatedEvaluationSettings() {
+        changeDeltaParametersVisibility();
         restrictReplayBasedImplicitnessInput.getComboBox()
                                             .setVisible(restrictReplayBasedImplicitnessInput.getCheckBox()
                                                                                             .isSelected());
