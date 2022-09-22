@@ -1,6 +1,5 @@
 package org.processmining.specpp.evaluation.heuristics;
 
-import org.processmining.specpp.base.Evaluator;
 import org.processmining.specpp.componenting.data.DataRequirements;
 import org.processmining.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.specpp.componenting.evaluation.EvaluationRequirements;
@@ -14,25 +13,26 @@ import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.log.Variant;
 import org.processmining.specpp.datastructures.log.impls.IndexedVariant;
 import org.processmining.specpp.datastructures.petri.Place;
+import org.processmining.specpp.datastructures.tree.base.HeuristicStrategy;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 
-public class PostponedPlaceScorer implements Evaluator<Place, PostponedCandidateScore> {
+import java.util.Comparator;
+
+public class DirectlyFollowsHeuristic implements HeuristicStrategy<Place, CandidateScore> {
 
     private final int[][] dfCounts;
 
-    public static class Builder extends ComponentSystemAwareBuilder<PostponedPlaceScorer.Provider> {
-
+    public static class Builder extends ComponentSystemAwareBuilder<DirectlyFollowsHeuristic.Provider> {
 
         private final DelegatingDataSource<Log> rawLog = new DelegatingDataSource<>();
         private final DelegatingDataSource<IntEncodings<Activity>> encAct = new DelegatingDataSource<>();
 
         public Builder() {
-            globalComponentSystem().require(DataRequirements.RAW_LOG, rawLog)
-                                   .require(DataRequirements.ENC_ACT, encAct);
+            globalComponentSystem().require(DataRequirements.RAW_LOG, rawLog).require(DataRequirements.ENC_ACT, encAct);
         }
 
         @Override
-        protected PostponedPlaceScorer.Provider buildIfFullySatisfied() {
+        protected DirectlyFollowsHeuristic.Provider buildIfFullySatisfied() {
             Log log = rawLog.getData();
             IntEncodings<Activity> activityIntEncodings = encAct.getData();
             IntEncoding<Activity> presetEncoding = activityIntEncodings.getPresetEncoding();
@@ -62,28 +62,35 @@ public class PostponedPlaceScorer implements Evaluator<Place, PostponedCandidate
                 }
             }
 
-            return new PostponedPlaceScorer.Provider(counts);
+            return new DirectlyFollowsHeuristic.Provider(counts);
         }
     }
 
     public static class Provider extends AbstractGlobalComponentSystemUser implements ProvidesEvaluators {
 
         public Provider(int[][] counts) {
-            globalComponentSystem().provide(EvaluationRequirements.POSTPONED_CANDIDATES_HEURISTIC.fulfilWith(new PostponedPlaceScorer(counts)));
+            HeuristicStrategy<Place, CandidateScore> delegate = new DirectlyFollowsHeuristic(counts);
+            globalComponentSystem().provide(EvaluationRequirements.POSTPONED_CANDIDATES_HEURISTIC.fulfilWith(delegate))
+                                   .provide(DataRequirements.dataSource("heuristics.place.df", DirectlyFollowsHeuristic.class, () -> new DirectlyFollowsHeuristic(counts)));
         }
     }
 
-    public PostponedPlaceScorer(int[][] dfCounts) {
+    public DirectlyFollowsHeuristic(int[][] dfCounts) {
         this.dfCounts = dfCounts;
     }
 
     @Override
-    public PostponedCandidateScore eval(Place input) {
+    public CandidateScore computeHeuristic(Place input) {
         int sum = input.preset()
                        .streamIndices()
                        .flatMap(i -> input.postset().streamIndices().map(j -> dfCounts[i][j]))
                        .sum();
 
-        return new PostponedCandidateScore((double) sum / input.size());
+        return new CandidateScore((double) sum / input.size());
+    }
+
+    @Override
+    public Comparator<CandidateScore> heuristicValuesComparator() {
+        return Comparator.reverseOrder();
     }
 }

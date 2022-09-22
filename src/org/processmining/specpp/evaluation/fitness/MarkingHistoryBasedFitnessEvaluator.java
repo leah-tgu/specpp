@@ -1,8 +1,10 @@
 package org.processmining.specpp.evaluation.fitness;
 
 import org.processmining.specpp.base.Evaluator;
+import org.processmining.specpp.componenting.data.DataSource;
 import org.processmining.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.specpp.datastructures.encoding.BitMask;
+import org.processmining.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.EnumCounts;
 import org.processmining.specpp.datastructures.util.IndexedItem;
@@ -18,17 +20,18 @@ public class MarkingHistoryBasedFitnessEvaluator extends AbstractBasicFitnessEva
 
     private final Evaluator<? super Place, ? extends VariantMarkingHistories> historyMaker;
 
-    public MarkingHistoryBasedFitnessEvaluator(ReplayComputationParameters replayComputationParameters, Evaluator<? super Place, ? extends VariantMarkingHistories> historyMaker) {
-        super(replayComputationParameters);
+    public MarkingHistoryBasedFitnessEvaluator(MultiEncodedLog multiEncodedLog, DataSource<BitMask> variantSubsetSource, ReplayComputationParameters replayComputationParameters, Evaluator<? super Place, ? extends VariantMarkingHistories> historyMaker) {
+        super(multiEncodedLog, variantSubsetSource, replayComputationParameters);
         this.historyMaker = historyMaker;
     }
+
 
     public static class Builder extends AbstractBasicFitnessEvaluator.Builder {
         private final DelegatingEvaluator<Place, VariantMarkingHistories> historyMakerSource = new DelegatingEvaluator<>();
 
         @Override
         protected MarkingHistoryBasedFitnessEvaluator buildIfFullySatisfied() {
-            return new MarkingHistoryBasedFitnessEvaluator(replayComputationParametersSource.getData(), historyMakerSource.getDelegate());
+            return new MarkingHistoryBasedFitnessEvaluator(multiEncodedLogSource.getData(), variantSubsetSource.getDelegate(), replayComputationParametersSource.getData(), historyMakerSource.getDelegate());
         }
     }
 
@@ -38,24 +41,18 @@ public class MarkingHistoryBasedFitnessEvaluator extends AbstractBasicFitnessEva
 
     @Override
     protected BasicFitnessEvaluation basicComputation(Place place, BitMask consideredVariants) {
-        timeStopper.start(basic);
         VariantMarkingHistories h = historyMaker.eval(place);
         Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator = VMHComputations.indexedFitnessComputationOn(h, consideredVariants);
         AbstractEnumSetReplayTask<ReplayUtils.ReplayOutcomes, BasicFitnessEvaluation> task = ReplayUtils.createBasicReplayTask(spliterator, getVariantFrequencies()::get);
-        BasicFitnessEvaluation result = ReplayUtils.computeHere(task);
-        timeStopper.stop(basic);
-        return result;
+        return ReplayUtils.computeHere(task);
     }
 
     @Override
     protected DetailedFitnessEvaluation detailedComputation(Place place, BitMask consideredVariants) {
-        timeStopper.start(detailed);
         VariantMarkingHistories h = historyMaker.eval(place);
         Spliterator<IndexedItem<EnumSet<ReplayUtils.ReplayOutcomes>>> spliterator = VMHComputations.indexedFitnessComputationOn(h, consideredVariants);
         AbstractEnumSetReplayTask<ReplayUtils.ReplayOutcomes, DetailedFitnessEvaluation> task = ReplayUtils.createDetailedReplayTask(spliterator, getVariantFrequencies()::get);
-        DetailedFitnessEvaluation result = ReplayUtils.computeHere(task);
-        timeStopper.stop(detailed);
-        return result;
+        return ReplayUtils.computeHere(task);
     }
 
     public static BasicFitnessEvaluation computeBasicEvaluationHere(Spliterator<IndexedItem<BasicFitnessStatus>> spliterator, IntUnaryOperator vectorFrequency) {

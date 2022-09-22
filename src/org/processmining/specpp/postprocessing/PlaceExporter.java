@@ -5,7 +5,6 @@ import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.specpp.componenting.system.ComponentSystemAwareBuilder;
-import org.processmining.specpp.componenting.system.link.PetriNetPostProcessor;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;

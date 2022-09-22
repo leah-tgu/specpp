@@ -23,7 +23,7 @@ import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGener
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
-import org.processmining.specpp.evaluation.heuristics.PostponedPlaceScorer;
+import org.processmining.specpp.evaluation.heuristics.DirectlyFollowsHeuristic;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.postprocessing.ProMConverter;
 import org.processmining.specpp.proposal.RestartablePlaceProposer;
@@ -35,7 +35,7 @@ public class UniwiredComponentConfig extends BaseSPECppComponentConfig {
         return Configurators.evaluators()
                             .evaluatorProvider(LogHistoryMaker::new)
                             .evaluatorProvider(new AbsolutelyNoFrillsFitnessEvaluator.Builder())
-                            .evaluatorProvider(new PostponedPlaceScorer.Builder())
+                            .evaluatorProvider(new DirectlyFollowsHeuristic.Builder())
                             .build(gcr);
     }
 

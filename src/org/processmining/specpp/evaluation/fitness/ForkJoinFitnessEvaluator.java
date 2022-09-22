@@ -1,6 +1,8 @@
 package org.processmining.specpp.evaluation.fitness;
 
+import org.processmining.specpp.componenting.data.DataSource;
 import org.processmining.specpp.datastructures.encoding.BitMask;
+import org.processmining.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.IndexedItem;
 import org.processmining.specpp.datastructures.util.Pair;
@@ -13,15 +15,16 @@ import java.util.stream.Stream;
 
 public class ForkJoinFitnessEvaluator extends AbstractBasicFitnessEvaluator {
 
-    public ForkJoinFitnessEvaluator(ReplayComputationParameters replayComputationParameters) {
-        super(replayComputationParameters);
+
+    public ForkJoinFitnessEvaluator(MultiEncodedLog multiEncodedLog, DataSource<BitMask> variantSubsetSource, ReplayComputationParameters replayComputationParameters) {
+        super(multiEncodedLog, variantSubsetSource, replayComputationParameters);
     }
 
     public static class Builder extends AbstractBasicFitnessEvaluator.Builder {
 
         @Override
         protected ForkJoinFitnessEvaluator buildIfFullySatisfied() {
-            return new ForkJoinFitnessEvaluator(replayComputationParametersSource.getData());
+            return new ForkJoinFitnessEvaluator(multiEncodedLogSource.getData(), variantSubsetSource.getDelegate(), replayComputationParametersSource.getData());
         }
     }
 

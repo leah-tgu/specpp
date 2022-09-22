@@ -33,6 +33,8 @@ public class PostProcessingConfigPanel extends JPanel {
     private final DefaultTableModel tableModel;
     private final List<FrameworkBridge.AnnotatedPostProcessor> availablePostProcessors;
     private static final String DRAG_DROP_HELP_TEXT = "use drag & drop to add, remove and reorder the desired post processing steps";
+    private static final int width = 475;
+    private static final int height = 225;
 
     public PostProcessingConfigPanel(PluginContext pc, MyListModel<FrameworkBridge.AnnotatedPostProcessor> ppPipelineModel) {
         super(new GridBagLayout());
@@ -90,8 +92,8 @@ public class PostProcessingConfigPanel extends JPanel {
         ppc.fill = GridBagConstraints.BOTH;
         ppc.weighty = 1;
         ppc.gridy++;
-        proMTable.setMaximumSize(new Dimension(500, 300));
-        proMTable.setPreferredSize(new Dimension(500, 300));
+        proMTable.setMaximumSize(new Dimension(width, height));
+        proMTable.setPreferredSize(new Dimension(width, height));
         add(proMTable, ppc);
         ppc.fill = GridBagConstraints.NONE;
         ProMList<FrameworkBridge.AnnotatedPostProcessor> proMList = new ProMList<>("Selected Post Processing Steps", ppPipelineModel);
@@ -212,8 +214,8 @@ public class PostProcessingConfigPanel extends JPanel {
         //JScrollPane inListScrollPane = new JScrollPane(inList);
         //inListScrollPane.setMaximumSize(new Dimension(500, 300));
         //inListScrollPane.setPreferredSize(new Dimension(500, 300));
-        proMList.setMaximumSize(new Dimension(500, 300));
-        proMList.setPreferredSize(new Dimension(500, 300));
+        proMList.setMaximumSize(new Dimension(width, height));
+        proMList.setPreferredSize(new Dimension(width, height));
         add(proMList, ppc);
         JButton importPostProcessorButton = SlickerFactory.instance().createButton("import from ProM");
         importPostProcessorButton.addActionListener(e -> ProMPostProcessor.createPluginFinderWindow(pc, this::importAnnotatedPostProcessor));

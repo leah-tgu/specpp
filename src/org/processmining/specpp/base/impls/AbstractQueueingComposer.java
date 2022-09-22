@@ -14,6 +14,10 @@ public abstract class AbstractQueueingComposer<C extends Candidate, I extends Co
 
     public AbstractQueueingComposer(ComposerComponent<C, I, R> childComposer) {
         super(childComposer);
+    }
+
+    @Override
+    protected void initSelf() {
         postponedCandidates = new LinkedList<>();
     }
 

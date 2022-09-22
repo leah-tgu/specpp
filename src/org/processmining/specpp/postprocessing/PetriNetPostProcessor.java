@@ -1,4 +1,4 @@
-package org.processmining.specpp.componenting.system.link;
+package org.processmining.specpp.postprocessing;
 
 import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.datastructures.petri.PetriNet;

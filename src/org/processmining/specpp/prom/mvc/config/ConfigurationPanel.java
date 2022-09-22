@@ -26,6 +26,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static org.processmining.specpp.prom.mvc.swing.SwingFactory.html;
+import static org.processmining.specpp.prom.mvc.swing.SwingFactory.resizeComboBox;
 
 public class ConfigurationPanel extends AbstractStagePanel<ConfigurationController> {
 
@@ -100,6 +101,8 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     private final ComboBoxAndTextBasedInputField<Double, OrderingRelation> heuristicThresholdInput;
     private final CheckboxedComboBox<ProMConfig.CIPRVariant> ciprVariantCheckboxedComboBox;
     private final JCheckBox logHeuristicsCheckBox;
+    private final JCheckBox initiallyWireSelfLoopsCheckBox = SwingFactory.labeledCheckBox("initially wire self loops", false);
+    private final HorizontalJPanel deltaRelatedParametersPanel;
 
     public ConfigurationPanel(ConfigurationController controller) {
         super(controller, new GridBagLayout());
@@ -119,17 +122,20 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         supervision.append(presetLabeledComboBox);
         LabeledComboBox<ProMConfig.SupervisionSetting> supervisionSettingLabeledComboBox = SwingFactory.labeledComboBox("Level of Detail of Supervision", ProMConfig.SupervisionSetting.values());
         supervisionComboBox = supervisionSettingLabeledComboBox.getComboBox();
+        SwingFactory.resizeComboBox(supervisionComboBox, 200, 25);
         supervisionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedSupervisionSettings();
         });
         supervision.append(supervisionSettingLabeledComboBox);
         supervisionSettingLabeledComboBox.add(SwingFactory.help(null, "Determines whether event generating implementations of the subsequent configured components will be used.\nEvent generation increases overhead but greatly benefits behavior analysis of the configured algorithm."));
         logToFileCheckBox = SwingFactory.labeledCheckBox("log to file");
+        logToFileCheckBox.setSelected(false);
         String s = OutputPathParameters.getDefault().getFilePath(PathTools.OutputFileType.MAIN_LOG, "main");
         logToFileCheckBox.setToolTipText(String.format("Whether to setup a file logger to \"%s\"", s));
         logToFileCheckBox.addChangeListener(e -> updatedSupervisionSettings());
         HorizontalJPanel logToWhatPanel = new HorizontalJPanel();
         logHeuristicsCheckBox = SwingFactory.labeledCheckBox("log heuristics");
+        logHeuristicsCheckBox.setSelected(false);
         logHeuristicsCheckBox.addChangeListener(e -> updatedSupervisionSettings());
         logHeuristicsCheckBox.setVisible(false);
         logToWhatPanel.add(logToFileCheckBox);
@@ -149,6 +155,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         proposal.append(candidateEnumerationLabeledComboBox);
         bridgedHeuristicsLabeledComboBox = SwingFactory.labeledComboBox("Heuristic", FrameworkBridge.HEURISTICS.toArray(new FrameworkBridge.AnnotatedTreeHeuristic[0]));
         heuristicComboBox = bridgedHeuristicsLabeledComboBox.getComboBox();
+        SwingFactory.resizeComboBox(heuristicComboBox, 150, 25);
         heuristicComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedProposalSettings();
         });
@@ -186,6 +193,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
 
         restrictReplayBasedImplicitnessInput = SwingFactory.checkboxedComboBox("restrict replay-based implicitness testing", false, ImplicitnessReplayRestriction.values());
         restrictReplayBasedImplicitnessInput.getCheckBox().addChangeListener(e -> updatedEvaluationSettings());
+        resizeComboBox(restrictReplayBasedImplicitnessInput.getComboBox(), 250, 25);
         restrictReplayBasedImplicitnessInput.getComboBox().addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedEvaluationSettings();
         });
@@ -218,11 +226,13 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         composition.append(compositionStrategyLabeledComboBox);
         ciprVariantCheckboxedComboBox = SwingFactory.checkboxedComboBox("apply concurrent implicit place removal", true, new ProMConfig.CIPRVariant[]{ProMConfig.CIPRVariant.ReplayBased, ProMConfig.CIPRVariant.LPBased});
         ciprVariantCheckboxedComboBox.getCheckBox().addChangeListener(e -> updatedCompositionSettings());
+        ciprVariantCheckboxedComboBox.getCheckBox()
+                                     .setToolTipText("Whether only non-implicit places are accepted into the current result.");
         ciprVariantCheckboxedComboBox.getComboBox().addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) updatedCompositionSettings();
         });
         ciprVariantCheckboxedComboBox.getComboBox()
-                                     .setRenderer(createTooltippedListCellRenderer(ImmutableMap.of(ProMConfig.CIPRVariant.ReplayBased, "uses subregion implicitness on the markings obtained from replay", ProMConfig.CIPRVariant.LPBased, "uses lp optimization based structural implicitness")));
+                                     .setRenderer(createTooltippedListCellRenderer(ImmutableMap.of(ProMConfig.CIPRVariant.ReplayBased, "Uses subregion implicitness on the markings obtained from replay.", ProMConfig.CIPRVariant.LPBased, "Uses lp optimization based structural implicitness.")));
         composition.append(ciprVariantCheckboxedComboBox);
         composition.completeWithWhitespace();
 
@@ -230,8 +240,8 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
 
         TitledBorderPanel postProcessing = new TitledBorderPanel("Post Processing", new BorderLayout());
         ppPipelineModel = new MyListModel<>();
-        postProcessing.add(new PostProcessingConfigPanel(controller.getContext(), ppPipelineModel));
-
+        postProcessing.add(new PostProcessingConfigPanel(controller.getContext(), ppPipelineModel), BorderLayout.CENTER);
+        postProcessing.add(Box.createVerticalGlue(), BorderLayout.PAGE_END);
         // ** PARAMETERS ** //
 
         TitledBorderPanel parameters = new TitledBorderPanel("Parameters");
@@ -242,18 +252,22 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         Consumer<Boolean> listener = b -> updatedParameters();
         tauInput.addVerificationStatusListener(listener);
         parameters.append(tauInput);
+
+        deltaRelatedParametersPanel = new HorizontalJPanel();
         deltaInput = SwingFactory.textBasedInputField("delta", zeroOneDoubleFunc, 10);
         deltaInput.getTextField().setToolTipText("Delta parameter in [0,1].");
         deltaField = deltaInput.getTextField();
         deltaInput.addVerificationStatusListener(listener);
         deltaInput.setVisible(false);
-        parameters.append(deltaInput);
+        deltaRelatedParametersPanel.add(deltaInput);
         steepnessInput = SwingFactory.textBasedInputField("steepness", posIntFunc, 10);
         steepnessInput.setToolTipText("Steepness parameter in {1,...}.");
         steepnessInput.addVerificationStatusListener(listener);
         steepnessField = steepnessInput.getTextField();
         steepnessInput.setVisible(false);
-        parameters.append(steepnessInput);
+        deltaRelatedParametersPanel.addSpaced(steepnessInput);
+        deltaRelatedParametersPanel.setVisible(false);
+        parameters.append(deltaRelatedParametersPanel);
         heuristicThresholdInput = SwingFactory.comboBoxAndTextBasedInputField("heuristic threshold", OrderingRelation.values(), doubleFunc, 10);
         heuristicThresholdInput.addVerificationStatusListener(listener);
         heuristicThresholdInput.setVisible(false);
@@ -263,26 +277,32 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         depthField = depthInput.getTextField();
         depthInput.addVerificationStatusListener(listener);
         parameters.append(depthInput);
+        initiallyWireSelfLoopsCheckBox.addChangeListener(e -> updatedParameters());
+        initiallyWireSelfLoopsCheckBox.setToolTipText("");
+        initiallyWireSelfLoopsCheckBox.setVisible(false);
+        parameters.append(initiallyWireSelfLoopsCheckBox);
         parameters.completeWithWhitespace();
 
         // ** EXECUTION ** //
 
         TitledBorderPanel execution = new TitledBorderPanel("Execution");
         execution.setFocusable(true);
+        HorizontalJPanel timeLimitsPanel = new HorizontalJPanel();
         discoveryTimeLimitInput = SwingFactory.activatableTextBasedInputField("discovery time limit", false, durationFunc, 25);
         discoveryTimeLimitInput.getCheckBox()
                                .setToolTipText("Real time limit for place discovery. Gracefully continues to post processing with intermediate result.");
         discoveryTimeLimitInput.getTextField()
                                .setToolTipText("<html>ISO-8601 format: P<it>x</it>DT<it>x</it>H<it>x</it>M<it>x</it>.<it>x</it>S</html>");
         discoveryTimeLimitInput.addVerificationStatusListener(listener);
-        execution.append(discoveryTimeLimitInput);
+        timeLimitsPanel.add(discoveryTimeLimitInput);
         totalTimeLimitInput = SwingFactory.activatableTextBasedInputField("total time limit", false, durationFunc, 25);
         totalTimeLimitInput.getCheckBox()
                            .setToolTipText("Real time limit over entire computation (discovery + post processing). Stops abruptly.");
         totalTimeLimitInput.getTextField()
                            .setToolTipText("<html>ISO-8601 format: P<it>x</it>DT<it>x</it>H<it>x</it>M<it>x</it>.<it>x</it>S</html>");
         totalTimeLimitInput.addVerificationStatusListener(listener);
-        execution.append(totalTimeLimitInput);
+        timeLimitsPanel.addSpaced(totalTimeLimitInput);
+        execution.append(timeLimitsPanel);
 
         runButton = SlickerFactory.instance().createButton("run");
         runButton.addActionListener(e -> tryRun());
@@ -382,8 +402,9 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         if (pc.depth >= 0) {
             depthInput.setText(Integer.toString(pc.depth));
             depthInput.activate();
-        }
-        depthInput.deactivate();
+        } else
+            depthInput.deactivate();
+        initiallyWireSelfLoopsCheckBox.setSelected(pc.initiallyWireSelfLoops);
         if (pc.discoveryTimeLimit != null) {
             discoveryTimeLimitInput.setText(pc.discoveryTimeLimit.toString());
             discoveryTimeLimitInput.activate();
@@ -407,6 +428,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
 
         pc.supervisionSetting = (ProMConfig.SupervisionSetting) supervisionComboBox.getSelectedItem();
         pc.logToFile = logToFileCheckBox.isSelected();
+        pc.logHeuristics = logHeuristicsCheckBox.isSelected();
         pc.treeExpansionSetting = (ProMConfig.TreeExpansionSetting) expansionStrategyComboBox.getSelectedItem();
         pc.respectWiring = respectWiringCheckBox.isSelected();
         pc.supportRestart = supportRestartCheckBox.isSelected();
@@ -441,11 +463,12 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         pc.delta = rawDelta != null ? rawDelta : -1;
         Integer rawSteepness = steepnessInput.getInput();
         pc.steepness = rawSteepness != null ? rawSteepness : -1;
-        Integer rawDepthLimit = depthInput.getInput();
         Double rawMinimumHeuristic = heuristicThresholdInput.getInput();
         pc.heuristicThreshold = rawMinimumHeuristic != null ? rawMinimumHeuristic : -1;
         pc.heuristicThresholdRelation = heuristicThresholdInput.getSelectedItem();
+        Integer rawDepthLimit = depthInput.getInput();
         pc.depth = rawDepthLimit != null ? rawDepthLimit : -1;
+        pc.initiallyWireSelfLoops = initiallyWireSelfLoopsCheckBox.isVisible() && initiallyWireSelfLoopsCheckBox.isSelected();
         pc.discoveryTimeLimit = discoveryTimeLimitInput.getInput();
         pc.totalTimeLimit = totalTimeLimitInput.getInput();
 
@@ -470,6 +493,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     private void updatedCompositionSettings() {
+        initiallyWireSelfLoopsCheckBox.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.Uniwired || respectWiringCheckBox.isSelected());
         ciprVariantCheckboxedComboBox.getComboBox()
                                      .setVisible(ciprVariantCheckboxedComboBox.getCheckBox().isSelected());
         deltaAdaptationLabeledComboBox.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta);
@@ -481,6 +505,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     private void changeDeltaParametersVisibility() {
         deltaInput.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta && deltaAdaptationFunctionComboBox.getSelectedItem() != FrameworkBridge.BridgedDeltaAdaptationFunctions.None.getBridge());
         steepnessInput.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.TauDelta && (deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear.getBridge() || deltaAdaptationFunctionComboBox.getSelectedItem() == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid.getBridge()));
+        deltaRelatedParametersPanel.setVisible(deltaField.isVisible() || steepnessInput.isVisible());
     }
 
     private void updatedEvaluationSettings() {
@@ -493,6 +518,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     private void updatedProposalSettings() {
+        initiallyWireSelfLoopsCheckBox.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.Uniwired || respectWiringCheckBox.isSelected());
         bridgedHeuristicsLabeledComboBox.setVisible(expansionStrategyComboBox.getSelectedItem() == ProMConfig.TreeExpansionSetting.Heuristic);
         enforceHeuristicScoreThresholdCheckBox.setVisible(expansionStrategyComboBox.getSelectedItem() == ProMConfig.TreeExpansionSetting.Heuristic);
         heuristicThresholdInput.setVisible(expansionStrategyComboBox.getSelectedItem() == ProMConfig.TreeExpansionSetting.Heuristic && enforceHeuristicScoreThresholdCheckBox.isSelected());
@@ -515,7 +541,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     private void updatedSupervisionSettings() {
-        if (logToFileCheckBox.isSelected()) {
+        if (logToFileCheckBox.isSelected() && supervisionComboBox.getSelectedItem() == ProMConfig.SupervisionSetting.PerformanceAndEvents) {
             logHeuristicsCheckBox.setVisible(true);
         } else {
             logHeuristicsCheckBox.setSelected(false);
@@ -533,7 +559,12 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     public enum Preset {
-        Default(ProMConfig::getDefault), Lightweight(ProMConfig::getLightweight), Last(null), Loaded(null);
+        Default(ProMConfig::getDefault),
+        Lightweight(ProMConfig::getLightweight),
+        TauDelta(ProMConfig::getTauDelta),
+        Uniwired(ProMConfig::getUniwired),
+        Last(null),
+        Loaded(null);
 
         private final DataSource<ProMConfig> configSource;
 

@@ -20,13 +20,13 @@ import org.processmining.specpp.traits.ZeroOneBounded;
 import java.util.Comparator;
 import java.util.PrimitiveIterator;
 
-public class InterestingnessHeuristic implements HeuristicStrategy<PlaceNode, TreeNodeScore>, ZeroOneBounded, SubtreeMonotonicity.Decreasing {
+public class EventuallyFollowsTreeHeuristic implements HeuristicStrategy<PlaceNode, TreeNodeScore>, ZeroOneBounded, SubtreeMonotonicity.Decreasing {
 
-    public InterestingnessHeuristic(double[][] eventuallyFollows) {
+    public EventuallyFollowsTreeHeuristic(double[][] eventuallyFollows) {
         this.eventuallyFollows = eventuallyFollows;
     }
 
-    public static class Builder extends ComponentSystemAwareBuilder<InterestingnessHeuristic> {
+    public static class Builder extends ComponentSystemAwareBuilder<EventuallyFollowsTreeHeuristic> {
 
 
         private final DelegatingDataSource<Log> rawLog = new DelegatingDataSource<>();
@@ -37,7 +37,7 @@ public class InterestingnessHeuristic implements HeuristicStrategy<PlaceNode, Tr
         }
 
         @Override
-        protected InterestingnessHeuristic buildIfFullySatisfied() {
+        protected EventuallyFollowsTreeHeuristic buildIfFullySatisfied() {
             Log log = rawLog.getData();
             IntEncodings<Activity> activityIntEncodings = encAct.getData();
             IntEncoding<Activity> presetEncoding = activityIntEncodings.getPresetEncoding();
@@ -88,7 +88,7 @@ public class InterestingnessHeuristic implements HeuristicStrategy<PlaceNode, Tr
                 }
             }
 
-            return new InterestingnessHeuristic(ef);
+            return new EventuallyFollowsTreeHeuristic(ef);
         }
     }
 

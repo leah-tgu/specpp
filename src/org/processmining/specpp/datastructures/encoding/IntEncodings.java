@@ -31,15 +31,21 @@ public class IntEncodings<T> implements ProperlyPrintable {
         return new IntEncodings<>(mapEncoding(presetEncoding, mapping), mapEncoding(postsetEncoding, mapping));
     }
 
-    public Set<T> combinedDomain() {
+    public Set<T> domainUnion() {
         HashSet<T> result = new HashSet<>();
         presetEncoding.domain().forEach(result::add);
         postsetEncoding.domain().forEach(result::add);
         return result;
     }
 
-    public IntEncoding<T> combinedEncoding() {
-        return HashmapEncoding.ofList(new ArrayList<>(combinedDomain()));
+    public Set<T> domainIntersection() {
+        HashSet<T> result = new HashSet<>();
+        presetEncoding.domain().filter(postsetEncoding::isInDomain).forEach(result::add);
+        return result;
+    }
+
+    public IntEncoding<T> unionizedEncoding() {
+        return HashmapEncoding.ofList(new ArrayList<>(domainUnion()));
     }
 
     public IntEncoding<T> getPresetEncoding() {

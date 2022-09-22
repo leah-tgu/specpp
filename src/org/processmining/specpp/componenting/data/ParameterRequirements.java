@@ -1,5 +1,7 @@
 package org.processmining.specpp.componenting.data;
 
+import org.processmining.specpp.composition.DeltaComposerParameters;
+import org.processmining.specpp.config.ExternalInitializationParameters;
 import org.processmining.specpp.config.parameters.*;
 import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
@@ -16,6 +18,8 @@ public class ParameterRequirements {
     public static final ParameterRequirement<ExecutionParameters> EXECUTION_PARAMETERS = parameters("execution.parameters", ExecutionParameters.class);
     public static final ParameterRequirement<ImplicitnessTestingParameters> IMPLICITNESS_TESTING = parameters("implicitness.parameters", ImplicitnessTestingParameters.class);
     public static final ParameterRequirement<ReplayComputationParameters> REPLAY_COMPUTATION = parameters("replay.parameters", ReplayComputationParameters.class);
+    public static final ParameterRequirement<ExternalInitializationParameters> EXTERNAL_INITIALIZATION = parameters("external_initialization.parameters", ExternalInitializationParameters.class);
+    public static final ParameterRequirement<DeltaComposerParameters> DELTA_COMPOSER_PARAMETERS = parameters("delta_composer.parameters", DeltaComposerParameters.class);
     public static ParameterRequirement<TreeHeuristicThreshold> TREE_HEURISTIC_THRESHOLD = parameters("tree.heuristic.parameters", TreeHeuristicThreshold.class);
 
     public static <P extends Parameters> ParameterRequirement<P> parameters(String label, Class<P> type) {

@@ -10,7 +10,7 @@ import org.processmining.specpp.datastructures.vectorization.VariantMarkingHisto
 import org.processmining.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.specpp.evaluation.fitness.DetailedFitnessEvaluation;
 import org.processmining.specpp.evaluation.heuristics.AdaptedDelta;
-import org.processmining.specpp.evaluation.heuristics.PostponedCandidateScore;
+import org.processmining.specpp.evaluation.heuristics.CandidateScore;
 import org.processmining.specpp.evaluation.implicitness.ImplicitnessRating;
 import org.processmining.specpp.util.JavaTypingUtils;
 
@@ -24,7 +24,7 @@ public class EvaluationRequirements {
     public static final EvaluatorRequirement<Place, VariantMarkingHistories> PLACE_MARKING_HISTORY = evaluator(Place.class, VariantMarkingHistories.class);
     public static final EvaluatorRequirement<EvaluationParameterTuple2<Place, BitMask>, VariantMarkingHistories> PLACE_SUBSET_MARKING_HISTORY = evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), VariantMarkingHistories.class);
     public static final EvaluatorRequirement<EvaluationParameterTuple2<Place, Integer>, AdaptedDelta> DELTA_ADAPTATION_FUNCTION = evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), AdaptedDelta.class);
-    public static final EvaluatorRequirement<Place, PostponedCandidateScore> POSTPONED_CANDIDATES_HEURISTIC = evaluator(Place.class, PostponedCandidateScore.class);
+    public static final EvaluatorRequirement<Place, CandidateScore> POSTPONED_CANDIDATES_HEURISTIC = evaluator(Place.class, CandidateScore.class);
 
 
     public static <I extends Evaluable, E extends Evaluation> EvaluatorRequirement<I, E> evaluator(Class<I> evaluableClass, Class<E> evaluationClass) {

@@ -167,4 +167,9 @@ public class SwingFactory {
             }
         };
     }
+
+    public static void resizeComboBox(JComboBox<?> heuristicComboBox, int width, int height) {
+        heuristicComboBox.setMinimumSize(new Dimension(width, height));
+        heuristicComboBox.setPreferredSize(new Dimension(width, height));
+    }
 }

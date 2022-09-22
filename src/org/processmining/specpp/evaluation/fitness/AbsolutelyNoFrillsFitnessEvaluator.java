@@ -1,6 +1,8 @@
 package org.processmining.specpp.evaluation.fitness;
 
+import org.processmining.specpp.componenting.data.DataSource;
 import org.processmining.specpp.datastructures.encoding.BitMask;
+import org.processmining.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.EnumCounts;
 import org.processmining.specpp.datastructures.util.IndexedItem;
@@ -15,15 +17,15 @@ import java.util.function.IntUnaryOperator;
 @SuppressWarnings("duplication")
 public class AbsolutelyNoFrillsFitnessEvaluator extends AbstractBasicFitnessEvaluator {
 
-    public AbsolutelyNoFrillsFitnessEvaluator(ReplayComputationParameters replayComputationParameters) {
-        super(replayComputationParameters);
+    public AbsolutelyNoFrillsFitnessEvaluator(MultiEncodedLog multiEncodedLog, DataSource<BitMask> variantSubsetSource, ReplayComputationParameters replayComputationParameters) {
+        super(multiEncodedLog, variantSubsetSource, replayComputationParameters);
     }
 
     public static class Builder extends AbstractBasicFitnessEvaluator.Builder {
 
         @Override
         protected AbstractBasicFitnessEvaluator buildIfFullySatisfied() {
-            return new AbsolutelyNoFrillsFitnessEvaluator(replayComputationParametersSource.getData());
+            return new AbsolutelyNoFrillsFitnessEvaluator(multiEncodedLogSource.getData(), variantSubsetSource.getDelegate(), replayComputationParametersSource.getData());
         }
     }
 

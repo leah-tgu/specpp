@@ -6,7 +6,7 @@ import org.processmining.specpp.datastructures.tree.heuristic.HeuristicValue;
 
 import java.util.Comparator;
 
-public interface HeuristicStrategy<N extends TreeNode & Evaluable, H extends HeuristicValue<? super H>> extends Evaluator<N, H> {
+public interface HeuristicStrategy<N extends Evaluable, H extends HeuristicValue<? super H>> extends Evaluator<N, H> {
 
     H computeHeuristic(N node);
 

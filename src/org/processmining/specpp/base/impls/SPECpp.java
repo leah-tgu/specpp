@@ -139,7 +139,8 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         try {
             finalResult = postProcessor.postProcess(result);
         } catch (Exception e) {
-            DebuggingSupervisor.debug("Post Processing", "Post Processing failed with\n" + e.getMessage());
+            DebuggingSupervisor.debug("Post Processing", "Post Processing failed with:");
+            e.printStackTrace();
         }
         return finalResult;
     }
@@ -148,7 +149,8 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         try {
             finalResult = postProcessor.postProcess(result, intermediateResultCallback);
         } catch (Exception e) {
-            DebuggingSupervisor.debug("Post Processing", "Post Processing failed with\n" + e.getMessage());
+            DebuggingSupervisor.debug("Post Processing", "Post Processing failed with:");
+            e.printStackTrace();
         }
         return finalResult;
     }

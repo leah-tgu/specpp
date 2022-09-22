@@ -1,16 +1,18 @@
 package org.processmining.specpp.evaluation.fitness;
 
+import org.processmining.specpp.componenting.data.DataRequirements;
+import org.processmining.specpp.componenting.data.DataSource;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.specpp.componenting.system.ComponentSystemAwareBuilder;
 import org.processmining.specpp.datastructures.encoding.BitMask;
+import org.processmining.specpp.datastructures.log.impls.MultiEncodedLog;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.EvaluationParameterTuple2;
 import org.processmining.specpp.datastructures.util.IndexedItem;
 import org.processmining.specpp.datastructures.util.Pair;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
-import org.processmining.specpp.supervision.observations.performance.TaskDescription;
 import org.processmining.specpp.util.JavaTypingUtils;
 
 import java.nio.IntBuffer;
@@ -21,20 +23,25 @@ public abstract class AbstractBasicFitnessEvaluator extends AbstractFitnessEvalu
 
     protected ReplayComputationParameters replayComputationParameters;
 
+
     public static abstract class Builder extends ComponentSystemAwareBuilder<AbstractBasicFitnessEvaluator> {
+
+        protected final DelegatingDataSource<MultiEncodedLog> multiEncodedLogSource = new DelegatingDataSource<>();
+        protected final DelegatingDataSource<BitMask> variantSubsetSource = new DelegatingDataSource<>();
 
         protected final DelegatingDataSource<ReplayComputationParameters> replayComputationParametersSource = new DelegatingDataSource<>();
 
         public Builder() {
-            globalComponentSystem().require(ParameterRequirements.REPLAY_COMPUTATION, replayComputationParametersSource);
+            globalComponentSystem().require(DataRequirements.CONSIDERED_VARIANTS, variantSubsetSource)
+                                   .require(DataRequirements.ENC_LOG, multiEncodedLogSource)
+                                   .require(ParameterRequirements.REPLAY_COMPUTATION, replayComputationParametersSource);
         }
 
     }
 
-    public static final TaskDescription BASIC_EVALUATION = new TaskDescription("Basic Fitness Evaluation");
-    public static final TaskDescription DETAILED_EVALUATION = new TaskDescription("Detailed Fitness Evaluation");
 
-    public AbstractBasicFitnessEvaluator(ReplayComputationParameters replayComputationParameters) {
+    public AbstractBasicFitnessEvaluator(MultiEncodedLog multiEncodedLog, DataSource<BitMask> variantSubsetSource, ReplayComputationParameters replayComputationParameters) {
+        super(multiEncodedLog, variantSubsetSource);
         this.replayComputationParameters = replayComputationParameters;
         globalComponentSystem().provide(EvaluationRequirements.evaluator(Place.class, BasicFitnessEvaluation.class, this::eval))
                                .provide(EvaluationRequirements.evaluator(Place.class, DetailedFitnessEvaluation.class, this::detailedEval))

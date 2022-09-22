@@ -115,9 +115,12 @@ public class SPECppOperations {
         configBundle.instantiate(cr, dataBundle);
 
         Configuration configuration = new Configuration(cr);
+        ExternalInitializer externalInitializer = configuration.createFrom(ExternalInitializer::new);
         SPECpp<Place, TrackingPlaceCollection, PetriNet, ProMPetrinetWrapper> specpp = configuration.createFrom(new SPECppBuilder<>(), cr);
 
         specpp.init();
+
+        externalInitializer.initSelf();
 
         return specpp;
     }

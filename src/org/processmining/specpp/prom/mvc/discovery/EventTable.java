@@ -7,6 +7,9 @@ import org.processmining.specpp.composition.events.CandidateAccepted;
 import org.processmining.specpp.composition.events.CandidateRejected;
 import org.processmining.specpp.datastructures.tree.constraints.ClinicallyOverfedPlace;
 import org.processmining.specpp.datastructures.tree.constraints.ClinicallyUnderfedPlace;
+import org.processmining.specpp.datastructures.tree.constraints.CullPostsetChildren;
+import org.processmining.specpp.datastructures.tree.constraints.CullPresetChildren;
+import org.processmining.specpp.datastructures.tree.events.*;
 import org.processmining.specpp.prom.alg.LiveEvents;
 import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import org.processmining.specpp.prom.util.Destructible;
@@ -29,6 +32,15 @@ public class EventTable extends JPanel implements Destructible {
                                                                                                                                 .put(new ClassKey<>(CandidateRejected.class), "A place was rejected")
                                                                                                                                 .put(new ClassKey<>(CandidateAccepted.class), "A place was accepted")
                                                                                                                                 .put(new ClassKey<>(CandidateAcceptanceRevoked.class), "An accepted place was removed again")
+                                                                                                                                .put(new ClassKey<>(NodeExpansionEvent.class), "A tree node's child node was generated")
+                                                                                                                                .put(new ClassKey<>(NodeExhaustionEvent.class), "A tree node's potential child nodes were exhausted")
+                                                                                                                                .put(new ClassKey<>(EnqueuedNodeEvent.class), "A tree node was offered to the heuristically sorted priority queue")
+                                                                                                                                .put(new ClassKey<>(DequeuedNodeEvent.class), "A tree node was polled from the heuristically sorted priority queue")
+                                                                                                                                .put(new ClassKey<>(LeafAdditionEvent.class), "A tree node was inserted into the candidate tree")
+                                                                                                                                .put(new ClassKey<>(LeafRemovalEvent.class), "A tree node is no longer childless inside the candidate tree")
+                                                                                                                                .put(new ClassKey<>(HeuristicComputationEvent.class), "Tree node heuristics were computed")
+                                                                                                                                .put(new ClassKey<>(CullPresetChildren.class), "A tree nodes preset expansion subtree was cutoff")
+                                                                                                                                .put(new ClassKey<>(CullPostsetChildren.class), "A tree nodes postset expansion subtree was cutoff")
                                                                                                                                 .build();
 
     public EventTable(LiveEvents liveEvents) {

@@ -5,21 +5,18 @@ import org.processmining.specpp.base.Result;
 import org.processmining.specpp.componenting.data.DataRequirements;
 import org.processmining.specpp.componenting.delegators.ContainerUtils;
 import org.processmining.specpp.componenting.delegators.DelegatingDataSource;
-import org.processmining.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.specpp.componenting.delegators.DelegatingObserver;
-import org.processmining.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.specpp.componenting.supervision.SupervisionRequirements;
 import org.processmining.specpp.componenting.system.link.ComposerComponent;
 import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.Transition;
+import org.processmining.specpp.datastructures.tree.base.HeuristicStrategy;
 import org.processmining.specpp.datastructures.tree.constraints.AddWiredPlace;
 import org.processmining.specpp.datastructures.tree.constraints.RemoveWiredPlace;
-import org.processmining.specpp.datastructures.tree.constraints.WiringConstraint;
 import org.processmining.specpp.datastructures.tree.nodegen.UnWiringMatrix;
-import org.processmining.specpp.evaluation.heuristics.PostponedCandidateScore;
+import org.processmining.specpp.evaluation.heuristics.CandidateScore;
 import org.processmining.specpp.proposal.ProposerSignal;
-import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.specpp.util.JavaTypingUtils;
 
 import java.util.ArrayList;
@@ -30,10 +27,11 @@ public class UniwiredComposer<I extends AdvancedComposition<Place>, R extends Re
     protected final ArrayList<Place> collectedPlaces;
     protected final DelegatingObserver<ProposerSignal> proposerSignalsIn = new DelegatingObserver<>();
     protected final DelegatingDataSource<IntEncodings<Transition>> transitionEncodings = new DelegatingDataSource<>();
-    protected final DelegatingEvaluator<Place, PostponedCandidateScore> heuristic = new DelegatingEvaluator<>();
+    protected final DelegatingDataSource<HeuristicStrategy<Place, CandidateScore>> orderingHeuristic = new DelegatingDataSource<>();
     protected UnWiringMatrix wiringMatrix;
     protected int currentTreeLevel;
     protected final DelegatingDataSource<Integer> treeLevelSource = new DelegatingDataSource<>(() -> currentTreeLevel);
+    private HeuristicStrategy<Place, CandidateScore> heuristic;
 
     public UniwiredComposer(ComposerComponent<Place, I, R> childComposer) {
         super(childComposer);
@@ -41,8 +39,9 @@ public class UniwiredComposer<I extends AdvancedComposition<Place>, R extends Re
         currentTreeLevel = 0;
 
         globalComponentSystem().require(DataRequirements.ENC_TRANS, transitionEncodings)
+                               .require(SupervisionRequirements.observable("external.constraints.wiring", JavaTypingUtils.castClass(CandidateConstraint.class)), ContainerUtils.observeResults(this::addConstraint))
                                .require(DataRequirements.dataSource("tree.current_level", Integer.class), treeLevelSource)
-                               .require(EvaluationRequirements.POSTPONED_CANDIDATES_HEURISTIC, heuristic);
+                               .require(DataRequirements.dataSource("heuristics.place.df", JavaTypingUtils.castClass(HeuristicStrategy.class)), orderingHeuristic);
         localComponentSystem().require(SupervisionRequirements.observer("proposer.signals.in", ProposerSignal.class), proposerSignalsIn)
                               .require(SupervisionRequirements.observable("composition.constraints.wiring", JavaTypingUtils.castClass(CandidateConstraint.class)), ContainerUtils.observeResults(this::addConstraint));
 
@@ -55,7 +54,10 @@ public class UniwiredComposer<I extends AdvancedComposition<Place>, R extends Re
 
     @Override
     protected void initSelf() {
-        wiringMatrix = new UnWiringMatrix(transitionEncodings.getData());
+        heuristic = orderingHeuristic.getData();
+        IntEncodings<Transition> encodings = transitionEncodings.getData();
+        wiringMatrix = new UnWiringMatrix(encodings);
+
     }
 
     @Override
@@ -70,7 +72,7 @@ public class UniwiredComposer<I extends AdvancedComposition<Place>, R extends Re
     @Override
     protected boolean iteratePostponedCandidates() {
         if (collectedPlaces.isEmpty()) return false;
-        collectedPlaces.sort(Comparator.<Place>comparingDouble(p -> heuristic.eval(p).getScore()).reversed());
+        collectedPlaces.sort(Comparator.comparing(heuristic::computeHeuristic, heuristic.heuristicValuesComparator()));
 
         for (Place place : collectedPlaces) {
             if (wiringMatrix.isWired(place)) rejectCandidate(place);

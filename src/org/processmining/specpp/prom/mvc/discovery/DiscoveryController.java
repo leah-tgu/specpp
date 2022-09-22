@@ -16,6 +16,7 @@ import org.processmining.specpp.config.parameters.ExecutionParameters;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
+import org.processmining.specpp.orchestra.ExternalInitializer;
 import org.processmining.specpp.orchestra.SPECppConfigBundle;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.prom.computations.OngoingComputation;
@@ -39,6 +40,8 @@ public class DiscoveryController extends AbstractStageController implements Dest
     private final ExecutionParameters.ExecutionTimeLimits timeLimits;
     private final List<Timer> startedTimers = new LinkedList<>();
     private final ListeningExecutorService executorService;
+    private final GlobalComponentRepository gcr;
+    private final ExternalInitializer externalInitializer;
     private List<Result> intermediateResults;
 
     public DiscoveryController(SPECppController parentController) {
@@ -47,10 +50,10 @@ public class DiscoveryController extends AbstractStageController implements Dest
         InputDataBundle dataBundle = parentController.getDataBundle();
         SPECppConfigBundle configBundle = parentController.getConfigBundle();
 
-        GlobalComponentRepository gcr = new GlobalComponentRepository();
+        gcr = new GlobalComponentRepository();
         gracefulCancellationDelegate = new DelegatingDataSource<>();
-
         gcr.require(DataRequirements.dataSource("cancel_gracefully", Runnable.class), gracefulCancellationDelegate);
+
         configBundle.instantiate(gcr, dataBundle);
         Configuration configuration = new Configuration(gcr);
 
@@ -58,6 +61,7 @@ public class DiscoveryController extends AbstractStageController implements Dest
                                                      .askForData(ParameterRequirements.EXECUTION_PARAMETERS);
         timeLimits = executionParameters.getTimeLimits();
 
+        externalInitializer = configuration.createFrom(ExternalInitializer::new);
         specpp = configuration.createFrom(new SPECppBuilder<>(), gcr);
         specpp.init();
 
@@ -80,6 +84,8 @@ public class DiscoveryController extends AbstractStageController implements Dest
         if (ongoingDiscoveryComputation.isCancelled()) return;
 
         specpp.start();
+
+        externalInitializer.initSelf();
 
         LocalDateTime startTime = LocalDateTime.now();
         if (timeLimits.hasDiscoveryTimeLimit())
@@ -110,7 +116,9 @@ public class DiscoveryController extends AbstractStageController implements Dest
 
     private void discoveryFinished() {
         ongoingDiscoveryComputation.setEnd(LocalDateTime.now());
-        startPostProcessing();
+        if (specpp.getInitialResult() != null)
+            startPostProcessing();
+        else cancelEverything();
     }
 
     public OngoingComputation getOngoingDiscoveryComputation() {

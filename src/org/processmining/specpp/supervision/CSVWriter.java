@@ -5,7 +5,6 @@ import org.processmining.specpp.supervision.piping.AsyncObserver;
 import org.processmining.specpp.supervision.piping.Buffer;
 import org.processmining.specpp.supervision.piping.Buffering;
 import org.processmining.specpp.supervision.piping.ConcurrentBuffer;
-import org.processmining.specpp.traits.Joinable;
 import org.processmining.specpp.traits.Stoppable;
 import org.processmining.specpp.util.FileUtils;
 
@@ -23,7 +22,7 @@ public class CSVWriter<O extends Observation> implements AsyncObserver<O>, Buffe
     public CSVWriter(String filePath, String[] columnLabels, Function<O, String[]> rowMapper) {
         this.rowMapper = rowMapper;
         buffer = new ConcurrentBuffer<>();
-        csvWriter = new com.opencsv.CSVWriter(FileUtils.createOutputFileWriter(filePath));
+        csvWriter = new com.opencsv.CSVWriter(FileUtils.createOutputFileWriter(filePath), ';', '"', '\\', "\n");
         csvWriter.writeNext(columnLabels);
 
     }

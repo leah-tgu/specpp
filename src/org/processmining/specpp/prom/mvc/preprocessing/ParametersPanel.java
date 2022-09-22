@@ -33,16 +33,13 @@ public class ParametersPanel extends JPanel {
         availableEventClassifiers = ImmutableList.copyOf(eventClassifiers);
         LabeledComboBox<XEventClassifier> eventClassifierBox = SwingFactory.labeledComboBox("Event Classifier", availableEventClassifiers.toArray(new XEventClassifier[0]));
         classifierComboBox = eventClassifierBox.getComboBox();
-
-        classifierComboBox.setMinimumSize(new Dimension(175, 25));
-        classifierComboBox.setPreferredSize(new Dimension(175, 25));
+        SwingFactory.resizeComboBox(classifierComboBox, 175, 25);
         classifierComboBox.setSelectedItem(defaultParameters.getEventClassifier());
 
         availableOrderings = FrameworkBridge.ORDERING_STRATEGIES;
         LabeledComboBox<FrameworkBridge.AnnotatedActivityOrderingStrategy> orderingStrategyBox = SwingFactory.labeledComboBox("Ordering Strategy", availableOrderings.toArray(new FrameworkBridge.AnnotatedActivityOrderingStrategy[0]));
         orderingComboBox = orderingStrategyBox.getComboBox();
-        orderingComboBox.setMinimumSize(new Dimension(250, 25));
-        orderingComboBox.setPreferredSize(new Dimension(250, 25));
+        SwingFactory.resizeComboBox(orderingComboBox, 250, 25);
         orderingComboBox.setSelectedItem(findEnum(defaultParameters.getTransitionEncodingsBuilderClass()));
         orderingStrategyBox.add(SwingFactory.help(null, SwingFactory.html("Determines the order in which the search tree is explored. Can have a big impact on performance.<br>Refer to <a href=\"https://dx.doi.org/10.1007/978-3-030-66498-5_25\">Improving the State-Space Traversal of the eST-Miner by Exploiting Underlying Log Structures</a>")));
 

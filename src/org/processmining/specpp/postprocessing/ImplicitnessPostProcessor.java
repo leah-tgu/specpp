@@ -1,4 +1,4 @@
-package org.processmining.specpp.componenting.system.link;
+package org.processmining.specpp.postprocessing;
 
 import org.processmining.specpp.componenting.data.DataRequirements;
 import org.processmining.specpp.componenting.data.ParameterRequirements;

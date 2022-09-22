@@ -2,7 +2,6 @@ package org.processmining.specpp.prom.alg;
 
 import org.processmining.specpp.base.IdentityPostProcessor;
 import org.processmining.specpp.base.PostProcessor;
-import org.processmining.specpp.componenting.system.link.LPBasedImplicitnessPostProcessing;
 import org.processmining.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.specpp.config.SimpleBuilder;
 import org.processmining.specpp.datastructures.petri.PetriNet;
@@ -16,9 +15,7 @@ import org.processmining.specpp.evaluation.fitness.ForkJoinFitnessEvaluator;
 import org.processmining.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
 import org.processmining.specpp.evaluation.heuristics.*;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
-import org.processmining.specpp.postprocessing.ProMConverter;
-import org.processmining.specpp.postprocessing.ReplayBasedImplicitnessPostProcessing;
-import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
+import org.processmining.specpp.postprocessing.*;
 import org.processmining.specpp.preprocessing.orderings.ActivityOrderingStrategy;
 
 import java.util.Arrays;
@@ -45,7 +42,9 @@ public class FrameworkBridge {
     public static final List<AnnotatedPostProcessor> POST_PROCESSORS = Arrays.asList(BridgedPostProcessors.ReplayBasedImplicitPlaceRemoval.getBridge(), BridgedPostProcessors.LPBasedImplicitPlaceRemoval.getBridge(), BridgedPostProcessors.SelfLoopPlacesMerging.getBridge(), BridgedPostProcessors.ProMPetrinetConversion.getBridge());
 
     public enum BridgedHeuristics {
-        PlaceInterestingness(new AnnotatedTreeHeuristic("Place Interestingness", InterestingnessHeuristic.Builder::new)), BFS_Emulation(new AnnotatedTreeHeuristic("BFS Emulation", () -> HeuristicUtils::bfs)), DFS_Emulation(new AnnotatedTreeHeuristic("DFS Emulation", () -> HeuristicUtils::dfs));
+        PlaceInterestingness(new AnnotatedTreeHeuristic("Place Interestingness", EventuallyFollowsTreeHeuristic.Builder::new)),
+        BFS_Emulation(new AnnotatedTreeHeuristic("BFS Emulation", () -> HeuristicUtils::bfs)),
+        DFS_Emulation(new AnnotatedTreeHeuristic("DFS Emulation", () -> HeuristicUtils::dfs));
 
         private final AnnotatedTreeHeuristic bth;
 
@@ -64,7 +63,12 @@ public class FrameworkBridge {
     }
 
     public enum BridgedPostProcessors {
-        Identity(new AnnotatedPostProcessor("Identity", PetriNet.class, PetriNet.class, () -> IdentityPostProcessor::new)), ReplayBasedImplicitPlaceRemoval(new AnnotatedPostProcessor("Replay-Based Implicit Place Removal", PetriNet.class, PetriNet.class, ReplayBasedImplicitnessPostProcessing.Builder::new)), LPBasedImplicitPlaceRemoval(new AnnotatedPostProcessor("LP-Based Implicit Place Removal", PetriNet.class, PetriNet.class, LPBasedImplicitnessPostProcessing.Builder::new)), SelfLoopPlacesMerging(new AnnotatedPostProcessor("Self-Loop Places Merging", PetriNet.class, PetriNet.class, () -> SelfLoopPlaceMerger::new)), ProMPetrinetConversion(new AnnotatedPostProcessor("Conversion to ProM Petri net", PetriNet.class, ProMPetrinetWrapper.class, () -> ProMConverter::new));
+        Identity(new AnnotatedPostProcessor("Identity", PetriNet.class, PetriNet.class, () -> IdentityPostProcessor::new)),
+        ReplayBasedImplicitPlaceRemoval(new AnnotatedPostProcessor("Replay-Based Implicit Place Removal", PetriNet.class, PetriNet.class, ReplayBasedImplicitnessPostProcessing.Builder::new)),
+        LPBasedImplicitPlaceRemoval(new AnnotatedPostProcessor("LP-Based Implicit Place Removal", PetriNet.class, PetriNet.class, LPBasedImplicitnessPostProcessing.Builder::new)),
+        SelfLoopPlacesMerging(new AnnotatedPostProcessor("Self-Loop Places Merging", PetriNet.class, PetriNet.class, () -> SelfLoopPlaceMerger::new)),
+        UniwiredSelfLoopAddition(new AnnotatedPostProcessor("Uniwired Self-Loop Addition", PetriNet.class, PetriNet.class, UniwiredSelfLoopAdditionPostProcessing.Builder::new)),
+        ProMPetrinetConversion(new AnnotatedPostProcessor("Conversion to ProM Petri net", PetriNet.class, ProMPetrinetWrapper.class, () -> ProMConverter::new));
         private final AnnotatedPostProcessor bpp;
 
         BridgedPostProcessors(AnnotatedPostProcessor bpp) {
@@ -83,7 +87,10 @@ public class FrameworkBridge {
     }
 
     public enum BridgedEvaluators {
-        BaseFitness(new AnnotatedEvaluator("Base Fitness Evaluator", AbsolutelyNoFrillsFitnessEvaluator.Builder::new)), ForkJoinFitness(new AnnotatedEvaluator("Concurrent Fitness Evaluator", ForkJoinFitnessEvaluator.Builder::new)), MarkingHistoryBasedFitness(new AnnotatedEvaluator("Marking History Based Fitness Evaluator", MarkingHistoryBasedFitnessEvaluator.Builder::new)), MarkingHistory(new AnnotatedEvaluator("Marking History Computer", () -> LogHistoryMaker::new));
+        BaseFitness(new AnnotatedEvaluator("Base Fitness Evaluator", AbsolutelyNoFrillsFitnessEvaluator.Builder::new)),
+        ForkJoinFitness(new AnnotatedEvaluator("Concurrent Fitness Evaluator", ForkJoinFitnessEvaluator.Builder::new)),
+        MarkingHistoryBasedFitness(new AnnotatedEvaluator("Marking History Based Fitness Evaluator", MarkingHistoryBasedFitnessEvaluator.Builder::new)),
+        MarkingHistory(new AnnotatedEvaluator("Marking History Computer", () -> LogHistoryMaker::new));
 
         private final AnnotatedEvaluator be;
 
@@ -103,7 +110,10 @@ public class FrameworkBridge {
     }
 
     public enum BridgedDeltaAdaptationFunctions {
-        None(new AnnotatedEvaluator("None", NoDelta.Builder::new)), Constant(new AnnotatedEvaluator("Constant Delta", ConstantDelta.Builder::new)), Linear(new AnnotatedEvaluator("Linear Delta", LinearDelta.Builder::new)), Sigmoid(new AnnotatedEvaluator("Sigmoid Delta", SigmoidDelta.Builder::new));
+        None(new AnnotatedEvaluator("None", NoDelta.Builder::new)),
+        Constant(new AnnotatedEvaluator("Constant Delta", ConstantDelta.Builder::new)),
+        Linear(new AnnotatedEvaluator("Linear Delta", LinearDelta.Builder::new)),
+        Sigmoid(new AnnotatedEvaluator("Sigmoid Delta", SigmoidDelta.Builder::new));
 
         private final AnnotatedEvaluator be;
 
@@ -122,7 +132,11 @@ public class FrameworkBridge {
     }
 
     public enum BridgedActivityOrderingStrategies {
-        AverageFirstOccurrenceIndex(new AnnotatedActivityOrderingStrategy("Average First Occurrence Index", org.processmining.specpp.preprocessing.orderings.AverageFirstOccurrenceIndex.class)), AverageTraceOccurrence(new AnnotatedActivityOrderingStrategy("Average Trace Occurrence", org.processmining.specpp.preprocessing.orderings.AverageTraceOccurrence.class)), AbsoluteTraceFrequency(new AnnotatedActivityOrderingStrategy("Absolute Trace Frequency", org.processmining.specpp.preprocessing.orderings.AbsoluteTraceFrequency.class)), AbsoluteActivityFrequency(new AnnotatedActivityOrderingStrategy("Absolute Activity Frequency", org.processmining.specpp.preprocessing.orderings.AbsoluteActivityFrequency.class)), Lexicographic(new AnnotatedActivityOrderingStrategy("Lexicographic", org.processmining.specpp.preprocessing.orderings.Lexicographic.class));
+        AverageFirstOccurrenceIndex(new AnnotatedActivityOrderingStrategy("Average First Occurrence Index", org.processmining.specpp.preprocessing.orderings.AverageFirstOccurrenceIndex.class)),
+        AverageTraceOccurrence(new AnnotatedActivityOrderingStrategy("Average Trace Occurrence", org.processmining.specpp.preprocessing.orderings.AverageTraceOccurrence.class)),
+        AbsoluteTraceFrequency(new AnnotatedActivityOrderingStrategy("Absolute Trace Frequency", org.processmining.specpp.preprocessing.orderings.AbsoluteTraceFrequency.class)),
+        AbsoluteActivityFrequency(new AnnotatedActivityOrderingStrategy("Absolute Activity Frequency", org.processmining.specpp.preprocessing.orderings.AbsoluteActivityFrequency.class)),
+        Lexicographic(new AnnotatedActivityOrderingStrategy("Lexicographic", org.processmining.specpp.preprocessing.orderings.Lexicographic.class));
 
         private final AnnotatedActivityOrderingStrategy strategy;
 
