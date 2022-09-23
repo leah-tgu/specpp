@@ -5,7 +5,6 @@ import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.classification.XEventNameClassifier;
 import org.processmining.specpp.config.parameters.Parameters;
 import org.processmining.specpp.preprocessing.orderings.*;
-import org.processmining.specpp.prom.alg.FrameworkBridge;
 
 import java.util.List;
 import java.util.Objects;

@@ -11,11 +11,14 @@ import org.processmining.specpp.datastructures.tree.constraints.CullPostsetChild
 import org.processmining.specpp.datastructures.tree.constraints.CullPresetChildren;
 import org.processmining.specpp.datastructures.tree.events.*;
 import org.processmining.specpp.prom.alg.LiveEvents;
+import org.processmining.specpp.prom.computations.ComputationEnded;
+import org.processmining.specpp.prom.computations.ComputationEvent;
 import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import org.processmining.specpp.prom.util.Destructible;
 import org.processmining.specpp.supervision.monitoring.KeepLastMonitor;
 import org.processmining.specpp.supervision.observations.Event;
 import org.processmining.specpp.supervision.observations.*;
+import org.processmining.specpp.supervision.piping.Observer;
 import org.processmining.specpp.util.JavaTypingUtils;
 
 import javax.swing.*;
@@ -23,7 +26,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Map;
 
-public class EventTable extends JPanel implements Destructible {
+public class EventTable extends JPanel implements Destructible, Observer<ComputationEvent> {
 
     private final DefaultTableModel model;
     private KeepLastMonitor<EventCountStatistics> monitor;
@@ -90,4 +93,10 @@ public class EventTable extends JPanel implements Destructible {
     public void destroy() {
         if (updateTimer != null) updateTimer.stop();
     }
+
+    @Override
+    public void observe(ComputationEvent event) {
+        if (event instanceof ComputationEnded) updateTimer.stop();
+    }
+
 }

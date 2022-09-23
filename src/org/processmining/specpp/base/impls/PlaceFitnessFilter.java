@@ -57,7 +57,7 @@ public class PlaceFitnessFilter<I extends CompositionComponent<Place>, R extends
         } else if (FitnessThresholder.isOverfed(fitness, thresholds)) {
             constraintEvents.observe(new ClinicallyOverfedPlace(place));
             gotFiltered(place);
-        } else if (FitnessThresholder.isTauFitting(fitness, thresholds)){
+        } else if (FitnessThresholder.isTauFitting(fitness, thresholds)) {
             fitnessCache.put(place, eval);
             forward(place);
         }

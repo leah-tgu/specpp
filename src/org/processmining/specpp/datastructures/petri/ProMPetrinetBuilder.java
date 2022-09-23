@@ -42,20 +42,20 @@ public class ProMPetrinetBuilder {
         uniqueEndPlace.getAttributeMap().put(AttributeMap.LABEL, "END");
         uniqueEndPlace.getAttributeMap().put(AttributeMap.SHOWLABEL, "true");
         Marking initialMarking = new Marking(ImmutableSet.of(uniqueStartPlace)), finalMarking = new Marking(ImmutableSet.of(uniqueEndPlace));
-        Set<org.processmining.specpp.datastructures.petri.Transition> alreadyConnected = new HashSet<>();
+        Set<org.processmining.specpp.datastructures.petri.Transition> hasStartConnection = new HashSet<>(), hasEndConnection = new HashSet<>();
         for (Place p : petriNet.getPlaces()) {
             org.processmining.models.graphbased.directed.petrinet.elements.Place correspondingPlace = net.addPlace(p.toString());
             for (org.processmining.specpp.datastructures.petri.Transition t : p.preset()) {
-                if (t instanceof InitialTransition && !alreadyConnected.contains(t)) {
+                if (t instanceof Initial && !hasStartConnection.contains(t)) {
                     net.addArc(uniqueStartPlace, correspondingTransition(t));
-                    alreadyConnected.add(t);
+                    hasStartConnection.add(t);
                 }
                 net.addArc(correspondingTransition(t), correspondingPlace);
             }
             for (org.processmining.specpp.datastructures.petri.Transition t : p.postset()) {
-                if (t instanceof FinalTransition && !alreadyConnected.contains(t)) {
+                if (t instanceof Final && !hasEndConnection.contains(t)) {
                     net.addArc(correspondingTransition(t), uniqueEndPlace);
-                    alreadyConnected.add(t);
+                    hasEndConnection.add(t);
                 }
                 net.addArc(correspondingPlace, correspondingTransition(t));
             }

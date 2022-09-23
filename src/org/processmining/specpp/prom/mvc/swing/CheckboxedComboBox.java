@@ -1,7 +1,6 @@
 package org.processmining.specpp.prom.mvc.swing;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
-import org.processmining.specpp.prom.mvc.config.ProMConfig;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,10 +1,7 @@
 package org.processmining.specpp.evaluation.fitness;
 
-import org.processmining.specpp.componenting.data.DataRequirements;
 import org.processmining.specpp.componenting.data.DataSource;
-import org.processmining.specpp.componenting.delegators.DelegatingDataSource;
 import org.processmining.specpp.componenting.system.AbstractGlobalComponentSystemUser;
-import org.processmining.specpp.componenting.system.ComponentSystemAwareBuilder;
 import org.processmining.specpp.componenting.traits.IsGlobalProvider;
 import org.processmining.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.specpp.datastructures.encoding.BitMask;

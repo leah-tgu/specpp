@@ -13,6 +13,7 @@ public class LabeledTextField extends HorizontalJPanel {
         field = new JTextField(inputTextColumns);
         addSpaced(field);
     }
+
     public LabeledTextField(JTextField field) {
         this.field = field;
     }

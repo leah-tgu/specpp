@@ -3,7 +3,10 @@ package org.processmining.specpp.postprocessing;
 import org.processmining.specpp.datastructures.petri.PetriNet;
 import org.processmining.specpp.datastructures.petri.Place;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Optional;
+import java.util.Set;
 
 public class SelfLoopPlaceMerger implements PetriNetPostProcessor {
     @Override

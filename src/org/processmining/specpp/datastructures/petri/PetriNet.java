@@ -2,11 +2,9 @@ package org.processmining.specpp.datastructures.petri;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.processmining.specpp.base.Result;
 
 import java.util.Collection;
-import java.util.Set;
 
 public class PetriNet implements Result {
     private final ImmutableCollection<Place> places;

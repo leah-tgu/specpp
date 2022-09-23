@@ -105,7 +105,10 @@ public class SPECppController {
 
 
     public enum PluginStage {
-        PreProcessing("Pre Processing", PreProcessingController.class), Configuration("Configuration", ConfigurationController.class), Discovery("Discovery", DiscoveryController.class), Results("Results", ResultController.class);
+        PreProcessing("Pre Processing", PreProcessingController.class),
+        Configuration("Configuration", ConfigurationController.class),
+        Discovery("Discovery", DiscoveryController.class),
+        Results("Results", ResultController.class);
 
         private final String label;
         private final Class<? extends StageController> controllerClass;

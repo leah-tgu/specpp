@@ -2,12 +2,15 @@ package org.processmining.specpp.prom.mvc.discovery;
 
 import org.processmining.framework.util.ui.widgets.ProMTable;
 import org.processmining.specpp.prom.alg.LivePerformance;
+import org.processmining.specpp.prom.computations.ComputationEnded;
+import org.processmining.specpp.prom.computations.ComputationEvent;
 import org.processmining.specpp.prom.mvc.swing.SwingFactory;
 import org.processmining.specpp.prom.util.Destructible;
 import org.processmining.specpp.supervision.monitoring.PerformanceStatisticsMonitor;
 import org.processmining.specpp.supervision.observations.Statistics;
 import org.processmining.specpp.supervision.observations.performance.PerformanceStatistic;
 import org.processmining.specpp.supervision.observations.performance.TaskDescription;
+import org.processmining.specpp.supervision.piping.Observer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -16,7 +19,7 @@ import java.awt.*;
 import java.time.Duration;
 import java.util.Map;
 
-public class PerformanceTable extends JPanel implements Destructible {
+public class PerformanceTable extends JPanel implements Destructible, Observer<ComputationEvent> {
 
     private final DefaultTableModel model;
     private PerformanceStatisticsMonitor monitor;
@@ -74,6 +77,7 @@ public class PerformanceTable extends JPanel implements Destructible {
 
     private Timer updateTimer;
 
+
     private void updateTable() {
         Statistics<TaskDescription, PerformanceStatistic> copy = monitor.getMonitoringState().copy();
         model.setRowCount(0);
@@ -87,5 +91,10 @@ public class PerformanceTable extends JPanel implements Destructible {
     @Override
     public void destroy() {
         if (updateTimer != null) updateTimer.stop();
+    }
+
+    @Override
+    public void observe(ComputationEvent event) {
+        if (event instanceof ComputationEnded) updateTimer.stop();
     }
 }

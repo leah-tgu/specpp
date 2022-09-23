@@ -15,7 +15,7 @@ public class InstrumentedBasicFitnessEvaluator extends AbstractBasicFitnessEvalu
     private final TimeStopper timeStopper = new TimeStopper();
 
     public InstrumentedBasicFitnessEvaluator(AbstractBasicFitnessEvaluator delegate) {
-        super(delegate.getMultiEncodedLog(), delegate.getVariantSubsetSource(),delegate.replayComputationParameters);
+        super(delegate.getMultiEncodedLog(), delegate.getVariantSubsetSource(), delegate.replayComputationParameters);
         globalComponentSystem().provide(SupervisionRequirements.observable("evaluator.performance", PerformanceEvent.class, timeStopper));
         this.delegate = delegate;
     }

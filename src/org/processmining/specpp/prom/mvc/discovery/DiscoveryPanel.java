@@ -57,7 +57,9 @@ public class DiscoveryPanel extends AbstractStagePanel<DiscoveryController> {
                                          .map(s -> (LivePerformance) s)
                                          .findFirst()
                                          .orElse(null);
-        performancePanel.add(new PerformanceTable(livePerf), BorderLayout.CENTER);
+        PerformanceTable performanceTable = new PerformanceTable(livePerf);
+        ongoingPostProcessingComputation.addObserver(performanceTable);
+        performancePanel.add(performanceTable, BorderLayout.CENTER);
 
         TitledBorderPanel eventsPanel = new TitledBorderPanel("Events", new BorderLayout());
         LiveEvents liveEvents = specpp.getSupervisors()
@@ -66,7 +68,9 @@ public class DiscoveryPanel extends AbstractStagePanel<DiscoveryController> {
                                       .map(s -> (LiveEvents) s)
                                       .findFirst()
                                       .orElse(null);
-        eventsPanel.add(new EventTable(liveEvents), BorderLayout.CENTER);
+        EventTable eventTable = new EventTable(liveEvents);
+        ongoingPostProcessingComputation.addObserver(eventTable);
+        eventsPanel.add(eventTable, BorderLayout.CENTER);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
