@@ -10,7 +10,7 @@ import org.processmining.specpp.componenting.evaluation.EvaluatorCollection;
 import org.processmining.specpp.componenting.supervision.FulfilledObservableRequirement;
 import org.processmining.specpp.componenting.supervision.ObservableRequirement;
 import org.processmining.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.specpp.composition.PlaceCollection;
+import org.processmining.specpp.composition.TrackingPlaceCollection;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.datastructures.encoding.*;
 import org.processmining.specpp.datastructures.log.Activity;
@@ -32,11 +32,14 @@ import org.processmining.specpp.datastructures.vectorization.IVSComputations;
 import org.processmining.specpp.datastructures.vectorization.IntVectorStorage;
 import org.processmining.specpp.datastructures.vectorization.VMHComputations;
 import org.processmining.specpp.datastructures.vectorization.VariantMarkingHistories;
+import org.processmining.specpp.evaluation.fitness.AbstractBasicFitnessEvaluator;
+import org.processmining.specpp.evaluation.fitness.AbstractFitnessEvaluator;
 import org.processmining.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
 import org.processmining.specpp.orchestra.BaseSPECppConfigBundle;
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.specpp.preprocessing.*;
+import org.processmining.specpp.preprocessing.orderings.*;
 import org.processmining.specpp.supervision.observations.Observation;
 import org.processmining.specpp.supervision.piping.PipeWorks;
 import org.processmining.specpp.util.*;
@@ -195,7 +198,7 @@ public class Main {
         Transition tc = ts.get("c");
         Transition td = ts.get("d");
         Transition te = ts.get("e");
-        Placemaker maker = new Placemaker(encs);
+        PlaceMaker maker = new PlaceMaker(encs);
         Place p1 = maker.preset(ta).postset(tb).get();
         Place p2 = maker.preset(ta).postset(tc).get();
         Place p3 = maker.preset(tb).postset(te).get();
@@ -207,7 +210,7 @@ public class Main {
         Map<Activity, Transition> mapping = HardcodedTestInput.setupMapping(as, ts);
 
 
-        MarkingHistoryBasedFitnessEvaluator ev = new MarkingHistoryBasedFitnessEvaluator();
+        AbstractBasicFitnessEvaluator ev = new MarkingHistoryBasedFitnessEvaluator.Builder().build();
         ev.globalComponentSystem().fulfilFrom(DataRequirements.CONSIDERED_VARIANTS.fulfilWith(() -> BitMask.of(0)));
         EvaluatorCollection ec = new EvaluatorCollection();
         ec.register(EvaluationRequirements.evaluator(Place.class, BasicFitnessEvaluation.class, ev::eval));
@@ -218,7 +221,7 @@ public class Main {
         System.out.println(ev.eval(p4));
         System.out.println(ev.eval(p5));
 
-        PlaceCollection comp = new PlaceCollection();
+        TrackingPlaceCollection comp = new TrackingPlaceCollection();
         comp.accept(p1);
         comp.accept(p2);
         comp.accept(p3);
@@ -229,7 +232,7 @@ public class Main {
 
         ev.setConsideredVariants(BitMask.of(0));
         Place pprime = maker.preset(ta, tb).postset(tc, td).get();
-        PlaceCollection c2 = new PlaceCollection();
+        TrackingPlaceCollection c2 = new TrackingPlaceCollection();
         c2.globalComponentSystem().fulfilFrom(ec);
         c2.accept(p1);
         System.out.println(c2.rateImplicitness(pprime));
@@ -237,7 +240,7 @@ public class Main {
         Place ptiny = maker.preset(ta).postset(td).get();
         Place psmaller = maker.preset(ta, tb).postset(tb, td).get();
         Place pbigger = maker.preset(ta, tb, tc).postset(tb, tc, td).get();
-        PlaceCollection c3 = new PlaceCollection();
+        TrackingPlaceCollection c3 = new TrackingPlaceCollection();
         c3.globalComponentSystem().fulfilFrom(ec);
         c3.accept(pbigger);
         System.out.println(c3.rateImplicitness(psmaller));
@@ -271,7 +274,7 @@ public class Main {
         System.out.println(bundle.getTransitionEncodings());
         System.out.println(bundle.getMapping());
 
-        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
+        SPECpp<Place, TrackingPlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
 
         execute(specPP, true);
 
@@ -284,7 +287,7 @@ public class Main {
         System.out.println(bundle.getTransitionEncodings());
         System.out.println(bundle.getMapping());
 
-        SPECpp<Place, PlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
+        SPECpp<Place, TrackingPlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
 
         execute(specPP, true);
     }
@@ -354,18 +357,18 @@ public class Main {
                                                    .collect(Collectors.toMap(e -> e.getKey()
                                                                                    .toString(), Map.Entry::getKey));
 
-        List<Class<? extends TransitionEncodingsBuilder>> classes = new LinkedList<>();
-        classes.add(AverageTracePositionOrdering.class);
-        classes.add(TraceFrequencyOrdering.class);
-        classes.add(ActivityFrequencyOrdering.class);
-        classes.add(LexicographicTransitionOrdering.class);
+        List<Class<? extends ActivityOrderingStrategy>> classes = new LinkedList<>();
+        classes.add(AverageFirstOccurrenceIndex.class);
+        classes.add(AbsoluteTraceFrequency.class);
+        classes.add(AbsoluteActivityFrequency.class);
+        classes.add(Lexicographic.class);
 
 
         System.out.println(activityMap.values());
         log.stream().limit(10).forEach(System.out::println);
 
-        for (Class<? extends TransitionEncodingsBuilder> aClass : classes) {
-            TransitionEncodingsBuilder instance = Reflection.instance(aClass, log, activityMap, mapping);
+        for (Class<? extends ActivityOrderingStrategy> aClass : classes) {
+            ActivityOrderingStrategy instance = Reflection.instance(aClass, log, activityMap, mapping);
             System.out.println(aClass);
             System.out.println(instance);
             System.out.println(instance.build());
@@ -378,7 +381,7 @@ public class Main {
         InputDataBundle dummyInputBundle = HardcodedTestInput.getDummyInputBundle("a", "b", "c", "d");
 
 
-        NaivePlacemaker placemaker = new NaivePlacemaker(dummyInputBundle.getTransitionEncodings());
+        NaivePlaceMaker placemaker = new NaivePlaceMaker(dummyInputBundle.getTransitionEncodings());
         Place p1 = placemaker.preset("a", "b").postset("b", "c").get();
         Place p2 = placemaker.preset("a").postset("c").get();
         Place p3 = placemaker.preset("b").postset("b", "d").get();
