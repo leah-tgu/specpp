@@ -25,7 +25,7 @@ import org.processmining.specpp.datastructures.vectorization.IntVector;
 import org.processmining.specpp.evaluation.fitness.DetailedFitnessEvaluation;
 import org.processmining.specpp.util.JavaTypingUtils;
 
-public class QueueingDeltaComposer<I extends AdvancedComposition<Place>, R extends Result> extends AbstractQueueingComposer<Place, I, R, CandidateConstraint<Place>> {
+public class DeltaComposer<I extends AdvancedComposition<Place>, R extends Result> extends AbstractQueueingComposer<Place, I, R, CandidateConstraint<Place>> {
 
     private final DelegatingEvaluator<Place, DetailedFitnessEvaluation> fitnessEvaluator = new DelegatingEvaluator<>();
     private final DelegatingEvaluator<EvaluationParameterTuple2<Place, Integer>, DoubleScore> deltaAdaptationFunction = new DelegatingEvaluator<>();
@@ -39,7 +39,7 @@ public class QueueingDeltaComposer<I extends AdvancedComposition<Place>, R exten
     private Evaluator<Place, DetailedFitnessEvaluation> cachedEvaluator;
     private int maxQueueSize;
 
-    public QueueingDeltaComposer(ComposerComponent<Place, I, R> childComposer) {
+    public DeltaComposer(ComposerComponent<Place, I, R> childComposer) {
         super(childComposer);
         globalComponentSystem().require(ParameterRequirements.TAU_FITNESS_THRESHOLDS, fitnessThresholds)
                                .require(EvaluationRequirements.DETAILED_FITNESS, fitnessEvaluator)
