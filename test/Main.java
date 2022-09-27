@@ -10,14 +10,14 @@ import org.processmining.specpp.componenting.evaluation.EvaluatorCollection;
 import org.processmining.specpp.componenting.supervision.FulfilledObservableRequirement;
 import org.processmining.specpp.componenting.supervision.ObservableRequirement;
 import org.processmining.specpp.componenting.supervision.SupervisionRequirements;
-import org.processmining.specpp.composition.TrackingPlaceCollection;
+import org.processmining.specpp.composition.StatefulPlaceComposition;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.datastructures.encoding.*;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.log.impls.LogBuilderImpl;
 import org.processmining.specpp.datastructures.log.impls.VariantImpl;
-import org.processmining.specpp.datastructures.petri.PetriNet;
+import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.petri.Transition;
@@ -33,7 +33,6 @@ import org.processmining.specpp.datastructures.vectorization.IntVectorStorage;
 import org.processmining.specpp.datastructures.vectorization.VMHComputations;
 import org.processmining.specpp.datastructures.vectorization.VariantMarkingHistories;
 import org.processmining.specpp.evaluation.fitness.AbstractBasicFitnessEvaluator;
-import org.processmining.specpp.evaluation.fitness.AbstractFitnessEvaluator;
 import org.processmining.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
 import org.processmining.specpp.orchestra.BaseSPECppConfigBundle;
@@ -221,7 +220,7 @@ public class Main {
         System.out.println(ev.eval(p4));
         System.out.println(ev.eval(p5));
 
-        TrackingPlaceCollection comp = new TrackingPlaceCollection();
+        StatefulPlaceComposition comp = new StatefulPlaceComposition();
         comp.accept(p1);
         comp.accept(p2);
         comp.accept(p3);
@@ -232,7 +231,7 @@ public class Main {
 
         ev.setConsideredVariants(BitMask.of(0));
         Place pprime = maker.preset(ta, tb).postset(tc, td).get();
-        TrackingPlaceCollection c2 = new TrackingPlaceCollection();
+        StatefulPlaceComposition c2 = new StatefulPlaceComposition();
         c2.globalComponentSystem().fulfilFrom(ec);
         c2.accept(p1);
         System.out.println(c2.rateImplicitness(pprime));
@@ -240,7 +239,7 @@ public class Main {
         Place ptiny = maker.preset(ta).postset(td).get();
         Place psmaller = maker.preset(ta, tb).postset(tb, td).get();
         Place pbigger = maker.preset(ta, tb, tc).postset(tb, tc, td).get();
-        TrackingPlaceCollection c3 = new TrackingPlaceCollection();
+        StatefulPlaceComposition c3 = new StatefulPlaceComposition();
         c3.globalComponentSystem().fulfilFrom(ec);
         c3.accept(pbigger);
         System.out.println(c3.rateImplicitness(psmaller));
@@ -274,7 +273,7 @@ public class Main {
         System.out.println(bundle.getTransitionEncodings());
         System.out.println(bundle.getMapping());
 
-        SPECpp<Place, TrackingPlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
+        SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
 
         execute(specPP, true);
 
@@ -287,7 +286,7 @@ public class Main {
         System.out.println(bundle.getTransitionEncodings());
         System.out.println(bundle.getMapping());
 
-        SPECpp<Place, TrackingPlaceCollection, PetriNet, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
+        SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
 
         execute(specPP, true);
     }
@@ -395,7 +394,7 @@ public class Main {
 
         SelfLoopPlaceMerger slpm = new SelfLoopPlaceMerger();
 
-        PetriNet pn = new PetriNet(ImmutableSet.of(p1, p2, p3));
+        CollectionOfPlaces pn = new CollectionOfPlaces(ImmutableSet.of(p1, p2, p3));
         System.out.println(pn);
         System.out.println(slpm.postProcess(pn));
     }
