@@ -21,3 +21,13 @@ The at-runtime declared dependencies are resolved after constructor call and are
 The observables and observers are the facility by which supervision system functions. Components can publish generic performance measurement events, as well as arbitrary user defined "xy happened" events.
 Concurrently running supervisors can plug into these streams of events as observers, transform it, e.g. counting, and finally log it.
 Particularly for the _ProMless_ execution format, visualization components such as live updating charts are available.
+
+#### To Run
+1. Clone
+2. Setup project java jdk (1.8)
+3. Setup ivy facet in IDE (IvyIDEA-like plugin installation may be required)
+   1. Mark ivysettings.xml as settings file
+4. Resolve dependencies
+5. Run
+   1. If using IntelliJ, you can use the configurations in specpp/.run/
+   2. If using Eclipse, you can additionally use the ProM .launch files
