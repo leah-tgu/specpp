@@ -1,0 +1,23 @@
+## SPECpp
+This is the development repository for the bottom-up process discovery framework _SPECpp_.
+An acronym for:
+- **S**upervision
+- **P**roposal
+- **E**valuation
+- **C**omposition
+- **P**ost-**P**rocessing
+
+It is intended as a standalone (with ivy dependencies) runnable framework (see package /headless), however an interactive ProM plugin making use of this framework is included here (see package /prom).
+This piece of software provides some structure, common implementations and extensive "supervision" as well as "inter component dependency and data management" support for interested developers who want to play around with evolutions of the original [eST-Miner](http://dx.doi.org/10.1007/978-3-030-21571-2_15) by L. Mannel et al.
+
+The logical structure of the discovery approach is looping proposal, evaluation & composition, with post-processing at the end.
+In this instance, proposal (potential candidate oracle) is specified via efficient local tree traversal.
+Composition is handled by token-based replay fitness thresholding, as well as variants on "postponing" strategies that first collect a number of places (e.g. a tree level), then make slightly less greedy acceptance/rejection decisions (Delta & Uniwired Composer).
+They can also make use of local information-based evaluations of the at-this-point intermediate result regarding a potential candidate. Instanced here by concurrent implicitness testing.
+Finally, post-processing is a pipeline of transforming operations starting off with the final set of collected places, e.g. implicit place removal.
+
+A big technical aspect is the "inter component dependency and data management". Components can request as well as provide arbitrarily definable dependencies, e.g. data sources & parameters, evaluation functions, observables & observers.
+The at-runtime declared dependencies are resolved after constructor call and are either satisfied or not at _init()_ time.
+The observables and observers are the facility by which supervision system functions. Components can publish generic performance measurement events, as well as arbitrary user defined "xy happened" events.
+Concurrently running supervisors can plug into these streams of events as observers, transform it, e.g. counting, and finally log it.
+Particularly for the _ProMless_ execution format, visualization components such as live updating charts are available.
