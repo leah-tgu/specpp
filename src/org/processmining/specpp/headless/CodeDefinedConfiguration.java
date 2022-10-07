@@ -1,6 +1,7 @@
 package org.processmining.specpp.headless;
 
 import org.processmining.specpp.base.AdvancedComposition;
+import org.processmining.specpp.base.impls.NewPlaceFitnessFilter;
 import org.processmining.specpp.base.impls.PlaceComposerWithCIPR;
 import org.processmining.specpp.base.impls.PlaceFitnessFilter;
 import org.processmining.specpp.componenting.data.DataSource;
@@ -77,7 +78,7 @@ public class CodeDefinedConfiguration {
         pcConfig.terminalComposer(PlaceComposerWithCIPR::new);
         // without concurrent implicit place removal
         // pcConfig.terminalComposer(PlaceAccepter::new);
-        pcConfig.composerChain(PlaceFitnessFilter::new);
+        pcConfig.composerChain(NewPlaceFitnessFilter::new);
         // pcConfig.composerChain(PlaceFitnessFilter::new, UniwiredComposer::new);
         // pcConfig.composerChain(PlaceFitnessFilter::new, DeltaComposer::new);
 
