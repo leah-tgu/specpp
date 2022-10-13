@@ -1,7 +1,6 @@
 package org.processmining.specpp.headless;
 
 import org.processmining.specpp.base.AdvancedComposition;
-import org.processmining.specpp.base.impls.NewPlaceFitnessFilter;
 import org.processmining.specpp.base.impls.PlaceComposerWithCIPR;
 import org.processmining.specpp.base.impls.PlaceFitnessFilter;
 import org.processmining.specpp.componenting.data.DataSource;
@@ -78,7 +77,7 @@ public class CodeDefinedConfiguration {
         pcConfig.terminalComposer(PlaceComposerWithCIPR::new);
         // without concurrent implicit place removal
         // pcConfig.terminalComposer(PlaceAccepter::new);
-        pcConfig.composerChain(NewPlaceFitnessFilter::new);
+        pcConfig.composerChain(PlaceFitnessFilter::new);
         // pcConfig.composerChain(PlaceFitnessFilter::new, UniwiredComposer::new);
         // pcConfig.composerChain(PlaceFitnessFilter::new, DeltaComposer::new);
 
@@ -104,7 +103,7 @@ public class CodeDefinedConfiguration {
 
         DataSource<ConfiguratorCollection> confSource = () -> new ConfiguratorCollection(svConfig, pcConfig, evConfig, htConfig, ppConfig, parProv);
 
-        String path = PublicPaths.SAMPLE_EVENTLOG_1;
+        String path = PublicPaths.SAMPLE_EVENTLOG_2;
         PreProcessingParameters prePar = PreProcessingParameters.getDefault();
         DataSource<InputDataBundle> dataSource = InputData.loadData(path, prePar);
         SPECppOperations.configureAndExecute(confSource, dataSource, false);
