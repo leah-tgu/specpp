@@ -37,7 +37,7 @@ import org.processmining.specpp.supervision.supervisors.BaseSupervisor;
 import org.processmining.specpp.supervision.supervisors.EventCountsSupervisor;
 import org.processmining.specpp.supervision.supervisors.PerformanceSupervisor;
 import org.processmining.specpp.supervision.supervisors.TerminalSupervisor;
-import org.processmining.specpp.util.PrivatePaths;
+import org.processmining.specpp.util.PublicPaths;
 
 public class CodeDefinedConfiguration {
 
@@ -103,7 +103,7 @@ public class CodeDefinedConfiguration {
 
         DataSource<ConfiguratorCollection> confSource = () -> new ConfiguratorCollection(svConfig, pcConfig, evConfig, htConfig, ppConfig, parProv);
 
-        String path = PrivatePaths.toAbsolutePath(PrivatePaths.WILWILLES_REDUCED_NO_PARALELLISM);
+        String path = PublicPaths.SAMPLE_EVENTLOG_1;
         PreProcessingParameters prePar = PreProcessingParameters.getDefault();
         DataSource<InputDataBundle> dataSource = InputData.loadData(path, prePar);
         SPECppOperations.configureAndExecute(confSource, dataSource, false);
