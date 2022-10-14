@@ -1,4 +1,4 @@
-package org.processmining.specpp.base.impls;
+package org.processmining.specpp.composition.composers;
 
 import org.apache.commons.collections4.BidiMap;
 import org.processmining.specpp.base.Result;

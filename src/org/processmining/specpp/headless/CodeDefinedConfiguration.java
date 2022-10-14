@@ -1,8 +1,8 @@
 package org.processmining.specpp.headless;
 
 import org.processmining.specpp.base.AdvancedComposition;
-import org.processmining.specpp.base.impls.PlaceComposerWithCIPR;
-import org.processmining.specpp.base.impls.PlaceFitnessFilter;
+import org.processmining.specpp.composition.composers.PlaceComposerWithCIPR;
+import org.processmining.specpp.composition.composers.PlaceFitnessFilter;
 import org.processmining.specpp.componenting.data.DataSource;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;

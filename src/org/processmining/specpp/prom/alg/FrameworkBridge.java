@@ -1,6 +1,6 @@
 package org.processmining.specpp.prom.alg;
 
-import org.processmining.specpp.base.IdentityPostProcessor;
+import org.processmining.specpp.base.impls.IdentityPostProcessor;
 import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.componenting.traits.ProvidesEvaluators;
 import org.processmining.specpp.config.SimpleBuilder;
