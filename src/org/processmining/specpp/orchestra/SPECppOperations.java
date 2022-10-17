@@ -1,5 +1,6 @@
 package org.processmining.specpp.orchestra;
 
+import org.processmining.specpp.base.Result;
 import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.base.impls.SPECppBuilder;
 import org.processmining.specpp.componenting.data.DataSource;
@@ -124,6 +125,28 @@ public class SPECppOperations {
         externalInitializer.init();
 
         return specpp;
+    }
+
+    public static <R extends Result> R execute_headless(SPECpp<?, ?, ?, R> specpp) {
+        R r = null;
+        try {
+            ExecutorService executorService = Executors.newCachedThreadPool();
+
+            specpp.start();
+
+            CompletableFuture<R> future = specpp.future(executorService);
+
+            for (ProvidesOngoingVisualization<?> ongoingVisualization : getOngoingVisualizations(specpp)) {
+                VizUtils.showVisualization(ongoingVisualization.getOngoingVisualization());
+            }
+
+            r = future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        } finally {
+            specpp.stop();
+        }
+        return r;
     }
 
     public static void execute(SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp, boolean allowPrinting) {

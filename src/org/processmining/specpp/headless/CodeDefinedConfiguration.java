@@ -42,7 +42,16 @@ import org.processmining.specpp.util.PublicPaths;
 public class CodeDefinedConfiguration {
 
     public static void main(String[] args) {
+        DataSource<ConfiguratorCollection> confSource = CodeDefinedConfiguration::createConfiguration;
 
+        String path = PublicPaths.SAMPLE_EVENTLOG_2;
+        PreProcessingParameters prePar = PreProcessingParameters.getDefault();
+        DataSource<InputDataBundle> dataSource = InputData.loadData(path, prePar);
+        SPECppOperations.configureAndExecute(confSource, dataSource, false);
+    }
+
+
+    public static ConfiguratorCollection createConfiguration() {
         // ** Supervision ** //
 
         SupervisionConfiguration.Configurator svConfig = Configurators.supervisors().addSupervisor(BaseSupervisor::new);
@@ -101,13 +110,9 @@ public class CodeDefinedConfiguration {
             }
         };
 
-        DataSource<ConfiguratorCollection> confSource = () -> new ConfiguratorCollection(svConfig, pcConfig, evConfig, htConfig, ppConfig, parProv);
-
-        String path = PublicPaths.SAMPLE_EVENTLOG_2;
-        PreProcessingParameters prePar = PreProcessingParameters.getDefault();
-        DataSource<InputDataBundle> dataSource = InputData.loadData(path, prePar);
-        SPECppOperations.configureAndExecute(confSource, dataSource, false);
+        return new ConfiguratorCollection(svConfig, pcConfig, evConfig, htConfig, ppConfig, parProv);
     }
+
 
 
     /*
