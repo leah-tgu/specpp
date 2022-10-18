@@ -11,6 +11,7 @@ import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.orchestra.PreProcessingParameters;
+import org.processmining.specpp.orchestra.SPECppConfigBundle;
 import org.processmining.specpp.orchestra.SPECppOperations;
 import org.processmining.specpp.preprocessing.InputData;
 import org.processmining.specpp.preprocessing.InputDataBundle;
@@ -26,14 +27,24 @@ public class ProMLessSPECpp {
         String eventLogPath = args[0] + ".xes";
         String resultPath = args[1] + ".pnml";
 
-        ConfiguratorCollection configuration = CodeDefinedConfiguration.createConfiguration();
-        InputDataBundle data = InputData.loadData(eventLogPath, new PreProcessingParameters(new XEventNameClassifier(), false, AverageFirstOccurrenceIndex.class))
-                                        .getData();
-        SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECppOperations.setup(configuration, data);
-        ProMPetrinetWrapper petrinetWrapper = SPECppOperations.execute_headless(specpp);
-
-        myPnmlExport(new File(resultPath), petrinetWrapper);
+        run(eventLogPath, resultPath);
     }
+
+    public static void run(String inputLogPath, String outputPetrinetPath) {
+        run(inputLogPath, outputPetrinetPath, new PreProcessingParameters(new XEventNameClassifier(), false, AverageFirstOccurrenceIndex.class), CodeDefinedConfiguration.createConfiguration());
+    }
+
+    public static void run(String inputLogPath, String outputPetrinetPath, PreProcessingParameters preProcessingParameters, SPECppConfigBundle configBundle) {
+        InputDataBundle data = InputData.loadData(inputLogPath, preProcessingParameters)
+                                        .getData();
+        //SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECppOperations.configureAndExecute(configBundle, data, false);
+        //ProMPetrinetWrapper result = specpp.getPostProcessedResult();
+        SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECppOperations.setup(configBundle, data);
+        ProMPetrinetWrapper result = SPECppOperations.execute(specpp, false);
+
+        myPnmlExport(new File(outputPetrinetPath), result);
+    }
+
 
     public static void myPnmlExport(File file, AcceptingPetriNet apn) {
         String s = convertToPnmlString(apn);

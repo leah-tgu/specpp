@@ -43,8 +43,8 @@ public class SPECppOperations {
         LocalDateTime start = LocalDateTime.now();
         System.out.println("# Commencing " + parametersList.size() + " Multi SpecOps" + (doInParallel ? " in parallel" : "") + " @" + start);
         System.out.println("// ========================================= //");
-
-        List<SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>> collect = stream.map(pp -> SPECppOperations.configureAndExecute(() -> new CustomSPECppConfigBundle(pp), inputDataBundleSource, false, true, true))
+        InputDataBundle data = inputDataBundleSource.getData();
+        List<SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>> collect = stream.map(pp -> SPECppOperations.configureAndExecute(new CustomSPECppConfigBundle(pp), data, false, true, true))
                                                                                                                .collect(Collectors.toList());
         System.out.println("// ========================================= //");
         LocalDateTime end = LocalDateTime.now();
@@ -66,14 +66,11 @@ public class SPECppOperations {
     }
 
 
-    public static SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> configureAndExecute(DataSource<? extends SPECppConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean suppressAnyOutput) {
-        return configureAndExecute(configBundleSource, inputDataBundleSource, !suppressAnyOutput, !suppressAnyOutput, !suppressAnyOutput);
+    public static SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> configureAndExecute(SPECppConfigBundle configBundle, InputDataBundle inputDataBundle, boolean suppressAnyOutput) {
+        return configureAndExecute(configBundle, inputDataBundle, !suppressAnyOutput, !suppressAnyOutput, !suppressAnyOutput);
     }
 
-    public static SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> configureAndExecute(DataSource<? extends SPECppConfigBundle> configBundleSource, DataSource<InputDataBundle> inputDataBundleSource, boolean allowPrinting, boolean allowVisualOutput, boolean allowSaving) {
-        SPECppConfigBundle configBundle = configBundleSource.getData();
-        InputDataBundle inputDataBundle = inputDataBundleSource.getData();
-
+    public static SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> configureAndExecute(SPECppConfigBundle configBundle, InputDataBundle inputDataBundle, boolean allowPrinting, boolean allowVisualOutput, boolean allowSaving) {
         preSetup(configBundle, inputDataBundle, allowPrinting);
         SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specPP = setup(configBundle, inputDataBundle);
         postSetup(specPP, allowPrinting);
@@ -136,10 +133,6 @@ public class SPECppOperations {
 
             CompletableFuture<R> future = specpp.future(executorService);
 
-            for (ProvidesOngoingVisualization<?> ongoingVisualization : getOngoingVisualizations(specpp)) {
-                VizUtils.showVisualization(ongoingVisualization.getOngoingVisualization());
-            }
-
             r = future.get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
@@ -149,23 +142,24 @@ public class SPECppOperations {
         return r;
     }
 
-    public static void execute(SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp, boolean allowPrinting) {
+    public static <R extends Result> R execute(SPECpp<?, ?, ?, R> specpp, boolean allowPrinting) {
         if (allowPrinting) {
             System.out.println("# Commencing SpecOps @" + LocalDateTime.now());
             System.out.println("// ========================================= //");
         }
+        R r;
         try {
             ExecutorService executorService = Executors.newCachedThreadPool();
 
             specpp.start();
 
-            CompletableFuture<ProMPetrinetWrapper> future = specpp.future(executorService);
+            CompletableFuture<R> future = specpp.future(executorService);
 
             for (ProvidesOngoingVisualization<?> ongoingVisualization : getOngoingVisualizations(specpp)) {
                 VizUtils.showVisualization(ongoingVisualization.getOngoingVisualization());
             }
 
-            future.get();
+            r = future.get();
 
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
@@ -177,6 +171,8 @@ public class SPECppOperations {
             specpp.stop();
         }
         if (allowPrinting) System.out.println("# Shutdown SpecOps @" + LocalDateTime.now());
+
+        return r;
     }
 
     private static List<ProvidesOngoingVisualization<?>> getOngoingVisualizations(SPECpp<?, ?, ?, ?> specpp) {
