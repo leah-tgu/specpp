@@ -73,8 +73,8 @@ public class PDCDiscovery {
 
     public static void discover(String logIdentifier) {
         String fullLogName = String.format("pdc2022_%s", logIdentifier);
-        String trainingPath = FOLDER_PATH + "Training Logs\\" + fullLogName + ".xes";
-        String petrinetPath = FOLDER_PATH + "Discovered Models\\" + fullLogName + ".pnml";
+        String trainingPath = FOLDER_PATH + "Training_Logs\\" + fullLogName + ".xes";
+        String petrinetPath = FOLDER_PATH + "Discovered_Models\\" + fullLogName + ".pnml";
         ProMLessSPECpp.run(trainingPath, petrinetPath);
     }
 
