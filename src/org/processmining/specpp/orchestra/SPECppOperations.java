@@ -82,12 +82,17 @@ public class SPECppOperations {
         return specPP;
     }
 
-    private static void postSetup(SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specPP, boolean allowPrinting) {
-        DataSourceCollection parameters = specPP.getGlobalComponentRepository().parameters();
+    public static String saveParameters(SPECpp<?,?,?,?> specpp) {
+        DataSourceCollection parameters = specpp.getGlobalComponentRepository().parameters();
         String x = parameters.toString();
         OutputPathParameters outputPathParameters = parameters.askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS);
         String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.MISC_EXPORT, "parameters", ".txt");
         FileUtils.saveString(filePath, x);
+        return x;
+    }
+
+    private static void postSetup(SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specPP, boolean allowPrinting) {
+        String x = saveParameters(specPP);
         if (allowPrinting) System.out.println(x);
     }
 
