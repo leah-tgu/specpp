@@ -39,14 +39,14 @@ import org.processmining.specpp.supervision.supervisors.TerminalSupervisor;
 import org.processmining.specpp.util.PublicPaths;
 
 
-public class PlaceEvaluatorDevelopment {
+public class FelixDevelopment {
 
     public static void main(String[] args) {
         String path = PublicPaths.SAMPLE_EVENTLOG_2;
         PreProcessingParameters prePar = PreProcessingParameters.getDefault();
         InputDataBundle inputData = InputData.loadData(path, prePar).getData();
         SPECppConfigBundle configuration = createConfiguration();
-        SPECppOperations.configureAndExecute(configuration, inputData, true);
+        SPECppOperations.configureAndExecute(configuration, inputData, false);
     }
 
     public static SPECppConfigBundle createConfiguration() {
@@ -94,8 +94,8 @@ public class PlaceEvaluatorDevelopment {
             @Override
             public void init() {
                 globalComponentSystem().provide(ParameterRequirements.IMPLICITNESS_TESTING.fulfilWithStatic(new ImplicitnessTestingParameters(ImplicitnessTestingParameters.CIPRVersion.ReplayBased, ImplicitnessTestingParameters.SubLogRestriction.None)))
-                                       .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(new PlaceGeneratorParameters(6, true, false, false, false)))
-                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(SupervisionParameters.instrumentNone(false, false)));
+                                       .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(new PlaceGeneratorParameters(Integer.MAX_VALUE, true, false, false, false)))
+                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(SupervisionParameters.instrumentNone(true, false)));
             }
         };
 
