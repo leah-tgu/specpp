@@ -15,8 +15,7 @@ import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.datastructures.encoding.*;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;
-import org.processmining.specpp.datastructures.log.impls.LogBuilderImpl;
-import org.processmining.specpp.datastructures.log.impls.VariantImpl;
+import org.processmining.specpp.datastructures.log.impls.*;
 import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
@@ -35,6 +34,10 @@ import org.processmining.specpp.datastructures.vectorization.VariantMarkingHisto
 import org.processmining.specpp.evaluation.fitness.AbstractBasicFitnessEvaluator;
 import org.processmining.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
+import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
+import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
+import org.processmining.specpp.evaluation.markings.QuickReplay;
+import org.processmining.specpp.orchestra.BaseDataExtractionConfig;
 import org.processmining.specpp.orchestra.BaseSPECppConfigBundle;
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.specpp.preprocessing.*;
@@ -177,6 +180,8 @@ public class Main {
 
     @Test
     public void impliciticity() {
+        //new BaseDataExtractionConfig().registerDataSources();
+
         String[] labels = {"a", "b", "c", "d", "e"};
         Tuple2<IntEncodings<Transition>, Map<String, Transition>> tuple2 = HardcodedTestInput.setupTransitions(labels);
         Map<String, Activity> as = HardcodedTestInput.setupActivities(labels);
@@ -208,7 +213,10 @@ public class Main {
 
         Map<Activity, Transition> mapping = HardcodedTestInput.setupMapping(as, ts);
 
+        //new InputDataBundle(log, encs, mapping);
 
+        MultiEncodedLog multiEncodedLog = LogEncoder.multiEncodeLog(log, encs, mapping, LogEncoder.LogEncodingParameters.getDefault());
+        //MarkingHistoryBasedFitnessEvaluator fitnessEvaluator = new MarkingHistoryBasedFitnessEvaluator(multiEncodedLog, log::variantIndices, ReplayComputationParameters.getDefault(), QuickReplay::makeHistory);
         AbstractBasicFitnessEvaluator ev = new MarkingHistoryBasedFitnessEvaluator.Builder().build();
         ev.globalComponentSystem().fulfilFrom(DataRequirements.CONSIDERED_VARIANTS.fulfilWith(() -> BitMask.of(0)));
         EvaluatorCollection ec = new EvaluatorCollection();
