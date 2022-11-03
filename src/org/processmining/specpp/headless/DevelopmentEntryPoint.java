@@ -4,7 +4,7 @@ import org.processmining.specpp.base.AdvancedComposition;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.composition.StatefulPlaceComposition;
-import org.processmining.specpp.composition.composers.FelixNewPlaceComposer;
+import org.processmining.specpp.composition.composers.ComposerDelevopmentEntryPoint;
 import org.processmining.specpp.composition.composers.PlaceFitnessFilter;
 import org.processmining.specpp.config.*;
 import org.processmining.specpp.config.parameters.ParameterProvider;
@@ -39,7 +39,7 @@ import org.processmining.specpp.supervision.supervisors.TerminalSupervisor;
 import org.processmining.specpp.util.PublicPaths;
 
 
-public class FelixDevelopment {
+public class DevelopmentEntryPoint {
 
     public static void main(String[] args) {
         String path = PublicPaths.SAMPLE_EVENTLOG_2;
@@ -76,7 +76,7 @@ public class FelixDevelopment {
                                                                                                                                   .composition(StatefulPlaceComposition::new)
                                                                                                                                   .proposer(new ConstrainablePlaceProposer.Builder());
 
-        pcConfig.terminalComposer(FelixNewPlaceComposer::new);
+        pcConfig.terminalComposer(ComposerDelevopmentEntryPoint::new);
         pcConfig.composerChain(PlaceFitnessFilter::new);
 
         // ** Post Processing ** //

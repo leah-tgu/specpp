@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Spliterator;
 
-public class FelixNewPlaceComposer<I extends AdvancedComposition<Place>> extends AbstractComposer<Place, I, CollectionOfPlaces> {
+public class ComposerDelevopmentEntryPoint<I extends AdvancedComposition<Place>> extends AbstractComposer<Place, I, CollectionOfPlaces> {
 
     private final DelegatingDataSource<Log> logSource = new DelegatingDataSource<>();
     private final DelegatingDataSource<BidiMap<Activity, Transition>> actTransMapping = new DelegatingDataSource<>();
@@ -41,7 +41,7 @@ public class FelixNewPlaceComposer<I extends AdvancedComposition<Place>> extends
     private final DelegatingEvaluator<EvaluationParameterTuple2<Place, Collection<Place>>, BooleanImplicitness> directImplicitnessEvaluator = new DelegatingEvaluator<>();
     private final EventSupervision<DebugEvent> eventSupervisor = PipeWorks.eventSupervision();
 
-    public FelixNewPlaceComposer(I composition) {
+    public ComposerDelevopmentEntryPoint(I composition) {
         super(composition, c -> new CollectionOfPlaces(c.toList()));
         globalComponentSystem().require(DataRequirements.RAW_LOG, logSource)
                                .require(DataRequirements.ACT_TRANS_MAPPING, actTransMapping)
