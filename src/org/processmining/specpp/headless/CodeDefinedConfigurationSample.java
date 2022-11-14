@@ -1,7 +1,7 @@
 package org.processmining.specpp.headless;
 
+import org.deckfour.xes.classification.XEventNameClassifier;
 import org.processmining.specpp.base.AdvancedComposition;
-import org.processmining.specpp.componenting.data.DataSource;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.composition.ConstrainingPlaceCollection;
@@ -33,6 +33,10 @@ import org.processmining.specpp.postprocessing.ReplayBasedImplicitnessPostProces
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.specpp.preprocessing.InputData;
 import org.processmining.specpp.preprocessing.InputDataBundle;
+import org.processmining.specpp.preprocessing.orderings.AbsoluteActivityFrequency;
+import org.processmining.specpp.preprocessing.orderings.AverageFirstOccurrenceIndex;
+import org.processmining.specpp.preprocessing.orderings.AverageTraceOccurrence;
+import org.processmining.specpp.preprocessing.orderings.Lexicographic;
 import org.processmining.specpp.prom.mvc.config.ConfiguratorCollection;
 import org.processmining.specpp.proposal.ConstrainablePlaceProposer;
 import org.processmining.specpp.supervision.supervisors.AltEventCountsSupervisor;
@@ -45,10 +49,11 @@ public class CodeDefinedConfigurationSample {
 
     public static void main(String[] args) {
         String path = PublicPaths.SAMPLE_EVENTLOG_2;
-        PreProcessingParameters prePar = PreProcessingParameters.getDefault();
-        DataSource<InputDataBundle> dataSource = InputData.loadData(path, prePar);
+        //PreProcessingParameters prePar = PreProcessingParameters.getDefault();
+        PreProcessingParameters prePar = new PreProcessingParameters(new XEventNameClassifier(), true, AverageTraceOccurrence.class);
+        InputDataBundle data = InputData.loadData(path, prePar).getData();
         ConfiguratorCollection configuration = CodeDefinedConfigurationSample.createConfiguration();
-        SPECppOperations.configureAndExecute(configuration, dataSource.getData(), true);
+        SPECppOperations.configureAndExecute(configuration, data, false);
     }
 
 
