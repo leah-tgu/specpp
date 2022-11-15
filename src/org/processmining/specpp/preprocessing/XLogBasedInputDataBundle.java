@@ -36,7 +36,7 @@ public class XLogBasedInputDataBundle implements DataSource<InputDataBundle> {
     protected XLogBasedInputDataBundle(XLog xLog, PreProcessingParameters parameters) {
         this.xLog = xLog;
         eventClassifier = parameters.getEventClassifier();
-        this.transitionEncodingsBuilderClass = parameters.getTransitionEncodingsBuilderClass();
+        this.transitionEncodingsBuilderClass = parameters.getActivityOrderingStrategy();
         this.introduceStartEndTransitions = parameters.isAddStartEndTransitions();
     }
 

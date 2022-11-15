@@ -19,7 +19,7 @@ import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGener
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
-import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
+import org.processmining.specpp.config.parameters.ImplicitnessTestingParameters;
 import org.processmining.specpp.evaluation.implicitness.LPBasedImplicitnessCalculator;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.orchestra.PreProcessingParameters;

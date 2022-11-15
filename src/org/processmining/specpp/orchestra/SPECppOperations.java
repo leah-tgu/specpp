@@ -20,6 +20,7 @@ import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.supervision.traits.ProvidesOngoingVisualization;
 import org.processmining.specpp.util.FileUtils;
 import org.processmining.specpp.util.PathTools;
+import org.processmining.specpp.util.PrintingUtils;
 import org.processmining.specpp.util.VizUtils;
 
 import java.time.Duration;
@@ -84,7 +85,7 @@ public class SPECppOperations {
 
     public static String saveParameters(SPECpp<?,?,?,?> specpp) {
         DataSourceCollection parameters = specpp.getGlobalComponentRepository().parameters();
-        String x = parameters.toString();
+        String x = PrintingUtils.parametersToPrettyString(parameters);
         OutputPathParameters outputPathParameters = parameters.askForData(ParameterRequirements.OUTPUT_PATH_PARAMETERS);
         String filePath = outputPathParameters.getFilePath(PathTools.OutputFileType.MISC_EXPORT, "parameters", ".txt");
         FileUtils.saveString(filePath, x);
@@ -129,10 +130,9 @@ public class SPECppOperations {
         return specpp;
     }
 
-    public static <R extends Result> R execute_headless(SPECpp<?, ?, ?, R> specpp) {
+    public static <R extends Result> R execute_headless(SPECpp<?, ?, ?, R> specpp, ExecutorService executorService) {
         R r = null;
         try {
-            ExecutorService executorService = Executors.newCachedThreadPool();
 
             specpp.start();
 

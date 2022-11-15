@@ -82,7 +82,7 @@ public class PreProcessingController extends AbstractStageController {
                     lastDerivedLog = XLogBasedInputDataBundle.convertLog(rawLog, collectedParameters.getEventClassifier(), collectedParameters.isAddStartEndTransitions());
                     lastParameters = collectedParameters;
                 }
-                Pair<Comparator<Activity>> comparators = XLogBasedInputDataBundle.createOrderings(lastDerivedLog.getT1(), lastDerivedLog.getT2(), collectedParameters.getTransitionEncodingsBuilderClass());
+                Pair<Comparator<Activity>> comparators = XLogBasedInputDataBundle.createOrderings(lastDerivedLog.getT1(), lastDerivedLog.getT2(), collectedParameters.getActivityOrderingStrategy());
                 lastComparators = comparators;
                 return comparators;
             }

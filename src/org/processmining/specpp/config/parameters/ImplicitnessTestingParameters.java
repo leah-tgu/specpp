@@ -1,6 +1,4 @@
-package org.processmining.specpp.evaluation.implicitness;
-
-import org.processmining.specpp.config.parameters.Parameters;
+package org.processmining.specpp.config.parameters;
 
 public class ImplicitnessTestingParameters implements Parameters {
 

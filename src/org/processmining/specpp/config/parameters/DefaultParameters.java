@@ -4,7 +4,6 @@ import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.system.AbstractGlobalComponentSystemUser;
 import org.processmining.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
-import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
 
 public class DefaultParameters extends AbstractGlobalComponentSystemUser implements ProvidesParameters {
 

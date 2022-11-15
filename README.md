@@ -30,4 +30,4 @@ Particularly for the _ProMless_ execution format, visualization components such 
 4. Resolve dependencies
 5. Run
    1. If using IntelliJ, you can use the configurations in specpp/.run/
-   2. If using Eclipse, you can additionally use the ProM .launch files
+   2. If using Eclipse, you can alternatively use the ProM .launch files

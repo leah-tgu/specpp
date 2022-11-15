@@ -1,11 +1,11 @@
 package org.processmining.specpp.componenting.data;
 
-import org.processmining.specpp.composition.composers.DeltaComposerParameters;
+import org.processmining.specpp.config.parameters.DeltaComposerParameters;
 import org.processmining.specpp.config.ExternalInitializationParameters;
 import org.processmining.specpp.config.parameters.*;
 import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
-import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
+import org.processmining.specpp.config.parameters.ImplicitnessTestingParameters;
 
 public class ParameterRequirements {
 

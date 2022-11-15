@@ -40,7 +40,7 @@ public class ParametersPanel extends JPanel {
         LabeledComboBox<FrameworkBridge.AnnotatedActivityOrderingStrategy> orderingStrategyBox = SwingFactory.labeledComboBox("Ordering Strategy", availableOrderings.toArray(new FrameworkBridge.AnnotatedActivityOrderingStrategy[0]));
         orderingComboBox = orderingStrategyBox.getComboBox();
         SwingFactory.resizeComboBox(orderingComboBox, 250, 25);
-        orderingComboBox.setSelectedItem(findEnum(defaultParameters.getTransitionEncodingsBuilderClass()));
+        orderingComboBox.setSelectedItem(findEnum(defaultParameters.getActivityOrderingStrategy()));
         orderingStrategyBox.add(SwingFactory.help(null, SwingFactory.html("Determines the order in which the search tree is explored. Can have a big impact on performance.<br>Refer to <a href=\"https://dx.doi.org/10.1007/978-3-030-66498-5_25\">Improving the State-Space Traversal of the eST-Miner by Exploiting Underlying Log Structures</a>")));
 
         artificialTransitionsCheckBox = SlickerFactory.instance()
@@ -86,7 +86,7 @@ public class ParametersPanel extends JPanel {
     private void instantiateFrom(PreProcessingParameters preProcessingParameters) {
         XEventClassifier eventClassifier = preProcessingParameters.getEventClassifier();
         if (availableEventClassifiers.contains(eventClassifier)) classifierComboBox.setSelectedItem(eventClassifier);
-        Class<? extends ActivityOrderingStrategy> aos = preProcessingParameters.getTransitionEncodingsBuilderClass();
+        Class<? extends ActivityOrderingStrategy> aos = preProcessingParameters.getActivityOrderingStrategy();
         orderingComboBox.setSelectedItem(findEnum(aos));
         artificialTransitionsCheckBox.setSelected(preProcessingParameters.isAddStartEndTransitions());
     }

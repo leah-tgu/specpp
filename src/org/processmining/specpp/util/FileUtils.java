@@ -71,7 +71,6 @@ public class FileUtils {
     }
 
     public static void saveStrings(String filePath, List<String> strings) {
-
         try (FileWriter outputFileWriter = createOutputFileWriter(filePath)) {
             for (String string : strings) {
                 outputFileWriter.write(string + "\n");

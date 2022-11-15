@@ -11,7 +11,7 @@ public class PrintingUtils {
     }
 
 
-    public static String printParameters(DataSourceCollection parameters) {
+    public static String parametersToPrettyString(DataSourceCollection parameters) {
         return parameters
                 .fulfilledRequirements()
                 .stream()

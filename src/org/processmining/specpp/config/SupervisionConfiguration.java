@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 
 public class SupervisionConfiguration extends Configuration {
 
-    private final List<SimpleBuilder<Supervisor>> supervisorBuilders;
+    private final List<SimpleBuilder<? extends Supervisor>> supervisorBuilders;
 
-    public SupervisionConfiguration(GlobalComponentRepository gcr, List<SimpleBuilder<Supervisor>> supervisorBuilders) {
+    public SupervisionConfiguration(GlobalComponentRepository gcr, List<SimpleBuilder<? extends Supervisor>> supervisorBuilders) {
         super(gcr);
         this.supervisorBuilders = supervisorBuilders;
     }
@@ -24,13 +24,13 @@ public class SupervisionConfiguration extends Configuration {
 
     public static class Configurator implements ComponentInitializerBuilder<SupervisionConfiguration> {
 
-        private final List<SimpleBuilder<Supervisor>> supervisorBuilders;
+        private final List<SimpleBuilder<? extends Supervisor>> supervisorBuilders;
 
         public Configurator() {
             supervisorBuilders = new LinkedList<>();
         }
 
-        public Configurator addSupervisor(SimpleBuilder<Supervisor> builder) {
+        public Configurator addSupervisor(SimpleBuilder<? extends Supervisor> builder) {
             supervisorBuilders.add(builder);
             return this;
         }

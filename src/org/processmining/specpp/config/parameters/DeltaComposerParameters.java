@@ -1,6 +1,4 @@
-package org.processmining.specpp.composition.composers;
-
-import org.processmining.specpp.config.parameters.Parameters;
+package org.processmining.specpp.config.parameters;
 
 public class DeltaComposerParameters implements Parameters {
 

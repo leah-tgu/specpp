@@ -24,7 +24,7 @@ import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
 import org.processmining.specpp.evaluation.heuristics.DirectlyFollowsHeuristic;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
-import org.processmining.specpp.evaluation.implicitness.ImplicitnessTestingParameters;
+import org.processmining.specpp.config.parameters.ImplicitnessTestingParameters;
 import org.processmining.specpp.evaluation.implicitness.LPBasedImplicitnessCalculator;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.prom.alg.FrameworkBridge;

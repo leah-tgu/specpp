@@ -13,12 +13,12 @@ public class PreProcessingParameters implements Parameters {
 
     private final XEventClassifier eventClassifier;
     private final boolean addStartEndTransitions;
-    private final Class<? extends ActivityOrderingStrategy> transitionEncodingsBuilderClass;
+    private final Class<? extends ActivityOrderingStrategy> activityOrderingStrategy;
 
-    public PreProcessingParameters(XEventClassifier eventClassifier, boolean addStartEndTransitions, Class<? extends ActivityOrderingStrategy> transitionEncodingsBuilderClass) {
+    public PreProcessingParameters(XEventClassifier eventClassifier, boolean addStartEndTransitions, Class<? extends ActivityOrderingStrategy> activityOrderingStrategy) {
         this.eventClassifier = eventClassifier;
         this.addStartEndTransitions = addStartEndTransitions;
-        this.transitionEncodingsBuilderClass = transitionEncodingsBuilderClass;
+        this.activityOrderingStrategy = activityOrderingStrategy;
     }
 
     public static PreProcessingParameters getDefault() {
@@ -34,21 +34,21 @@ public class PreProcessingParameters implements Parameters {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PreProcessingParameters that = (PreProcessingParameters) o;
-        return addStartEndTransitions == that.addStartEndTransitions && Objects.equals(eventClassifier, that.eventClassifier) && Objects.equals(transitionEncodingsBuilderClass, that.transitionEncodingsBuilderClass);
+        return addStartEndTransitions == that.addStartEndTransitions && Objects.equals(eventClassifier, that.eventClassifier) && Objects.equals(activityOrderingStrategy, that.activityOrderingStrategy);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventClassifier, addStartEndTransitions, transitionEncodingsBuilderClass);
+        return Objects.hash(eventClassifier, addStartEndTransitions, activityOrderingStrategy);
     }
 
     @Override
     public String toString() {
-        return "PreProcessingParameters{" + "eventClassifierBuilder=" + eventClassifier + ", addStartEndTransitions=" + addStartEndTransitions + ", transitionEncodingsBuilderClass=" + transitionEncodingsBuilderClass + '}';
+        return "PreProcessingParameters{" + "eventClassifierBuilder=" + eventClassifier + ", addStartEndTransitions=" + addStartEndTransitions + ", transitionEncodingsBuilderClass=" + activityOrderingStrategy + '}';
     }
 
-    public Class<? extends ActivityOrderingStrategy> getTransitionEncodingsBuilderClass() {
-        return transitionEncodingsBuilderClass;
+    public Class<? extends ActivityOrderingStrategy> getActivityOrderingStrategy() {
+        return activityOrderingStrategy;
     }
 
     public boolean isAddStartEndTransitions() {
