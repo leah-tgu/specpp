@@ -41,7 +41,7 @@ public class TauDeltaComponentConfig extends BaseSPECppComponentConfig {
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(StatefulPlaceComposition::new)
                             .terminalComposer(PlaceAccepter::new)
-                            .composerChain(PlaceFitnessFilter::new, DeltaComposer::new)
+                            .recursiveComposers(PlaceFitnessFilter::new, DeltaComposer::new)
                             .build(gcr);
     }
 

@@ -1,13 +1,13 @@
 package org.processmining.specpp.orchestra;
 
 import org.processmining.specpp.base.AdvancedComposition;
-import org.processmining.specpp.composition.composers.PlaceAccepter;
-import org.processmining.specpp.composition.composers.PlaceFitnessFilter;
-import org.processmining.specpp.composition.composers.UniwiredComposer;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.specpp.composition.ConstrainingPlaceCollection;
 import org.processmining.specpp.composition.StatefulPlaceComposition;
+import org.processmining.specpp.composition.composers.PlaceAccepter;
+import org.processmining.specpp.composition.composers.PlaceFitnessFilter;
+import org.processmining.specpp.composition.composers.UniwiredComposer;
 import org.processmining.specpp.config.Configurators;
 import org.processmining.specpp.config.EfficientTreeConfiguration;
 import org.processmining.specpp.config.PostProcessingConfiguration;
@@ -43,9 +43,10 @@ public class UniwiredComponentConfig extends BaseSPECppComponentConfig {
     public ProposerComposerConfiguration<Place, AdvancedComposition<Place>, CollectionOfPlaces> getProposerComposerConfiguration(GlobalComponentRepository gcr) {
         return Configurators.<Place, AdvancedComposition<Place>, CollectionOfPlaces>proposerComposer()
                             .proposer(new RestartablePlaceProposer.Builder())
-                            .nestedComposition(StatefulPlaceComposition::new, ConstrainingPlaceCollection::new)
+                            .terminalComposition(StatefulPlaceComposition::new)
+                            .recursiveCompositions(ConstrainingPlaceCollection::new)
                             .terminalComposer(PlaceAccepter::new)
-                            .composerChain(PlaceFitnessFilter::new, UniwiredComposer::new)
+                            .recursiveComposers(PlaceFitnessFilter::new, UniwiredComposer::new)
                             .build(gcr);
     }
 

@@ -57,7 +57,7 @@ public class BaseSPECppComponentConfig implements SPECppComponentConfig {
                             .proposer(new RestartablePlaceProposer.Builder())
                             .composition(StatefulPlaceComposition::new)
                             .terminalComposer(EventingPlaceComposerWithCIPR::new)
-                            .composerChain(EventingPlaceFitnessFilter::new)
+                            .recursiveComposers(EventingPlaceFitnessFilter::new)
                             .build(gcr);
     }
 

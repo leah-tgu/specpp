@@ -4,6 +4,7 @@ import org.deckfour.xes.classification.XEventNameClassifier;
 import org.processmining.specpp.base.AdvancedComposition;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
+import org.processmining.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.specpp.composition.ConstrainingPlaceCollection;
 import org.processmining.specpp.composition.StatefulPlaceComposition;
 import org.processmining.specpp.composition.composers.PlaceComposerWithCIPR;
@@ -33,10 +34,7 @@ import org.processmining.specpp.postprocessing.ReplayBasedImplicitnessPostProces
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.specpp.preprocessing.InputData;
 import org.processmining.specpp.preprocessing.InputDataBundle;
-import org.processmining.specpp.preprocessing.orderings.AbsoluteActivityFrequency;
-import org.processmining.specpp.preprocessing.orderings.AverageFirstOccurrenceIndex;
 import org.processmining.specpp.preprocessing.orderings.AverageTraceOccurrence;
-import org.processmining.specpp.preprocessing.orderings.Lexicographic;
 import org.processmining.specpp.prom.mvc.config.ConfiguratorCollection;
 import org.processmining.specpp.proposal.ConstrainablePlaceProposer;
 import org.processmining.specpp.supervision.supervisors.AltEventCountsSupervisor;
@@ -86,13 +84,13 @@ public class CodeDefinedConfigurationSample {
         // ** Proposal & Composition ** //
 
         ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, CollectionOfPlaces> pcConfig = Configurators.<Place, AdvancedComposition<Place>, CollectionOfPlaces>proposerComposer()
-                                                                                                                                  .nestedComposition(StatefulPlaceComposition::new, ConstrainingPlaceCollection::new)
+                                                                                                                                  .terminalComposition(StatefulPlaceComposition::new)
+                                                                                                                                  .recursiveCompositions(ConstrainingPlaceCollection::new)
                                                                                                                                   .proposer(new ConstrainablePlaceProposer.Builder());
 
-        pcConfig.terminalComposer(PlaceComposerWithCIPR::new);
+        pcConfig.terminalComposer(PlaceComposerWithCIPR::new).recursiveComposers(PlaceFitnessFilter::new);
         // without concurrent implicit place removal
         // pcConfig.terminalComposer(PlaceAccepter::new);
-        pcConfig.composerChain(PlaceFitnessFilter::new);
         // pcConfig.composerChain(PlaceFitnessFilter::new, UniwiredComposer::new);
         // pcConfig.composerChain(PlaceFitnessFilter::new, DeltaComposer::new);
 

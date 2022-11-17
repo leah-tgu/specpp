@@ -13,10 +13,8 @@ import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.componenting.data.FulfilledDataRequirement;
 import org.processmining.specpp.componenting.data.ParameterRequirement;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
-import org.processmining.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.specpp.componenting.system.link.*;
 import org.processmining.specpp.componenting.traits.ProvidesEvaluators;
-import org.processmining.specpp.composition.StatefulPlaceComposition;
 import org.processmining.specpp.config.*;
 import org.processmining.specpp.config.parameters.ParameterProvider;
 import org.processmining.specpp.config.parameters.Parameters;
@@ -31,7 +29,6 @@ import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.postprocessing.ProMConverter;
 import org.processmining.specpp.preprocessing.orderings.ActivityOrderingStrategy;
 import org.processmining.specpp.prom.mvc.config.ConfiguratorCollection;
-import org.processmining.specpp.proposal.ConstrainablePlaceProposer;
 import org.processmining.specpp.supervision.Supervisor;
 import org.processmining.specpp.supervision.supervisors.BaseSupervisor;
 import org.processmining.specpp.supervision.supervisors.TerminalSupervisor;
@@ -340,9 +337,7 @@ public class ConfigurationParsing {
                 name = in.nextName();
                 assert "proposing".equals(in.nextName());
                 in.beginObject(); // proposing
-                ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, CollectionOfPlaces> pcc = Configurators.<Place, AdvancedComposition<Place>, CollectionOfPlaces>proposerComposer()
-                                                                                                                                     .composition(StatefulPlaceComposition::new)
-                                                                                                                                     .proposer(new ConstrainablePlaceProposer.Builder());
+                ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, CollectionOfPlaces> pcc = Configurators.proposerComposer();
 
 
                 name = in.nextName();
@@ -370,14 +365,23 @@ public class ConfigurationParsing {
                     pcc.composition(co);
                 } else if (in.peek() == JsonToken.BEGIN_ARRAY) {
                     in.beginArray();
-                    s = in.nextString();
-                    s = getFullyQualifiedClassName(BasePackage.Composition, s);
-                    SimpleBuilder<AdvancedComposition<Place>> nest = (SimpleBuilder<AdvancedComposition<Place>>) parseBuilder(s, JavaTypingUtils.castClass(AdvancedComposition.class));
-                    s = in.nextString();
-                    s = getFullyQualifiedClassName(BasePackage.Composition, s);
-                    InitializingBuilder<? extends AdvancedComposition<Place>, AdvancedComposition<Place>> outer = parseInitializingBuilder(s, JavaTypingUtils.castClass(AdvancedComposition.class), JavaTypingUtils.castClass(AdvancedComposition.class));
+
+                    SimpleBuilder<? extends AdvancedComposition<Place>> term = null;
+                    List<InitializingBuilder<? extends AdvancedComposition<Place>, ? super AdvancedComposition<Place>>> l = new LinkedList<>();
+
+                    while (in.hasNext()) {
+                        s = in.nextString();
+                        s = getFullyQualifiedClassName(BasePackage.Composition, s);
+                        if (in.hasNext()) {
+                            InitializingBuilder<? extends AdvancedComposition<Place>, ? super AdvancedComposition<Place>> rec = parseInitializingBuilder(s, JavaTypingUtils.castClass(AdvancedComposition.class), JavaTypingUtils.castClass(AdvancedComposition.class));
+                            l.add(rec);
+                        } else {
+                            term = parseBuilder(s, JavaTypingUtils.castClass(AdvancedComposition.class));
+                        }
+                    }
                     in.endArray();
-                    pcc.nestedComposition(nest, outer);
+                    InitializingBuilder[] arr = l.toArray(new InitializingBuilder[0]);
+                    pcc.terminalComposition(term).recursiveCompositions(arr);
                 }
 
                 name = in.nextName();
@@ -402,9 +406,8 @@ public class ConfigurationParsing {
                         }
                     }
                     in.endArray();
-                    pcc.terminalComposer(termcomp);
                     InitializingBuilder[] arr = l.toArray(new InitializingBuilder[0]);
-                    pcc.composerChain(arr);
+                    pcc.terminalComposer(termcomp).recursiveComposers(arr);
                 }
                 in.endObject(); // compositing
 
@@ -503,8 +506,7 @@ public class ConfigurationParsing {
         try (Reader stream = new FileReader(path)) {
             JsonReader in = new JsonReader(stream);
             ConfiguratorCollection configuratorCollection = CONFIGURATOR_COLLECTION_TYPE_ADAPTER.read(in);
-            GlobalComponentRepository cr = new GlobalComponentRepository();
-            configuratorCollection.registerAlgorithmParameters(cr);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

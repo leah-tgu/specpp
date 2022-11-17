@@ -24,7 +24,6 @@ import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
 import org.processmining.specpp.evaluation.heuristics.DirectlyFollowsHeuristic;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
-import org.processmining.specpp.config.parameters.ImplicitnessTestingParameters;
 import org.processmining.specpp.evaluation.implicitness.LPBasedImplicitnessCalculator;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
@@ -78,13 +77,11 @@ public class ConfigurationController extends AbstractStageController {
         boolean compositionConstraintsRequired = pc.respectWiring || pc.compositionStrategy == ProMConfig.CompositionStrategy.Uniwired;
         boolean compositionStateRequired = pc.compositionStrategy == ProMConfig.CompositionStrategy.TauDelta;
         if (compositionStateRequired) {
-            if (compositionConstraintsRequired)
-                pcCfg.nestedComposition(StatefulPlaceComposition::new, ConstrainingPlaceCollection::new);
-            else pcCfg.composition(StatefulPlaceComposition::new);
+            pcCfg.terminalComposition(StatefulPlaceComposition::new);
+            if (compositionConstraintsRequired) pcCfg.recursiveCompositions(ConstrainingPlaceCollection::new);
         } else {
-            if (compositionConstraintsRequired)
-                pcCfg.nestedComposition(LightweightPlaceComposition::new, ConstrainingPlaceCollection::new);
-            else pcCfg.composition(LightweightPlaceComposition::new);
+            pcCfg.terminalComposition(LightweightPlaceComposition::new);
+            if (compositionConstraintsRequired) pcCfg.recursiveCompositions(ConstrainingPlaceCollection::new);
         }
         if (pc.ciprVariant != ProMConfig.CIPRVariant.None)
             pcCfg.terminalComposer(isSupervisingEvents ? EventingPlaceComposerWithCIPR::new : PlaceComposerWithCIPR::new);
@@ -92,13 +89,13 @@ public class ConfigurationController extends AbstractStageController {
         InitializingBuilder<? extends ComposerComponent<Place, AdvancedComposition<Place>, CollectionOfPlaces>, ComposerComponent<Place, AdvancedComposition<Place>, CollectionOfPlaces>> fitnessFilterBuilder = isSupervisingEvents ? EventingPlaceFitnessFilter::new : PlaceFitnessFilter::new;
         switch (pc.compositionStrategy) {
             case Standard:
-                pcCfg.composerChain(fitnessFilterBuilder);
+                pcCfg.recursiveComposers(fitnessFilterBuilder);
                 break;
             case TauDelta:
-                pcCfg.composerChain(fitnessFilterBuilder, DeltaComposer::new);
+                pcCfg.recursiveComposers(fitnessFilterBuilder, DeltaComposer::new);
                 break;
             case Uniwired:
-                pcCfg.composerChain(fitnessFilterBuilder, UniwiredComposer::new);
+                pcCfg.recursiveComposers(fitnessFilterBuilder, UniwiredComposer::new);
                 break;
         }
 

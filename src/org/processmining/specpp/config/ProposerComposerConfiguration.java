@@ -1,6 +1,5 @@
 package org.processmining.specpp.config;
 
-import org.processmining.specpp.base.AdvancedComposition;
 import org.processmining.specpp.base.Candidate;
 import org.processmining.specpp.base.Result;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
@@ -12,30 +11,20 @@ import org.processmining.specpp.supervision.instrumentators.InstrumentedProposer
 
 public class ProposerComposerConfiguration<C extends Candidate, I extends CompositionComponent<C>, R extends Result> extends Configuration {
     private final SimpleBuilder<? extends ProposerComponent<C>> proposerBuilder;
-    private final SimpleBuilder<? extends I> compositionBuilder;
     private final InitializingBuilder<? extends ComposerComponent<C, I, R>, ? super I> terminalComposerBuilder;
     private final InitializingBuilder<? extends ComposerComponent<C, I, R>, ComposerComponent<C, I, R>>[] composerBuilderChain;
-    private final SimpleBuilder<AdvancedComposition<C>> nestedCompositionBuilder;
-    private final InitializingBuilder<? extends I, AdvancedComposition<C>> outerCompositionBuilder;
 
-    public ProposerComposerConfiguration(GlobalComponentRepository gcr, SimpleBuilder<? extends ProposerComponent<C>> proposerBuilder, SimpleBuilder<? extends I> compositionBuilder, InitializingBuilder<? extends ComposerComponent<C, I, R>, ? super I> terminalComposerBuilder, InitializingBuilder<? extends ComposerComponent<C, I, R>, ComposerComponent<C, I, R>>[] composerBuilderChain) {
+    private final SimpleBuilder<? extends I> terminalCompositionBuilder;
+    private final InitializingBuilder<? extends I, ? super I>[] compositionBuilderChain;
+
+
+    public ProposerComposerConfiguration(GlobalComponentRepository gcr, SimpleBuilder<? extends ProposerComponent<C>> proposerBuilder, SimpleBuilder<? extends I> terminalCompositionBuilder, InitializingBuilder<? extends I, ? super I>[] compositionBuilderChain, InitializingBuilder<? extends ComposerComponent<C, I, R>, ? super I> terminalComposerBuilder, InitializingBuilder<? extends ComposerComponent<C, I, R>, ComposerComponent<C, I, R>>[] composerBuilderChain) {
         super(gcr);
         this.proposerBuilder = proposerBuilder;
-        this.compositionBuilder = compositionBuilder;
+        this.terminalCompositionBuilder = terminalCompositionBuilder;
+        this.compositionBuilderChain = compositionBuilderChain;
         this.terminalComposerBuilder = terminalComposerBuilder;
         this.composerBuilderChain = composerBuilderChain;
-        nestedCompositionBuilder = null;
-        outerCompositionBuilder = null;
-    }
-
-    public ProposerComposerConfiguration(GlobalComponentRepository gcr, SimpleBuilder<? extends ProposerComponent<C>> proposerBuilder, SimpleBuilder<? extends I> compositionBuilder, InitializingBuilder<? extends ComposerComponent<C, I, R>, ? super I> terminalComposerBuilder, InitializingBuilder<? extends ComposerComponent<C, I, R>, ComposerComponent<C, I, R>>[] composerBuilderChain, SimpleBuilder<AdvancedComposition<C>> nestedCompositionBuilder, InitializingBuilder<? extends I, AdvancedComposition<C>> outerCompositionBuilder) {
-        super(gcr);
-        this.proposerBuilder = proposerBuilder;
-        this.compositionBuilder = compositionBuilder;
-        this.terminalComposerBuilder = terminalComposerBuilder;
-        this.composerBuilderChain = composerBuilderChain;
-        this.nestedCompositionBuilder = nestedCompositionBuilder;
-        this.outerCompositionBuilder = outerCompositionBuilder;
     }
 
     public ProposerComponent<C> createProposer() {
@@ -47,15 +36,29 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
         return shouldBeInstrumented(proposer) ? checkout(new InstrumentedProposer<>(proposer)) : proposer;
     }
 
-    public I createComposition() {
-        return (nestedCompositionBuilder == null || outerCompositionBuilder == null) ? createFrom(compositionBuilder) : createFrom(outerCompositionBuilder, createFrom(nestedCompositionBuilder));
+    public I createTerminalComposition() {
+        return createFrom(terminalCompositionBuilder);
     }
+
+    public I createRecursiveComposition() {
+        I prev = createTerminalComposition();
+        for (int i = compositionBuilderChain.length - 1; i >= 0; i--) {
+            prev = createFrom(compositionBuilderChain[i], prev);
+        }
+        return prev;
+    }
+
+    public I createComposition() {
+        if (compositionBuilderChain == null || composerBuilderChain.length < 1) return createTerminalComposition();
+        else return createRecursiveComposition();
+    }
+
 
     public ComposerComponent<C, I, R> createTerminalComposer() {
         return createFrom(terminalComposerBuilder, createComposition());
     }
 
-    public ComposerComponent<C, I, R> createComposerChain() {
+    public ComposerComponent<C, I, R> createRecursiveComposer() {
         ComposerComponent<C, I, R> prev = createTerminalComposer();
         for (int i = composerBuilderChain.length - 1; i >= 0; i--) {
             prev = createFrom(composerBuilderChain[i], prev);
@@ -65,7 +68,7 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
 
     public ComposerComponent<C, I, R> createComposer() {
         if (composerBuilderChain == null || composerBuilderChain.length < 1) return createTerminalComposer();
-        else return createComposerChain();
+        else return createRecursiveComposer();
     }
 
     public ComposerComponent<C, I, R> createPossiblyInstrumentedComposer() {
@@ -76,12 +79,11 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
     public static class Configurator<C extends Candidate, I extends CompositionComponent<C>, R extends Result> implements ComponentInitializerBuilder<ProposerComposerConfiguration<C, I, R>> {
 
         private SimpleBuilder<? extends ProposerComponent<C>> proposerBuilder;
-        private SimpleBuilder<? extends I> terminalCompositionBuilder;
-        private InitializingBuilder<? extends CompositionComponent<C>, CompositionComponent<C>> stackedComposition;
         private InitializingBuilder<? extends ComposerComponent<C, I, R>, ? super I> terminalComposerBuilder;
         private InitializingBuilder<? extends ComposerComponent<C, I, R>, ComposerComponent<C, I, R>>[] composerBuilderChain;
-        private SimpleBuilder<AdvancedComposition<C>> nestedCompositionBuilder;
-        private InitializingBuilder<? extends I, AdvancedComposition<C>> outerCompositionBuilder;
+
+        private InitializingBuilder<? extends I, ? super I>[] compositionBuilderChain;
+        private SimpleBuilder<? extends I> terminalCompositionBuilder;
 
         public Configurator<C, I, R> proposer(SimpleBuilder<? extends ProposerComponent<C>> proposerBuilder) {
             this.proposerBuilder = proposerBuilder;
@@ -89,13 +91,17 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
         }
 
         public Configurator<C, I, R> composition(SimpleBuilder<? extends I> compositionBuilder) {
+            return terminalComposition(compositionBuilder);
+        }
+
+        public Configurator<C, I, R> terminalComposition(SimpleBuilder<? extends I> compositionBuilder) {
             this.terminalCompositionBuilder = compositionBuilder;
             return this;
         }
 
-        public Configurator<C, I, R> nestedComposition(SimpleBuilder<AdvancedComposition<C>> nestedCompositionBuilder, InitializingBuilder<? extends I, AdvancedComposition<C>> outerCompositionBuilder) {
-            this.nestedCompositionBuilder = nestedCompositionBuilder;
-            this.outerCompositionBuilder = outerCompositionBuilder;
+        @SafeVarargs
+        public final Configurator<C, I, R> recursiveCompositions(final InitializingBuilder<? extends I, ? super I>... compositionBuilderChain) {
+            this.compositionBuilderChain = compositionBuilderChain;
             return this;
         }
 
@@ -109,13 +115,13 @@ public class ProposerComposerConfiguration<C extends Candidate, I extends Compos
         }
 
         @SafeVarargs
-        public final Configurator<C, I, R> composerChain(final InitializingBuilder<? extends ComposerComponent<C, I, R>, ComposerComponent<C, I, R>>... composerBuilderChain) {
+        public final Configurator<C, I, R> recursiveComposers(final InitializingBuilder<? extends ComposerComponent<C, I, R>, ComposerComponent<C, I, R>>... composerBuilderChain) {
             this.composerBuilderChain = composerBuilderChain;
             return this;
         }
 
         public ProposerComposerConfiguration<C, I, R> build(GlobalComponentRepository gcr) {
-            return new ProposerComposerConfiguration<>(gcr, proposerBuilder, terminalCompositionBuilder, terminalComposerBuilder, composerBuilderChain, nestedCompositionBuilder, outerCompositionBuilder);
+            return new ProposerComposerConfiguration<>(gcr, proposerBuilder, terminalCompositionBuilder, compositionBuilderChain, terminalComposerBuilder, composerBuilderChain);
         }
 
     }

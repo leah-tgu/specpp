@@ -38,7 +38,7 @@ public class LightweightComponentConfig extends BaseSPECppComponentConfig {
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(StatefulPlaceComposition::new)
                             .composer(PlaceComposerWithCIPR::new)
-                            .composerChain(PlaceFitnessFilter::new)
+                            .recursiveComposers(PlaceFitnessFilter::new)
                             .build(gcr);
     }
 

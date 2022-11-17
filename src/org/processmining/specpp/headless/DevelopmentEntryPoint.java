@@ -74,7 +74,7 @@ public class DevelopmentEntryPoint {
                                                                                                                                   .proposer(new ConstrainablePlaceProposer.Builder());
 
         pcConfig.terminalComposer(ComposerDelevopmentEntryPoint::new);
-        pcConfig.composerChain(PlaceFitnessFilter::new);
+        pcConfig.recursiveComposers(PlaceFitnessFilter::new);
 
         // ** Post Processing ** //
 

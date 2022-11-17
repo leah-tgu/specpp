@@ -30,7 +30,7 @@ public class PlaceFocussedComponentConfig extends LightweightComponentConfig {
                             .proposer(new ConstrainablePlaceProposer.Builder())
                             .composition(BasePlaceComposition::new)
                             .composer(PlaceAccepter::new)
-                            .composerChain(PlaceFitnessFilter::new)
+                            .recursiveComposers(PlaceFitnessFilter::new)
                             .build(gcr);
     }
 
