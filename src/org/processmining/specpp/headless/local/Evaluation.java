@@ -228,7 +228,7 @@ public class Evaluation {
         // pcConfig.terminalComposer(PlaceAccepter::new);
         //pcConfig.composerChain(PlaceFitnessFilter::new);
         // pcConfig.composerChain(PlaceFitnessFilter::new, UniwiredComposer::new);
-        pcConfig.composerChain(PlaceFitnessFilter::new);
+        pcConfig.recursiveComposers(PlaceFitnessFilter::new);
 
         // ** Post Processing ** //
 
