@@ -3,7 +3,6 @@ import com.google.common.collect.Sets;
 import org.apache.commons.collections4.BidiMap;
 import org.junit.Assert;
 import org.junit.Test;
-import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.data.DataRequirements;
 import org.processmining.specpp.componenting.evaluation.EvaluationRequirements;
 import org.processmining.specpp.componenting.evaluation.EvaluatorCollection;
@@ -18,7 +17,6 @@ import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.log.impls.*;
 import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
 import org.processmining.specpp.datastructures.petri.Place;
-import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.petri.Transition;
 import org.processmining.specpp.datastructures.tree.base.BiDiTree;
 import org.processmining.specpp.datastructures.tree.base.impls.*;
@@ -34,11 +32,7 @@ import org.processmining.specpp.datastructures.vectorization.VariantMarkingHisto
 import org.processmining.specpp.evaluation.fitness.AbstractBasicFitnessEvaluator;
 import org.processmining.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
-import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
-import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
-import org.processmining.specpp.evaluation.markings.QuickReplay;
-import org.processmining.specpp.orchestra.BaseDataExtractionConfig;
-import org.processmining.specpp.orchestra.BaseSPECppConfigBundle;
+import org.processmining.specpp.headless.local.SampleData;
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.specpp.preprocessing.*;
 import org.processmining.specpp.preprocessing.orderings.*;
@@ -51,10 +45,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static org.processmining.specpp.orchestra.SPECppOperations.execute;
-import static org.processmining.specpp.orchestra.SPECppOperations.setup;
-import static org.processmining.specpp.util.HardcodedTestInput.getDummyInputBundle;
 
 public class Main {
 
@@ -274,30 +264,6 @@ public class Main {
         System.out.println(h2.getAt(2));
     }
 
-    @Test
-    public void orchestra() {
-        InputDataBundle bundle = getDummyInputBundle("a", "b", "c");
-        System.out.println(bundle.getLog());
-        System.out.println(bundle.getTransitionEncodings());
-        System.out.println(bundle.getMapping());
-
-        SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
-
-        execute(specPP, true);
-
-    }
-
-    @Test
-    public void actualLog() {
-        InputDataBundle bundle = InputData.sampleData().getData();
-        System.out.println(bundle.getLog());
-        System.out.println(bundle.getTransitionEncodings());
-        System.out.println(bundle.getMapping());
-
-        SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specPP = setup(new BaseSPECppConfigBundle(), bundle);
-
-        execute(specPP, true);
-    }
 
 
     @Test
@@ -355,7 +321,7 @@ public class Main {
 
     @Test
     public void transitionOrderings() {
-        InputDataBundle data = InputData.sampleData().getData();
+        InputDataBundle data = SampleData.sample_1();
         Log log = data.getLog();
         BidiMap<Activity, Transition> mapping = data.getMapping();
 

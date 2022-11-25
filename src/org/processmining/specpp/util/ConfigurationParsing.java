@@ -1,9 +1,6 @@
 package org.processmining.specpp.util;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.TypeAdapter;
+import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
@@ -12,9 +9,11 @@ import org.processmining.specpp.base.AdvancedComposition;
 import org.processmining.specpp.base.PostProcessor;
 import org.processmining.specpp.componenting.data.FulfilledDataRequirement;
 import org.processmining.specpp.componenting.data.ParameterRequirement;
+import org.processmining.specpp.componenting.data.ParameterSourceCollection;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.componenting.system.link.*;
 import org.processmining.specpp.componenting.traits.ProvidesEvaluators;
+import org.processmining.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.specpp.config.*;
 import org.processmining.specpp.config.parameters.ParameterProvider;
 import org.processmining.specpp.config.parameters.Parameters;
@@ -22,45 +21,42 @@ import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.tree.base.HeuristicStrategy;
+import org.processmining.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
 import org.processmining.specpp.datastructures.tree.heuristic.TreeNodeScore;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
-import org.processmining.specpp.orchestra.PreProcessingParameters;
+import org.processmining.specpp.orchestra.*;
 import org.processmining.specpp.postprocessing.ProMConverter;
 import org.processmining.specpp.preprocessing.orderings.ActivityOrderingStrategy;
-import org.processmining.specpp.prom.mvc.config.ConfiguratorCollection;
 import org.processmining.specpp.supervision.Supervisor;
 import org.processmining.specpp.supervision.supervisors.BaseSupervisor;
 import org.processmining.specpp.supervision.supervisors.TerminalSupervisor;
 
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
 public class ConfigurationParsing {
 
-    public static final TypeAdapter<PreProcessingParameters> PREPROCESSING_TYPE_ADAPTER = new TypeAdapter<PreProcessingParameters>() {
+    public static final TypeAdapter<InputProcessingConfig> INPUT_PROCESSING_CONFIG_TYPE_ADAPTER = new TypeAdapter<InputProcessingConfig>() {
 
         private final Gson gson = new Gson();
 
         @Override
-        public void write(JsonWriter out, PreProcessingParameters value) throws IOException {
+        public void write(JsonWriter out, InputProcessingConfig value) throws IOException {
             out.nullValue();
         }
 
         @Override
-        public PreProcessingParameters read(JsonReader in) throws IOException {
+        public InputProcessingConfig read(JsonReader in) throws IOException {
             PreProcessingParameters ppp = PreProcessingParameters.getDefault();
+            DataExtractionParameters dep = DataExtractionParameters.getDefault();
             if (in.peek() == JsonToken.NULL) in.nextNull();
             else {
                 JsonElement jsonElement = gson.fromJson(in, JsonElement.class);
                 JsonObject jsonObject = jsonElement.getAsJsonObject();
 
-                PreProcessingParameters defaultParameters = PreProcessingParameters.getDefault();
-
-                XEventClassifier eventClassifier = defaultParameters.getEventClassifier();
+                XEventClassifier eventClassifier = ppp.getEventClassifier();
                 if (jsonObject.has("eventClassifier")) try {
                     String eventClassifierString = jsonObject.get("eventClassifier").getAsString();
                     Class<XEventClassifier> eventClassifierClass = (Class<XEventClassifier>) Class.forName(getFullyQualifiedClassName(BasePackage.XES_Classifier, eventClassifierString));
@@ -69,11 +65,13 @@ public class ConfigurationParsing {
                     throw new RuntimeException(e);
                 }
 
-                boolean addStartEndTransitions = defaultParameters.isAddStartEndTransitions();
+                boolean addStartEndTransitions = ppp.isAddStartEndTransitions();
                 if (jsonObject.has("addStartEndTransitions"))
                     addStartEndTransitions = jsonObject.get("addStartEndTransitions").getAsBoolean();
 
-                Class<? extends ActivityOrderingStrategy> activityOrderingStrategyClass = defaultParameters.getActivityOrderingStrategy();
+                ppp = new PreProcessingParameters(eventClassifier, addStartEndTransitions);
+
+                Class<? extends ActivityOrderingStrategy> activityOrderingStrategyClass = dep.getActivityOrderingStrategy();
 
                 if (jsonObject.has("activityOrderingStrategy")) try {
                     String activityOrderingStrategyString = jsonObject.get("activityOrderingStrategy").getAsString();
@@ -82,9 +80,10 @@ public class ConfigurationParsing {
                     throw new RuntimeException(e);
                 }
 
-                ppp = new PreProcessingParameters(eventClassifier, addStartEndTransitions, activityOrderingStrategyClass);
+                dep = new DataExtractionParameters(activityOrderingStrategyClass);
+
             }
-            return ppp;
+            return new InputProcessingConfigImpl(ppp, dep);
         }
     };
 
@@ -167,10 +166,10 @@ public class ConfigurationParsing {
                 name = in.nextName();
                 assert "expansion strategy".equalsIgnoreCase(name);
                 s = in.nextString();
-                s = getFullyQualifiedClassName(BasePackage.Tree, s);
+                s = getFullyQualifiedClassName(BasePackage.TreeExpansion, s);
+                String expansionStrategyClass = s;
                 SimpleBuilder<? extends ExpansionStrategyComponent<PlaceNode>> exp = parseBuilder(s, JavaTypingUtils.castClass(ExpansionStrategyComponent.class));
                 etc.expansionStrategy(exp);
-                htc.expansionStrategy(exp);
 
                 name = in.nextName();
                 assert "node generation logic".equalsIgnoreCase(name);
@@ -184,7 +183,9 @@ public class ConfigurationParsing {
                     s = in.nextString();
                     s = getFullyQualifiedClassName(BasePackage.Heuristic, s);
                     SimpleBuilder<? extends HeuristicStrategy<PlaceNode, TreeNodeScore>> heu = parseBuilder(s, JavaTypingUtils.castClass(HeuristicStrategy.class));
+                    InitializingBuilder<? extends HeuristicTreeExpansion<PlaceNode, TreeNodeScore>, HeuristicStrategy<PlaceNode, TreeNodeScore>> heu_exp = parseInitializingBuilder(expansionStrategyClass, JavaTypingUtils.castClass(HeuristicTreeExpansion.class), JavaTypingUtils.castClass(HeuristicStrategy.class));
                     htc.heuristic(heu);
+                    htc.heuristicExpansion(heu_exp);
                     isHeuristic = true;
                 }
 
@@ -212,10 +213,10 @@ public class ConfigurationParsing {
                     String s = in.nextString();
                     s = getFullyQualifiedClassName(BasePackage.PostProcessor, s);
                     SimpleBuilder<? extends PostProcessor> simpleBuilder = parseBuilder(s, PostProcessor.class);
-                    ppc.addPostProcessor(simpleBuilder);
+                    ppc = ppc.addPostProcessor(simpleBuilder);
                 }
                 in.endArray();
-                ppc.addPostProcessor(ProMConverter::new);
+                // ppc.addPostProcessor(ProMConverter::new);
                 configurator = (PostProcessingConfiguration.Configurator<CollectionOfPlaces, ProMPetrinetWrapper>) ppc;
             }
             return configurator;
@@ -263,68 +264,83 @@ public class ConfigurationParsing {
         }
     };
 
-    public static final TypeAdapter<ParameterProvider> PARAMETERS_TYPE_ADAPTER = new TypeAdapter<ParameterProvider>() {
+    public static final TypeAdapter<ProvidesParameters> PARAMETERS_TYPE_ADAPTER = new TypeAdapter<ProvidesParameters>() {
         @Override
-        public void write(JsonWriter out, ParameterProvider value) throws IOException {
+        public void write(JsonWriter out, ProvidesParameters value) throws IOException {
             out.nullValue();
         }
 
         @Override
-        public ParameterProvider read(JsonReader in) throws IOException {
-            ParameterProvider pp = new ParameterProvider() {
+        public ProvidesParameters read(JsonReader in) throws IOException {
+            ProvidesParameters pp = new ParameterProvider() {
                 @Override
                 public void init() {
                 }
             };
             if (in.peek() == JsonToken.NULL) in.nextNull();
             else {
-                List<FulfilledDataRequirement<? extends Parameters>> list = new LinkedList<>();
+                if (in.peek() == JsonToken.BEGIN_OBJECT) {
+                    in.beginObject();
+                    String name = in.nextName();
+                    assert "base".equalsIgnoreCase(name);
+                    String s = in.nextString();
+                    s = getFullyQualifiedClassName(BasePackage.Configs, s);
+                    ProvidesParameters base_pp = parseBuilder(s, ProvidesParameters.class).get();
 
-                in.beginArray();
-                while (in.hasNext()) {
-                    FulfilledDataRequirement<? extends Parameters> freq = PARAMETER_REQUIREMENT_TYPE_ADAPTER.read(in);
-                    list.add(freq);
-                }
-                in.endArray();
-
-                pp = new ParameterProvider() {
-                    @Override
-                    public void init() {
-                        for (FulfilledDataRequirement<? extends Parameters> f : list) {
-                            globalComponentSystem().provide(f);
-                        }
+                    name = in.nextName();
+                    assert "extensions".equalsIgnoreCase(name);
+                    List<FulfilledDataRequirement<? extends Parameters>> list = readParameterList(in);
+                    ParameterSourceCollection psc = new ParameterSourceCollection();
+                    for (FulfilledDataRequirement<? extends Parameters> f : list) {
+                        psc.register(f);
                     }
-                };
+                    base_pp.globalComponentSystem().overridingAbsorb(psc);
+                    pp = base_pp;
+                    in.endObject();
+                } else if (in.peek() == JsonToken.BEGIN_ARRAY) {
+                    List<FulfilledDataRequirement<? extends Parameters>> list = readParameterList(in);
+
+                    pp = new ParameterProvider() {
+                        @Override
+                        public void init() {
+                            for (FulfilledDataRequirement<? extends Parameters> f : list) {
+                                globalComponentSystem().provide(f);
+                            }
+                        }
+                    };
+                }
 
             }
             return pp;
         }
+
+        private List<FulfilledDataRequirement<? extends Parameters>> readParameterList(JsonReader in) throws IOException {
+            List<FulfilledDataRequirement<? extends Parameters>> list = new LinkedList<>();
+            in.beginArray();
+            while (in.hasNext()) {
+                FulfilledDataRequirement<? extends Parameters> freq = PARAMETER_REQUIREMENT_TYPE_ADAPTER.read(in);
+                list.add(freq);
+            }
+            in.endArray();
+            return list;
+        }
     };
 
-    public static final TypeAdapter<ConfiguratorCollection> CONFIGURATOR_COLLECTION_TYPE_ADAPTER = new TypeAdapter<ConfiguratorCollection>() {
+    public static final TypeAdapter<ComponentConfig> CONFIGURATOR_COLLECTION_TYPE_ADAPTER = new TypeAdapter<ComponentConfig>() {
         @Override
-        public void write(JsonWriter out, ConfiguratorCollection value) throws IOException {
+        public void write(JsonWriter out, ComponentConfig value) throws IOException {
             out.nullValue();
         }
 
         @Override
-        public ConfiguratorCollection read(JsonReader in) throws IOException {
-            ConfiguratorCollection cc = null;
+        public ComponentConfig read(JsonReader in) throws IOException {
+            ComponentConfigImpl cc = null;
             if (in.peek() == JsonToken.NULL) in.nextNull();
             else {
-                in.beginObject(); // root
-
-                String name;
-                name = in.nextName();
-                if ("pre processing".equalsIgnoreCase(name)) {
-                    PreProcessingParameters ppp = PREPROCESSING_TYPE_ADAPTER.read(in);
-                    name = in.nextName();
-                }
-                assert "components".equalsIgnoreCase(name);
                 in.beginObject(); // components
 
                 // ** Supervisors ** //
-                name = in.nextName();
+                String name = in.nextName();
                 assert "supervisors".equalsIgnoreCase(name);
                 SupervisionConfiguration.Configurator sc = SUPERVISORS_TYPE_ADAPTER.read(in);
 
@@ -335,7 +351,7 @@ public class ConfigurationParsing {
 
                 // ** Proposing ** //
                 name = in.nextName();
-                assert "proposing".equals(in.nextName());
+                assert "proposing".equals(name);
                 in.beginObject(); // proposing
                 ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, CollectionOfPlaces> pcc = Configurators.proposerComposer();
 
@@ -418,27 +434,61 @@ public class ConfigurationParsing {
 
                 in.endObject(); // components
 
+                cc = new ComponentConfigImpl(sc, pcc, evc, etc, ppc);
+            }
+            return cc;
+        }
+    };
+
+    public static final TypeAdapter<SPECppConfigBundle> PARSED_CONFIG_TYPE_ADAPTER = new TypeAdapter<SPECppConfigBundle>() {
+        @Override
+        public void write(JsonWriter out, SPECppConfigBundle value) throws IOException {
+            out.nullValue();
+        }
+
+        @Override
+        public SPECppConfigBundle read(JsonReader in) throws IOException {
+            InputProcessingConfig idc = null;
+            ComponentConfig cc = null;
+            ProvidesParameters pp = null;
+
+            if (in.peek() == JsonToken.NULL) in.nextNull();
+            else {
+                in.beginObject(); // root
+
+                String name;
+                name = in.nextName();
+                if ("input processing".equalsIgnoreCase(name)) {
+                    idc = INPUT_PROCESSING_CONFIG_TYPE_ADAPTER.read(in);
+                    name = in.nextName();
+                }
+
+                assert "components".equalsIgnoreCase(name);
+                cc = CONFIGURATOR_COLLECTION_TYPE_ADAPTER.read(in);
+
                 // ** Parameters (optional) ** //
-                ParameterProvider pp = null;
                 if (in.hasNext()) {
                     name = in.nextName();
                     assert "parameters".equalsIgnoreCase(name);
                     pp = PARAMETERS_TYPE_ADAPTER.read(in);
                 }
 
-                cc = new ConfiguratorCollection(sc, pcc, evc, etc, ppc, pp);
-
                 in.endObject(); // root
 
             }
-            return cc;
+            return ConfigFactory.create(idc, cc, ConfigFactory.create(pp));
         }
     };
+
+    public static TypeAdapter<SPECppConfigBundle> getTypeAdapter() {
+        return PARSED_CONFIG_TYPE_ADAPTER;
+    }
+
 
     public enum BasePackage {
         Evaluation("org.processmining.specpp.evaluation"),
         Supervisors("org.processmining.specpp.supervision.supervisors"),
-        Tree("org.processmining.specpp.datastructures.tree"),
+        TreeExpansion("org.processmining.specpp.datastructures.tree"),
         NodeGeneration("org.processmining.specpp.datastructures.tree.nodegen"),
         Heuristic("org.processmining.specpp.evaluation.heuristics"),
         Composer("org.processmining.specpp.composition.composers"),
@@ -447,7 +497,9 @@ public class ConfigurationParsing {
         PostProcessor("org.processmining.specpp.postprocessing"),
         Parameters("org.processmining.specpp.config.parameters"),
         XES_Classifier("org.deckfour.xes.classification"),
-        ActivityOrdering("org.processmining.specpp.preprocessing.orderings");
+        ActivityOrdering("org.processmining.specpp.preprocessing.orderings"),
+        Configs("org.processmining.specpp.orchestra.presets"),
+        Tree("org.processmining.specpp.datastructures.tree.base.impls");
 
         private final String packagePath;
 
@@ -501,20 +553,8 @@ public class ConfigurationParsing {
         return initializingBuilder;
     }
 
-    public static void read() {
-        String path = PathTools.getRelativeFolderPath(PathTools.FolderStructure.BASE_INPUT_FOLDER) + "test.json";
-        try (Reader stream = new FileReader(path)) {
-            JsonReader in = new JsonReader(stream);
-            ConfiguratorCollection configuratorCollection = CONFIGURATOR_COLLECTION_TYPE_ADAPTER.read(in);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void main(String[] args) {
-
-        read();
+    public static Gson createGson() {
+        return new GsonBuilder().registerTypeAdapter(SPECppConfigBundle.class, PARSED_CONFIG_TYPE_ADAPTER).create();
     }
 
 }

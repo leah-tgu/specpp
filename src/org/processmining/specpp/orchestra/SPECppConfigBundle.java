@@ -4,9 +4,17 @@ import org.processmining.specpp.componenting.system.GlobalComponentRepository;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 
 public interface SPECppConfigBundle {
-    String getTitle();
 
-    String getDescription();
+    InputProcessingConfig getInputProcessingConfig();
 
-    void instantiate(GlobalComponentRepository cr, InputDataBundle bundle);
+    ComponentConfig getComponentConfig();
+
+    AlgorithmParameterConfig getAlgorithmParameterConfig();
+
+    default void instantiate(GlobalComponentRepository cr, InputDataBundle bundle) {
+        getInputProcessingConfig().instantiate(cr, bundle);
+        getComponentConfig().registerConfigurations(cr);
+        getAlgorithmParameterConfig().registerAlgorithmParameters(cr);
+    }
+
 }

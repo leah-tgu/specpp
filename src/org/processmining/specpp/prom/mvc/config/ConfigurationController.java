@@ -21,11 +21,13 @@ import org.processmining.specpp.datastructures.tree.heuristic.*;
 import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
-import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
 import org.processmining.specpp.evaluation.heuristics.DirectlyFollowsHeuristic;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
 import org.processmining.specpp.evaluation.implicitness.LPBasedImplicitnessCalculator;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
+import org.processmining.specpp.orchestra.ComponentConfigImpl;
+import org.processmining.specpp.orchestra.ConfigFactory;
+import org.processmining.specpp.orchestra.SPECppConfigBundle;
 import org.processmining.specpp.prom.alg.FrameworkBridge;
 import org.processmining.specpp.prom.alg.LiveEvents;
 import org.processmining.specpp.prom.alg.LivePerformance;
@@ -46,7 +48,7 @@ public class ConfigurationController extends AbstractStageController {
         super(parentController);
     }
 
-    public static ConfiguratorCollection convertToFullConfig(ProMConfig pc) {
+    public static SPECppConfigBundle convertToFullConfig(ProMConfig pc) {
         // BUILDING CONFIGURATORS
 
         // ** SUPERVISION ** //
@@ -141,8 +143,9 @@ public class ConfigurationController extends AbstractStageController {
         ExecutionParameters exp = new ExecutionParameters(new ExecutionParameters.ExecutionTimeLimits(pc.discoveryTimeLimit, null, pc.totalTimeLimit), ExecutionParameters.ParallelizationTarget.Moderate, ExecutionParameters.PerformanceFocus.Balanced);
         PlaceGeneratorParameters pgp = new PlaceGeneratorParameters(pc.depth < 0 ? Integer.MAX_VALUE : pc.depth, true, pc.respectWiring, false, false);
 
-        class CustomParameters extends ParameterProvider {
-            public CustomParameters() {
+        ParameterProvider pp = new ParameterProvider() {
+            @Override
+            public void init() {
                 globalComponentSystem().provide(ParameterRequirements.EXTERNAL_INITIALIZATION.fulfilWithStatic(new ExternalInitializationParameters(pc.initiallyWireSelfLoops)))
                                        .provide(ParameterRequirements.EXECUTION_PARAMETERS.fulfilWithStatic(exp))
                                        .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(pc.supervisionSetting != ProMConfig.SupervisionSetting.Nothing ? SupervisionParameters.instrumentAll(false, logToFile) : SupervisionParameters.instrumentNone(false, logToFile)))
@@ -157,10 +160,13 @@ public class ConfigurationController extends AbstractStageController {
                 }
                 if (pc.enforceHeuristicThreshold)
                     globalComponentSystem().provide(ParameterRequirements.TREE_HEURISTIC_THRESHOLD.fulfilWithStatic(new TreeHeuristicThreshold(pc.heuristicThreshold, pc.heuristicThresholdRelation)));
-            }
-        }
 
-        return new ConfiguratorCollection(svCfg, pcCfg, evCfg, etCfg, ppCfg, new CustomParameters());
+            }
+        };
+
+
+        ComponentConfigImpl cc = new ComponentConfigImpl(svCfg, pcCfg, evCfg, etCfg, ppCfg);
+        return ConfigFactory.create(null, cc, ConfigFactory.create(pp));
     }
 
     @Override
@@ -174,7 +180,7 @@ public class ConfigurationController extends AbstractStageController {
     }
 
     public void basicConfigCompleted(ProMConfig basicConfig) {
-        ConfiguratorCollection fullConfig = convertToFullConfig(basicConfig);
+        SPECppConfigBundle fullConfig = convertToFullConfig(basicConfig);
         parentController.configCompleted(basicConfig, fullConfig);
     }
 

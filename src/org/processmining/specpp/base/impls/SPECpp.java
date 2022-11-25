@@ -13,6 +13,9 @@ import org.processmining.specpp.componenting.system.link.ComposerComponent;
 import org.processmining.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.specpp.componenting.system.link.ProposerComponent;
 import org.processmining.specpp.config.Configuration;
+import org.processmining.specpp.orchestra.ExternalInitializer;
+import org.processmining.specpp.orchestra.SPECppConfigBundle;
+import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.supervision.Supervisor;
 import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.specpp.traits.Joinable;
@@ -22,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> extends AbstractBaseClass implements StartStoppable {
@@ -37,7 +41,9 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     private final Configuration configuration;
     private int cycleCount;
     private C lastCandidate;
-    private boolean active, computationCancelled;
+    private boolean computationCancelled;
+
+    private final AtomicBoolean active;
     private R result;
 
     private F finalResult;
@@ -50,6 +56,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         this.composer = composer;
         this.postProcessor = postProcessor;
         cycleCount = 0;
+        active = new AtomicBoolean(false);
         lastCandidate = null;
         computationCancelled = false;
         configuration = new Configuration(cr);
@@ -58,6 +65,21 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         localComponentSystem().provide(DataRequirements.dataSource("update_local_component_system", Runnable.class, StaticDataSource.of(this::updateLocalComponentSystem)));
         registerSubComponent(proposer);
         registerSubComponent(composer);
+    }
+
+    public static <C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> SPECpp<C, I, R, F> build(SPECppConfigBundle configBundle, InputDataBundle dataBundle) {
+        GlobalComponentRepository cr = new GlobalComponentRepository();
+
+        configBundle.instantiate(cr, dataBundle);
+
+        Configuration configuration = new Configuration(cr);
+        ExternalInitializer externalInitializer = configuration.createFrom(ExternalInitializer::new);
+        SPECpp<C, I, R, F> specpp = configuration.createFrom(new SPECppBuilder<>(), cr);
+
+        specpp.init();
+        externalInitializer.init();
+
+        return specpp;
     }
 
     public GlobalComponentRepository getGlobalComponentRepository() {
@@ -100,8 +122,9 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
 
     @Override
     public void start() {
-        active = true;
-        supervisors.forEach(Supervisor::start);
+        if (active.compareAndSet(false, true)) {
+            supervisors.forEach(Supervisor::start);
+        }
     }
 
 
@@ -182,21 +205,22 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
 
     @Override
     public void stop() {
-        supervisors.forEach(Supervisor::stop);
-        for (Supervisor supervisor : supervisors) {
-            if (supervisor instanceof Joinable) {
-                try {
-                    ((Joinable) supervisor).join();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        if (active.compareAndSet(true, false)) {
+            supervisors.forEach(Supervisor::stop);
+            for (Supervisor supervisor : supervisors) {
+                if (supervisor instanceof Joinable) {
+                    try {
+                        ((Joinable) supervisor).join();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }
-        active = false;
     }
 
     public boolean isActive() {
-        return active;
+        return active.get();
     }
 
     public Collection<Supervisor> getSupervisors() {

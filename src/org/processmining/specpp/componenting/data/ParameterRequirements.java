@@ -3,7 +3,7 @@ package org.processmining.specpp.componenting.data;
 import org.processmining.specpp.config.parameters.DeltaComposerParameters;
 import org.processmining.specpp.config.ExternalInitializationParameters;
 import org.processmining.specpp.config.parameters.*;
-import org.processmining.specpp.evaluation.fitness.ReplayComputationParameters;
+import org.processmining.specpp.config.parameters.ReplayComputationParameters;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;
 import org.processmining.specpp.config.parameters.ImplicitnessTestingParameters;
 
@@ -11,7 +11,7 @@ public class ParameterRequirements {
 
     public static final ParameterRequirement<OutputPathParameters> OUTPUT_PATH_PARAMETERS = parameters("output_paths", OutputPathParameters.class);
     public static final ParameterRequirement<PlaceGeneratorParameters> PLACE_GENERATOR_PARAMETERS = parameters("placegenerator.parameters", PlaceGeneratorParameters.class);
-    public static final ParameterRequirement<TauFitnessThresholds> TAU_FITNESS_THRESHOLDS = parameters("tau_fitness_thresholds", TauFitnessThresholds.class);
+    public static final ParameterRequirement<TauFitnessThresholds> TAU_FITNESS_THRESHOLDS = parameters("fitness.tau_threshold", TauFitnessThresholds.class);
     public static final ParameterRequirement<DeltaParameters> DELTA_PARAMETERS = parameters("delta.parameters", DeltaParameters.class);
     public static final ParameterRequirement<SupervisionParameters> SUPERVISION_PARAMETERS = parameters("supervision.parameters", SupervisionParameters.class);
 

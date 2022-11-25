@@ -96,8 +96,9 @@ public class ResultController extends AbstractStageController {
 
     public XLog getEvalLog() {
         if (evalLog == null)
-            if (parentController.getPreProcessingParameters() != null && parentController.getPreProcessingParameters()
-                                                                                         .isAddStartEndTransitions()) {
+            if (parentController.getInputProcessingConfig() != null && parentController.getInputProcessingConfig()
+                                                                                       .getPreProcessingParameters()
+                                                                                       .isAddStartEndTransitions()) {
                 XFactoryNaiveImpl xFactorY = new XFactoryNaiveImpl();
                 XAttributeMap attributeMap = xFactorY.createAttributeMap();
                 attributeMap.put("concept:name", xFactorY.createAttributeLiteral("concept:name", Factory.UNIQUE_START_LABEL, XConceptExtension.instance()));
@@ -120,7 +121,7 @@ public class ResultController extends AbstractStageController {
     }
 
     public XEventClassifier getEventClassifier() {
-        return parentController.getPreProcessingParameters().getEventClassifier();
+        return parentController.getInputProcessingConfig().getPreProcessingParameters().getEventClassifier();
     }
 
     public ProMConfig getProMConfig() {

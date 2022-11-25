@@ -8,8 +8,8 @@ import org.processmining.models.connections.petrinets.behavioral.InitialMarkingC
 import org.processmining.models.graphbased.directed.petrinet.Petrinet;
 import org.processmining.models.semantics.petrinet.Marking;
 import org.processmining.plugins.utils.ProvidedObjectHelper;
+import org.processmining.specpp.orchestra.InputProcessingConfig;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
-import org.processmining.specpp.orchestra.PreProcessingParameters;
 import org.processmining.specpp.prom.mvc.AbstractStagePanel;
 import org.processmining.specpp.prom.mvc.config.ProMConfig;
 import org.processmining.specpp.prom.plugins.ProMSPECppConfig;
@@ -54,8 +54,8 @@ public class ResultExportPanel extends AbstractStagePanel<ResultController> {
 
     private void saveConfig() {
         ProMConfig proMConfig = controller.getParentController().getProMConfig();
-        PreProcessingParameters preProcessingParameters = controller.getParentController().getPreProcessingParameters();
-        ProMSPECppConfig config = new ProMSPECppConfig(preProcessingParameters, proMConfig);
+        InputProcessingConfig inputProcessingConfig = controller.getParentController().getInputProcessingConfig();
+        ProMSPECppConfig config = new ProMSPECppConfig(inputProcessingConfig, proMConfig);
         context.getProvidedObjectManager().createProvidedObject("Config", config, ProMSPECppConfig.class, context);
         ProvidedObjectHelper.setFavorite(context, config);
         saveConfigButton.setEnabled(false);

@@ -6,6 +6,8 @@ import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.specpp.base.Result;
 import org.processmining.specpp.componenting.data.DataSourceCollection;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.specpp.orchestra.DataExtractionParameters;
+import org.processmining.specpp.orchestra.InputProcessingConfig;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.util.Pair;
@@ -47,7 +49,7 @@ public class SPECppController {
     private SPECppConfigBundle configBundle;
     private ProMPetrinetWrapper result;
     private List<Result> intermediatePostProcessingResults;
-    private PreProcessingParameters preProcessingParameters;
+    private InputProcessingConfig inputProcessingConfig;
     private ProMConfig proMConfig;
     private ProMSPECppConfig loadedProMSPECppConfig;
     private Pair<Set<Activity>> activitySelection;
@@ -68,11 +70,12 @@ public class SPECppController {
            .provide(staticDataSource("last_prom_petrinet_result", ProMPetrinetWrapper.class, result))
            .provide(staticDataSource("last_intermediate_post_processing_results", JavaTypingUtils.castClass(List.class), intermediatePostProcessingResults))
            .provide(staticDataSource("last_activity_selection", JavaTypingUtils.castClass(Pair.class), activitySelection))
-           .provide(staticDataSource("last_pre_processing_parameters", PreProcessingParameters.class, preProcessingParameters));
+           .provide(staticDataSource("last_pre_processing_parameters", PreProcessingParameters.class, inputProcessingConfig.getPreProcessingParameters()))
+           .provide(staticDataSource("last_data_extraction_parameters", DataExtractionParameters.class, inputProcessingConfig.getDataExtractionParameters()));
         if (loadedProMSPECppConfig != null)
             gcr.provide(staticDataSource("loaded_prom_specpp_config", ProMSPECppConfig.class, loadedProMSPECppConfig))
                .provide(dataSource("loaded_prom_config", ProMConfig.class, loadedProMSPECppConfig::getProMConfig))
-               .provide(dataSource("loaded_pre_processing_parameters", PreProcessingParameters.class, loadedProMSPECppConfig::getPreProcessingParameters));
+               .provide(dataSource("loaded_input_config", InputProcessingConfig.class, loadedProMSPECppConfig::getInputDataConfig));
     }
 
     public DataSourceCollection cache() {
@@ -95,12 +98,16 @@ public class SPECppController {
         return loadedProMSPECppConfig != null ? loadedProMSPECppConfig.getProMConfig() : null;
     }
 
-    public PreProcessingParameters getLoadedPreProcessingParameters() {
-        return loadedProMSPECppConfig != null ? loadedProMSPECppConfig.getPreProcessingParameters() : null;
+    public InputProcessingConfig getLoadedInputDataConfig() {
+        return loadedProMSPECppConfig != null ? loadedProMSPECppConfig.getInputDataConfig() : null;
     }
 
     public ProMSPECppConfig getLoadedConfig() {
         return loadedProMSPECppConfig;
+    }
+
+    public InputProcessingConfig getInputProcessingConfig() {
+        return inputProcessingConfig;
     }
 
 
@@ -172,8 +179,8 @@ public class SPECppController {
         currentPluginStageIndex++;
     }
 
-    public void preprocessingCompleted(PreProcessingParameters preProcessingParameters, Pair<Set<Activity>> activitySelection, InputDataBundle bundle) {
-        this.preProcessingParameters = preProcessingParameters;
+    public void preprocessingCompleted(InputProcessingConfig inputProcessingConfig, Pair<Set<Activity>> activitySelection, InputDataBundle bundle) {
+        this.inputProcessingConfig = inputProcessingConfig;
         this.activitySelection = activitySelection;
         this.dataBundle = bundle;
         advanceStage();
@@ -215,10 +222,6 @@ public class SPECppController {
 
     public InputDataBundle getDataBundle() {
         return dataBundle;
-    }
-
-    public PreProcessingParameters getPreProcessingParameters() {
-        return preProcessingParameters;
     }
 
     public Pair<Set<Activity>> getActivitySelection() {

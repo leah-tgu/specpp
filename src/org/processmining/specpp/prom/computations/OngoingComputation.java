@@ -24,6 +24,10 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
         publish(new ComputationStarted(start));
     }
 
+    public void markStarted() {
+        setStart(LocalDateTime.now());
+    }
+
     public LocalDateTime getEnd() {
         return end;
     }
@@ -32,6 +36,10 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
         assert this.end == null;
         this.end = end;
         publish(new ComputationEnded(end));
+    }
+
+    public void markEnded() {
+        setEnd(LocalDateTime.now());
     }
 
     public Duration getTimeLimit() {
@@ -77,8 +85,16 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
         this.cancellationCallback = cancellationCallback;
     }
 
+    public boolean hasStarted() {
+        return start != null;
+    }
+
     public boolean hasEnded() {
         return end != null;
+    }
+
+    public boolean hasTimeLimit() {
+        return timeLimit != null;
     }
 
     public boolean isRunning() {
@@ -90,6 +106,11 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
     }
 
     public boolean hasTerminatedSuccessfully() {
-        return hasEnded() && !forciblyCancelled;
+        return hasStarted() && hasEnded() && !forciblyCancelled;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("OngoingComputation{Started: %s, Finished: %s, Duration: %s/ Limit: %s, Cancelled: %s%s}", getStart() != null ? getStart() : "n/a", getEnd() != null ? getEnd() : "n/a", hasEnded() ? calculateRuntime() : "n/a", hasTimeLimit() ? getTimeLimit() : "n/a", isCancelled(), gracefullyCancelled ? " (gracefully)" : "");
     }
 }

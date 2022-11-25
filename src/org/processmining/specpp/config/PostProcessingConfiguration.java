@@ -76,6 +76,7 @@ public class PostProcessingConfiguration<R extends Result, F extends Result> ext
             return new PostProcessingConfiguration<>(gcr, first, last, list);
         }
 
+
     }
 
 }

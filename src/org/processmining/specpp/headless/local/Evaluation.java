@@ -1,17 +1,18 @@
 package org.processmining.specpp.headless.local;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.deckfour.xes.classification.XEventNameClassifier;
-import org.processmining.specpp.base.AdvancedComposition;
 import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
-import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
-import org.processmining.specpp.composition.StatefulPlaceComposition;
-import org.processmining.specpp.composition.composers.PlaceComposerWithCIPR;
-import org.processmining.specpp.composition.composers.PlaceFitnessFilter;
-import org.processmining.specpp.config.*;
-import org.processmining.specpp.config.parameters.*;
+import org.processmining.specpp.componenting.traits.ProvidesParameters;
+import org.processmining.specpp.composition.BasePlaceComposition;
+import org.processmining.specpp.config.parameters.ExecutionParameters;
+import org.processmining.specpp.config.parameters.OutputPathParameters;
+import org.processmining.specpp.config.parameters.ParameterProvider;
 import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;
@@ -19,71 +20,107 @@ import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.petri.Transition;
-import org.processmining.specpp.datastructures.tree.base.impls.EnumeratingTree;
-import org.processmining.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
-import org.processmining.specpp.datastructures.tree.heuristic.TreeNodeScore;
-import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
-import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
-import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
-import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
-import org.processmining.specpp.evaluation.heuristics.DirectlyFollowsHeuristic;
-import org.processmining.specpp.evaluation.heuristics.EventuallyFollowsTreeHeuristic;
-import org.processmining.specpp.evaluation.implicitness.LPBasedImplicitnessCalculator;
-import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
-import org.processmining.specpp.orchestra.PreProcessingParameters;
-import org.processmining.specpp.orchestra.SPECppOperations;
-import org.processmining.specpp.postprocessing.LPBasedImplicitnessPostProcessing;
-import org.processmining.specpp.postprocessing.ProMConverter;
-import org.processmining.specpp.postprocessing.ReplayBasedImplicitnessPostProcessing;
-import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
-import org.processmining.specpp.preprocessing.InputData;
+import org.processmining.specpp.datastructures.util.ImmutableTuple2;
+import org.processmining.specpp.datastructures.util.Tuple2;
+import org.processmining.specpp.orchestra.*;
 import org.processmining.specpp.preprocessing.InputDataBundle;
-import org.processmining.specpp.preprocessing.orderings.AverageFirstOccurrenceIndex;
-import org.processmining.specpp.prom.mvc.config.ConfiguratorCollection;
-import org.processmining.specpp.proposal.ConstrainablePlaceProposer;
+import org.processmining.specpp.supervision.CSVWriter;
+import org.processmining.specpp.supervision.observations.Observation;
+import org.processmining.specpp.util.ConfigurationParsing;
 import org.processmining.specpp.util.FileUtils;
+import org.processmining.specpp.util.ParameterVariationsParsing;
 import org.processmining.specpp.util.PathTools;
-import org.processmining.specpp.util.PrintingUtils;
 
 import java.io.File;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class Evaluation {
 
 
     public static final String ATTEMPT_IDENTIFIER = "attempt_0";
-    public static final String OUTPUT_FOLDER = PathTools.join("evaluation", ATTEMPT_IDENTIFIER) + PathTools.PATH_FOLDER_SEPARATOR;
-    private static final Duration PEC_TIMEOUT = Duration.ofMinutes(2);
-    private static final Duration ABSOLUTE_TIMEOUT = Duration.ofMinutes(3);
+    private static final Options CLI_OPTIONS = new Options().addOption("l", "log", true, "path to the input event log")
+                                                            .addOption("c", "config", true, "path to a json base configuration file")
+                                                            .addOption("v", "variations", true, "path to a json parameter variation configuration file")
+                                                            .addOption("o", "out", true, "path to the output directory")
+                                                            .addOption("pec_tout", "pec_timeout", true, "pec timeout in s")
+                                                            .addOption("pp_tout", "pp_timeout", true, "postprocessing timeout in s")
+                                                            .addOption("total_tout", "total_timeout", true, "total timeout in s")
+                                                            .addOption("l", "label", true, "label identifying this evaluation");
 
     public static void main(String[] args) {
-        /*
+        DefaultParser defaultParser = new DefaultParser(false);
+        CommandLine parsedArgs;
+        try {
+            parsedArgs = defaultParser.parse(CLI_OPTIONS, args);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
-        CLOptionDescriptor eventLogOption = new CLOptionDescriptor("log", CLOptionDescriptor.ARGUMENT_REQUIRED, 0, "path to the input event log");
-        CLOptionDescriptor configOption = new CLOptionDescriptor("config", CLOptionDescriptor.ARGUMENT_OPTIONAL, 1, "path to a json configuration file");
-        CLOptionDescriptor[] clOptions = {eventLogOption, configOption};
-        CLArgsParser argsParser = new CLArgsParser(args, clOptions);
-        String logPath = argsParser.getArgumentByName("log").getArgument();
-        String configPath = argsParser.getArgumentByName("config").getArgument();
+        String labelValue = parsedArgs.getOptionValue("label");
+        String attemptLabel = labelValue != null ? labelValue : ATTEMPT_IDENTIFIER;
 
-        */
+        String outValue = parsedArgs.getOptionValue("out");
+        String outFolder = outValue != null ? outValue : PathTools.join("evaluation", ATTEMPT_IDENTIFIER) + PathTools.PATH_FOLDER_SEPARATOR;
+        if (!outFolder.endsWith(PathTools.PATH_FOLDER_SEPARATOR))
+            outFolder = outValue + PathTools.PATH_FOLDER_SEPARATOR;
 
+        String logValue = parsedArgs.getOptionValue("log");
+        String logPath = logValue != null ? logValue : PrivatePaths.toAbsolutePath(PrivatePaths.ROAD_TRAFFIC_FINE_MANAGEMENT_PROCESS);
 
-        String path = PrivatePaths.toAbsolutePath(PrivatePaths.ROAD_TRAFFIC_FINE_MANAGEMENT_PROCESS);
+        SPECppConfigBundle configBundle;
+        String configValue = parsedArgs.getOptionValue("config");
+        if (configValue != null)
+            configBundle = FileUtils.readCustomJson(configValue, ConfigurationParsing.getTypeAdapter());
+        else configBundle = new CodeDefinedEvaluationConfig();
 
-        PreProcessingParameters prePar = new PreProcessingParameters(new XEventNameClassifier(), true, AverageFirstOccurrenceIndex.class);
-        InputDataBundle inputData = InputData.loadData(path, prePar).getData();
+        List<ProvidesParameters> parameterVariations;
+        String variationsValue = parsedArgs.getOptionValue("variations");
+        if (variationsValue != null)
+            parameterVariations = FileUtils.readCustomJson(variationsValue, ParameterVariationsParsing.getTypeAdapter());
+        else parameterVariations = CodeDefinedEvaluationConfig.createParameterVariations();
+        System.out.println("Parameter Variations");
+        for (ProvidesParameters pv : parameterVariations) {
+            System.out.println(pv);
+        }
+
+        Duration pecTimeout = null, ppTimeout = null, totalTimeout = null;
+        String pecValue = parsedArgs.getOptionValue("pec_timeout");
+        if (pecValue != null) pecTimeout = Duration.ofSeconds(Long.parseLong(pecValue));
+        String pptValue = parsedArgs.getOptionValue("pp_timeout");
+        if (pptValue != null) ppTimeout = Duration.ofSeconds(Long.parseLong(pptValue));
+        String ttValue = parsedArgs.getOptionValue("total_timeout");
+        if (ttValue != null) totalTimeout = Duration.ofSeconds(Long.parseLong(ttValue));
+        ExecutionParameters.ExecutionTimeLimits timeLimits = new ExecutionParameters.ExecutionTimeLimits(pecTimeout, ppTimeout, totalTimeout);
+        ExecutionParameters executionParameters = ExecutionParameters.timeouts(timeLimits);
+
+        EvaluationContext ec = new EvaluationContext();
+        ec.attempt_identifier = attemptLabel;
+        ec.logPath = logPath;
+        ec.outputFolder = outFolder;
+        ec.parameterVariations = parameterVariations;
+
+        run(configBundle, executionParameters, ec);
+    }
+
+    private static void run(SPECppConfigBundle configBundle, ExecutionParameters executionParameters, EvaluationContext ec) {
+        InputProcessingConfig inputProcessingConfig = configBundle.getInputProcessingConfig();
+        System.out.printf("Loading and preprocessing input log from \"%s\".%n", ec.logPath);
+        InputDataBundle inputData = InputDataBundle.load(ec.logPath, inputProcessingConfig);
+        System.out.println("Finished preparing input data.");
 
         int num_threads = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         int num_replications = 1;
 
-        String meta_string = "Evaluation Attempt: " + ATTEMPT_IDENTIFIER + " @" + LocalDateTime.now() + "\n" + "PEC Timeout: " + PEC_TIMEOUT + "\n" + "Absolute Timeout: " + ABSOLUTE_TIMEOUT + "\n" + "Number of Threads: " + num_threads + ", " + "Number of Replications per Config: " + num_replications + "\n" + "Log Path: " + path + "\n" + "Pre-Processing Parameters: " + prePar;
+        String meta_string = "Evaluation Attempt: " + ec.attempt_identifier + " @" + LocalDateTime.now() + "\n" + "Per run Timeouts: " + executionParameters.getTimeLimits() + "\n" + "Number of Threads: " + num_threads + ", " + "Number of Replications per Config: " + num_replications + "\n" + "Log Path: " + ec.logPath + "\n" + "Input Processing Parameters:\n\t" + inputProcessingConfig + "\n" + "Base Parameters:\n\t" + configBundle.getAlgorithmParameterConfig();
 
 
         Log log = inputData.getLog();
@@ -103,159 +140,165 @@ public class Evaluation {
 
         // save evaluation attempt strings
 
-        new File(OUTPUT_FOLDER).mkdirs();
+        File file = new File(ec.outputFolder);
+        if (!file.exists() && !file.mkdirs()) return;
 
-        FileUtils.saveString(OUTPUT_FOLDER + "meta_info.txt", meta_string);
-        FileUtils.saveString(OUTPUT_FOLDER + "input_data_info.txt", data_string);
-
+        FileUtils.saveString(ec.inOutputFolder("meta_info.txt"), meta_string);
+        FileUtils.saveString(ec.inOutputFolder("input_data_info.txt"), data_string);
 
         ScheduledExecutorService controlThreadsService = Executors.newScheduledThreadPool(1);
         ExecutorService executorService = Executors.newFixedThreadPool(num_threads - 1);
-        ExecutorCompletionService<?> completionService = new ExecutorCompletionService<>(executorService);
+        ExecutionEnvironment executionEnvironment = new ExecutionEnvironment(executorService, controlThreadsService);
 
-        List<ConfiguratorCollection> configurations = new ArrayList<>();
-        configurations.add(simplifiedConfig("run_0", 0.5));
-
-        List<Future<?>> futures = new ArrayList<>();
-
-        Object[][] results = new Object[configurations.size()][3];
-
-        for (int i = 0; i < configurations.size(); i++) {
-            int runId = i;
-            ConfiguratorCollection cfg = configurations.get(i);
-            SPECpp<Place, StatefulPlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECppOperations.setup(cfg, inputData);
-            Runnable runnable = () -> {
-                LocalDateTime start = LocalDateTime.now();
-                specpp.start();
-                specpp.executeAll();
-                specpp.stop();
-                LocalDateTime end = LocalDateTime.now();
-                Duration duration = Duration.between(start, end);
-                String parametersString = PrintingUtils.parametersToPrettyString(specpp.getGlobalComponentRepository()
-                                                                                       .parameters());
-                ProMPetrinetWrapper petrinetWrapper = specpp.getPostProcessedResult();
-                Object[] objects = {duration, parametersString, petrinetWrapper};
-                results[runId] = objects;
-                controlThreadsService.submit(() -> saveResults(OUTPUT_FOLDER, runId, objects));
-            };
-            Future<?> future = completionService.submit(runnable, null);
-            futures.add(future);
-
-            Runnable killer = () -> {
-                if (specpp.isActive()) specpp.cancelGracefully();
-            };
-            Runnable stoneColdKiller = () -> {
-                if (specpp.isActive()) specpp.stop();
-                if (!future.isDone()) future.cancel(true);
-            };
-            controlThreadsService.schedule(killer, PEC_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
-            controlThreadsService.schedule(stoneColdKiller, ABSOLUTE_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+        List<Tuple2<String, SPECppConfigBundle>> configurations = new ArrayList<>();
+        for (int i = 0; i < ec.parameterVariations.size(); i++) {
+            for (int r = 0; r < num_replications; r++) {
+                String rid = createRunIdentifier(i, r);
+                SPECppConfigBundle rc = createRunConfiguration(rid, ec, configBundle, i);
+                configurations.add(new ImmutableTuple2<>(rid, rc));
+            }
         }
 
-        for (int i = 0; i < futures.size(); i++) {
-            try {
-                completionService.take();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            executorService.shutdown();
+        ec.perfWriter = new CSVWriter<>(ec.inOutputFolder("perf.csv"), new String[]{"runIdentifier", "pec cycling", "post processing", "total"}, SPECppFinished::toCSVRow);
+
+        System.out.printf("Commencing evaluation run of %d configurations with %d replications each over %d threads.%n", configurations.size(), num_replications, num_threads);
+        List<Tuple2<String, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>>> submittedExecutions = new ArrayList<>(configurations.size());
+        for (Tuple2<String, SPECppConfigBundle> tup : configurations) {
+            String runIdentifier = tup.getT1();
+            SPECppConfigBundle cfg = tup.getT2();
+
+            SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECpp.build(cfg, inputData);
+            ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution = executionEnvironment.execute(specpp, executionParameters);
+            System.out.println("queued " + runIdentifier + ".");
+            executionEnvironment.addCompletionCallback(execution, ex -> handleCompletion(ec, runIdentifier, ex));
+            submittedExecutions.add(new ImmutableTuple2<>(runIdentifier, execution));
         }
 
         try {
-            executorService.awaitTermination(10, TimeUnit.SECONDS);
+            executionEnvironment.join();
+            ec.perfWriter.stop();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
+        List<String> successful = submittedExecutions.stream()
+                                                     .filter(t -> t.getT2().hasTerminatedSuccessfully())
+                                                     .map(Tuple2::getT1)
+                                                     .collect(Collectors.toList());
+        List<String> unsuccessful = submittedExecutions.stream()
+                                                       .filter(t -> !t.getT2().hasTerminatedSuccessfully())
+                                                       .map(Tuple2::getT1)
+                                                       .collect(Collectors.toList());
+        long count = successful.size();
+        System.out.printf("Completed evaluation. %d/%d executions terminated successfully.%n", count, configurations.size());
+        FileUtils.saveStrings(ec.inOutputFolder("successes.txt"), successful);
+        FileUtils.saveStrings(ec.inOutputFolder("failures.txt"), unsuccessful);
 
-        for (int i = 0; i < results.length; i++) {
-            if (results[i] == null) {
-                System.out.println("Run id " + i + ": did not finish.");
-            } else {
-                Object[] o = results[i];
-                System.out.println("Run id " + i + ": " + Arrays.toString(o));
-            }
+    }
+
+    private static class EvaluationContext {
+
+        public List<ProvidesParameters> parameterVariations;
+        private String attempt_identifier, outputFolder, logPath;
+        private CSVWriter<SPECppFinished> perfWriter;
+
+        public String inOutputFolder(String filename) {
+            return outputFolder + filename;
+        }
+
+    }
+
+    public static class SPECppFinished implements Observation {
+
+        private final String runIdentifier;
+        private final ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution;
+
+        public SPECppFinished(String runIdentifier, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
+            this.runIdentifier = runIdentifier;
+            this.execution = execution;
+        }
+
+        public ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> getExecution() {
+            return execution;
+        }
+
+        public String getRunIdentifier() {
+            return runIdentifier;
+        }
+
+        @Override
+        public String toString() {
+            return "SPECppFinished{" + runIdentifier + ": " + execution + '}';
+        }
+
+        public String[] toCSVRow() {
+            return new String[]{runIdentifier, Long.toString(execution.getDiscoveryComputation()
+                                                                      .calculateRuntime()
+                                                                      .toMillis()), Long.toString(execution.getPostProcessingComputation()
+                                                                                                           .calculateRuntime()
+                                                                                                           .toMillis()), Long.toString(execution.getMasterComputation()
+                                                                                                                                                .calculateRuntime()
+                                                                                                                                                .toMillis())};
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SPECppFinished that = (SPECppFinished) o;
+
+            if (!Objects.equals(runIdentifier, that.runIdentifier)) return false;
+            return Objects.equals(execution, that.execution);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = runIdentifier != null ? runIdentifier.hashCode() : 0;
+            result = 31 * result + (execution != null ? execution.hashCode() : 0);
+            return result;
         }
     }
 
-    public static void saveResults(String outputFolder, int runId, Object[] results) {
-        FileUtils.saveString(outputFolder + "_" + runId + ".txt", Arrays.toString(results));
+    public static void handleCompletion(EvaluationContext ec, String runIdentifier, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
+        SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = execution.getSPECpp();
+        if (execution.hasTerminatedSuccessfully()) {
+            ec.perfWriter.observe(new SPECppFinished(runIdentifier, execution));
+            String s = runIdentifier + " completed successfully." + "\n" + printComputationStatuses(execution);
+            System.out.println(s);
+
+            ProMPetrinetWrapper pn = specpp.getPostProcessedResult();
+            //VizUtils.showVisualization(PetrinetVisualization.of(pn));
+            FileUtils.savePetrinetToPnml(ec.outputFolder + "model_" + runIdentifier, pn);
+            FileUtils.saveString(ec.outputFolder + "parameters_" + runIdentifier + ".txt", specpp.getGlobalComponentRepository()
+                                                                                                 .parameters()
+                                                                                                 .toString());
+        } else {
+            String s = runIdentifier + " completed unsuccessfully." + "\n" + printComputationStatuses(execution);
+            System.out.println(s);
+        }
     }
 
-    public static ConfiguratorCollection simplifiedConfig(String runIdentifier, double tau) {
-        OutputPathParameters opp = new OutputPathParameters(OUTPUT_FOLDER, "", runIdentifier);
-        TauFitnessThresholds fitnessThresholds = TauFitnessThresholds.tau(tau);
-        ParameterProvider temp = new ParameterProvider() {
+    private static String printComputationStatuses(ExecutionEnvironment.SPECppExecution<?, ?, ?, ?> execution) {
+        return "Computation Statuses:" + "\n\t" + execution.getDiscoveryComputation() + "\n" + "\t" + execution.getPostProcessingComputation() + "\n\t" + execution.getMasterComputation();
+    }
+
+    public static SPECppConfigBundle createRunConfiguration(String runIdentifier, EvaluationContext ec, SPECppConfigBundle baseConfigBundle, int variationId) {
+        ProvidesParameters parameterization = ec.parameterVariations.get(variationId);
+        ParameterProvider custom = new ParameterProvider() {
             @Override
             public void init() {
-                globalComponentSystem().provide(ParameterRequirements.OUTPUT_PATH_PARAMETERS.fulfilWithStatic(opp))
-                                       .provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWithStatic(fitnessThresholds));
+                globalComponentSystem().provide(ParameterRequirements.OUTPUT_PATH_PARAMETERS.fulfilWithStatic(new OutputPathParameters(ec.outputFolder, "", "_" + runIdentifier)));
             }
         };
-
-        return createEvaluationConfig(temp);
+        AlgorithmParameterConfig parameterConfig = ConfigFactory.create(baseConfigBundle.getAlgorithmParameterConfig()
+                                                                                        .getParameters(), custom, parameterization);
+        return ConfigFactory.create(baseConfigBundle.getInputProcessingConfig(), baseConfigBundle.getComponentConfig(), parameterConfig);
     }
 
-    public static ConfiguratorCollection createEvaluationConfig(ParameterProvider changedParameters) {
-        // ** Supervision ** //
-
-        SupervisionConfiguration.Configurator svConfig = Configurators.supervisors();
-
-        // ** Evaluation ** //
-
-        EvaluatorConfiguration.Configurator evConfig = Configurators.evaluators()
-                                                                    .addEvaluatorProvider(new AbsolutelyNoFrillsFitnessEvaluator.Builder())
-                                                                    .addEvaluatorProvider(new LogHistoryMaker.Builder())
-                                                                    .addEvaluatorProvider(new LPBasedImplicitnessCalculator.Builder())
-                                                                    .addEvaluatorProvider(new DirectlyFollowsHeuristic.Builder());
-
-        HeuristicTreeConfiguration.Configurator<Place, PlaceState, PlaceNode, TreeNodeScore> htConfig = Configurators.<Place, PlaceState, PlaceNode, TreeNodeScore>heuristicTree()
-                                                                                                                     .heuristicExpansion(HeuristicTreeExpansion::new)
-                                                                                                                     .childGenerationLogic(new MonotonousPlaceGenerationLogic.Builder())
-                                                                                                                     .tree(EnumeratingTree::new);
-        // tree node heuristic
-        //htConfig.heuristic(HeuristicUtils::bfs);
-        htConfig.heuristic(new EventuallyFollowsTreeHeuristic.Builder());
-
-        // ** Proposal & Composition ** //
-
-        ProposerComposerConfiguration.Configurator<Place, AdvancedComposition<Place>, CollectionOfPlaces> pcConfig = Configurators.<Place, AdvancedComposition<Place>, CollectionOfPlaces>proposerComposer()
-                                                                                                                                  .composition(StatefulPlaceComposition::new)
-                                                                                                                                  .proposer(new ConstrainablePlaceProposer.Builder());
-
-        pcConfig.terminalComposer(PlaceComposerWithCIPR::new);
-        // without concurrent implicit place removal
-        // pcConfig.terminalComposer(PlaceAccepter::new);
-        //pcConfig.composerChain(PlaceFitnessFilter::new);
-        // pcConfig.composerChain(PlaceFitnessFilter::new, UniwiredComposer::new);
-        pcConfig.recursiveComposers(PlaceFitnessFilter::new);
-
-        // ** Post Processing ** //
-
-        PostProcessingConfiguration.Configurator<CollectionOfPlaces, CollectionOfPlaces> temp_ppConfig = Configurators.postProcessing();
-        // ppConfig.processor(new UniwiredSelfLoopAdditionPostProcessing.Builder());
-        // ppConfig.processor(SelfLoopPlaceMerger::new);
-        temp_ppConfig.addPostProcessor(new ReplayBasedImplicitnessPostProcessing.Builder())
-                     .addPostProcessor(new LPBasedImplicitnessPostProcessing.Builder())
-                     .addPostProcessor(SelfLoopPlaceMerger::new);
-        PostProcessingConfiguration.Configurator<CollectionOfPlaces, ProMPetrinetWrapper> ppConfig = temp_ppConfig.addPostProcessor(ProMConverter::new);
-
-        // ** Parameters ** //
-        //.provide(ParameterRequirements.DELTA_PARAMETERS.fulfilWithStatic(DeltaParameters.steepDelta(0.3, 3)))
-        //.provide(ParameterRequirements.DELTA_COMPOSER_PARAMETERS.fulfilWithStatic(DeltaComposerParameters.getDefault()))
-
-        ParameterProvider parProv = new ParameterProvider() {
-            @Override
-            public void init() {
-                globalComponentSystem().provide(ParameterRequirements.TAU_FITNESS_THRESHOLDS.fulfilWithStatic(TauFitnessThresholds.tau(1)))
-                                       .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(new PlaceGeneratorParameters(6, true, false, false, false)))
-                                       .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(SupervisionParameters.instrumentNone(false, false)));
-            }
-        };
-
-        if (changedParameters != null) parProv.globalComponentSystem().overridingAbsorb(changedParameters);
-
-        return new ConfiguratorCollection(svConfig, pcConfig, evConfig, htConfig, ppConfig, parProv);
+    public static String createRunIdentifier(int run_id, int replication_id) {
+        return "run_" + run_id + "_rep_" + replication_id;
     }
+
 
 }

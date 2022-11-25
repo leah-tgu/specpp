@@ -2,22 +2,23 @@ package org.processmining.specpp.headless;
 
 import org.deckfour.xes.classification.XEventNameClassifier;
 import org.processmining.specpp.base.AdvancedComposition;
+import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
-import org.processmining.specpp.componenting.system.link.CompositionComponent;
+import org.processmining.specpp.composition.BasePlaceComposition;
 import org.processmining.specpp.composition.ConstrainingPlaceCollection;
 import org.processmining.specpp.composition.StatefulPlaceComposition;
 import org.processmining.specpp.composition.composers.PlaceComposerWithCIPR;
 import org.processmining.specpp.composition.composers.PlaceFitnessFilter;
 import org.processmining.specpp.config.*;
-import org.processmining.specpp.config.parameters.ParameterProvider;
-import org.processmining.specpp.config.parameters.PlaceGeneratorParameters;
-import org.processmining.specpp.config.parameters.SupervisionParameters;
+import org.processmining.specpp.config.parameters.*;
 import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
+import org.processmining.specpp.datastructures.petri.PetrinetVisualization;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.tree.base.impls.EnumeratingTree;
 import org.processmining.specpp.datastructures.tree.heuristic.HeuristicTreeExpansion;
+import org.processmining.specpp.datastructures.tree.heuristic.HeuristicUtils;
 import org.processmining.specpp.datastructures.tree.heuristic.TreeNodeScore;
 import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
@@ -26,36 +27,43 @@ import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEval
 import org.processmining.specpp.evaluation.heuristics.DirectlyFollowsHeuristic;
 import org.processmining.specpp.evaluation.heuristics.EventuallyFollowsTreeHeuristic;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
-import org.processmining.specpp.orchestra.PreProcessingParameters;
-import org.processmining.specpp.orchestra.SPECppOperations;
+import org.processmining.specpp.orchestra.*;
 import org.processmining.specpp.postprocessing.LPBasedImplicitnessPostProcessing;
 import org.processmining.specpp.postprocessing.ProMConverter;
 import org.processmining.specpp.postprocessing.ReplayBasedImplicitnessPostProcessing;
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
-import org.processmining.specpp.preprocessing.InputData;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.preprocessing.orderings.AverageTraceOccurrence;
-import org.processmining.specpp.prom.mvc.config.ConfiguratorCollection;
 import org.processmining.specpp.proposal.ConstrainablePlaceProposer;
 import org.processmining.specpp.supervision.supervisors.AltEventCountsSupervisor;
 import org.processmining.specpp.supervision.supervisors.BaseSupervisor;
 import org.processmining.specpp.supervision.supervisors.PerformanceSupervisor;
 import org.processmining.specpp.supervision.supervisors.TerminalSupervisor;
 import org.processmining.specpp.util.PublicPaths;
+import org.processmining.specpp.util.VizUtils;
 
 public class CodeDefinedConfigurationSample {
 
     public static void main(String[] args) {
         String path = PublicPaths.SAMPLE_EVENTLOG_2;
-        //PreProcessingParameters prePar = PreProcessingParameters.getDefault();
-        PreProcessingParameters prePar = new PreProcessingParameters(new XEventNameClassifier(), true, AverageTraceOccurrence.class);
-        InputDataBundle data = InputData.loadData(path, prePar).getData();
-        ConfiguratorCollection configuration = CodeDefinedConfigurationSample.createConfiguration();
-        SPECppOperations.configureAndExecute(configuration, data, false);
+        SPECppConfigBundle cfg = createConfiguration();
+        InputDataBundle data = InputDataBundle.load(path, cfg.getInputProcessingConfig());
+        try (ExecutionEnvironment ee = new ExecutionEnvironment()) {
+            ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution = ee.execute(SPECpp.build(cfg, data), ExecutionParameters.noTimeouts());
+            ee.addCompletionCallback(execution, ex -> {
+                ProMPetrinetWrapper petrinetWrapper = execution.getSPECpp().getPostProcessedResult();
+                VizUtils.showVisualization(PetrinetVisualization.of(petrinetWrapper));
+            });
+        } catch (InterruptedException ignored) {
+        }
+    }
+
+    public static SPECppConfigBundle createConfiguration() {
+        return ConfigFactory.create(new PreProcessingParameters(new XEventNameClassifier(), true), new DataExtractionParameters(AverageTraceOccurrence.class), createComponentConfiguration(), new DefaultParameters(), createSpecificParameters());
     }
 
 
-    public static ConfiguratorCollection createConfiguration() {
+    public static ComponentConfig createComponentConfiguration() {
         // ** Supervision ** //
 
         SupervisionConfiguration.Configurator svConfig = Configurators.supervisors().addSupervisor(BaseSupervisor::new);
@@ -106,17 +114,21 @@ public class CodeDefinedConfigurationSample {
 
         // ** Parameters ** //
 
-        ParameterProvider parProv = new ParameterProvider() {
+
+        return new ComponentConfigImpl(svConfig, pcConfig, evConfig, htConfig, ppConfig);
+    }
+
+
+    public static ParameterProvider createSpecificParameters() {
+        return new ParameterProvider() {
             @Override
             public void init() {
                 globalComponentSystem()
                         //.provide(ParameterRequirements.DELTA_PARAMETERS.fulfilWithStatic(DeltaParameters.delta(0.75)))
                         .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(new PlaceGeneratorParameters(6, true, false, false, false)))
-                        .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(SupervisionParameters.instrumentNone(false, false)));
+                        .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(SupervisionParameters.instrumentNone(true, false)));
             }
         };
-
-        return new ConfiguratorCollection(svConfig, pcConfig, evConfig, htConfig, ppConfig, parProv);
     }
 
 
