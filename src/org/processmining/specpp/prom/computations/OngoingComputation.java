@@ -69,6 +69,10 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
         return gracefullyCancelled || forciblyCancelled;
     }
 
+    public boolean isGracefullyCancelled() {
+        return gracefullyCancelled && !forciblyCancelled;
+    }
+
     public ListenableFuture<?> getComputationFuture() {
         return computationFuture;
     }
@@ -111,6 +115,6 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
 
     @Override
     public String toString() {
-        return String.format("OngoingComputation{Started: %s, Finished: %s, Duration: %s/ Limit: %s, Cancelled: %s%s}", getStart() != null ? getStart() : "n/a", getEnd() != null ? getEnd() : "n/a", hasEnded() ? calculateRuntime() : "n/a", hasTimeLimit() ? getTimeLimit() : "n/a", isCancelled(), gracefullyCancelled ? " (gracefully)" : "");
+        return String.format("OngoingComputation{Started: %s, Finished: %s, Duration: %s/ Limit: %s, Cancelled: %s%s}", getStart() != null ? getStart() : "n/a", getEnd() != null ? getEnd() : "n/a", hasEnded() ? calculateRuntime() : "n/a", hasTimeLimit() ? getTimeLimit() : "n/a", isCancelled(), isGracefullyCancelled() ? " (gracefully)" : "");
     }
 }

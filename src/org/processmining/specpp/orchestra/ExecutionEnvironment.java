@@ -2,6 +2,7 @@ package org.processmining.specpp.orchestra;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import org.apache.commons.lang3.ThreadUtils;
 import org.processmining.specpp.base.Candidate;
 import org.processmining.specpp.base.Result;
 import org.processmining.specpp.base.impls.SPECpp;
@@ -19,8 +20,12 @@ import java.util.function.Consumer;
 
 public class ExecutionEnvironment implements Joinable, AutoCloseable {
 
-    private final ExecutorService executorService;
+    private final ScheduledExecutorService timeoutExecutorService;
+    private final ExecutorService managerExecutorService, workerExecutorService, callbackExecutorService;
+    private final List<ListenableFuture<?>> monitoredFutures;
+    private final List<ListenableFuture<?>> monitoredCallbackFutures;
     private final int MAX_TERMINATION_WAIT = 10;
+    private static final int CALLBACK_TIMEOUT = 5;
 
 
     @Override
@@ -32,9 +37,22 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
                 throw new RuntimeException(e);
             }
         }
-        executorService.shutdown();
-        controlThreadService.shutdown();
-        executorService.awaitTermination(MAX_TERMINATION_WAIT, TimeUnit.SECONDS);
+        workerExecutorService.shutdown();
+        managerExecutorService.shutdown();
+        timeoutExecutorService.shutdownNow();
+        for (ListenableFuture<?> f : monitoredCallbackFutures) {
+            try {
+                f.get(CALLBACK_TIMEOUT, TimeUnit.SECONDS);
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            } catch (TimeoutException e) {
+                System.out.println("callback execution timed out");
+            }
+        }
+        callbackExecutorService.shutdown();
+        managerExecutorService.awaitTermination(MAX_TERMINATION_WAIT, TimeUnit.SECONDS);
+        timeoutExecutorService.awaitTermination(MAX_TERMINATION_WAIT, TimeUnit.SECONDS);
+        callbackExecutorService.awaitTermination(MAX_TERMINATION_WAIT, TimeUnit.SECONDS);
     }
 
     @Override
@@ -84,26 +102,29 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
 
     }
 
-    private final ScheduledExecutorService controlThreadService;
-    private final List<ListenableFuture<?>> monitoredFutures;
 
     public ExecutionEnvironment() {
-        this(2);
+        this(3);
     }
+
 
     public ExecutionEnvironment(int num_threads) {
-        this(Executors.newFixedThreadPool(Math.max(num_threads - 1, 1)), Executors.newScheduledThreadPool(1));
-    }
-
-    public ExecutionEnvironment(ExecutorService executorService, ScheduledExecutorService controlThreadService) {
-        this.executorService = executorService;
-        this.controlThreadService = controlThreadService;
+        this.managerExecutorService = Executors.newFixedThreadPool(Math.max(num_threads - 2, 1));
+        this.workerExecutorService = Executors.newFixedThreadPool(Math.max(num_threads - 2, 1));
+        this.callbackExecutorService = Executors.newSingleThreadExecutor();
         monitoredFutures = new ArrayList<>();
+        monitoredCallbackFutures = new ArrayList<>();
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
+        scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+        scheduledThreadPoolExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        scheduledThreadPoolExecutor.prestartCoreThread();
+        scheduledThreadPoolExecutor.setMaximumPoolSize(num_threads - 2);
+        timeoutExecutorService = scheduledThreadPoolExecutor;
     }
 
     public static <C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> SPECppExecution<C, I, R, F> oneshotExecution(SPECpp<C, I, R, F> specpp, ExecutionParameters executionParameters) {
         SPECppExecution<C, I, R, F> execution;
-        try (ExecutionEnvironment ee = new ExecutionEnvironment(2)) {
+        try (ExecutionEnvironment ee = new ExecutionEnvironment(3)) {
             execution = ee.execute(specpp, executionParameters);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -113,8 +134,8 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
 
     public <C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> ListenableFuture<?> addCompletionCallback(SPECppExecution<C, I, R, F> execution, Consumer<SPECppExecution<C, I, R, F>> callback) {
         ListenableFutureTask<?> futureTask = ListenableFutureTask.create(() -> callback.accept(execution), null);
-
-        execution.getMasterComputation().getComputationFuture().addListener(futureTask, controlThreadService);
+        execution.getMasterComputation().getComputationFuture().addListener(futureTask, callbackExecutorService);
+        monitoredCallbackFutures.add(futureTask);
         return futureTask;
     }
 
@@ -147,6 +168,7 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
         oc.setTimeLimit(timeLimits.getDiscoveryTimeLimit());
         osc.setTimeLimit(timeLimits.getPostProcessingTimeLimit());
         masterComputation.setTimeLimit(timeLimits.getTotalTimeLimit());
+
         ListenableFutureTask<R> discoveryFuture = ListenableFutureTask.create(specpp::executeDiscovery);
         oc.setComputationFuture(discoveryFuture);
         ListenableFutureTask<F> postProcessingFuture = ListenableFutureTask.create(specpp::executePostProcessing);
@@ -155,36 +177,45 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
         ListenableFutureTask<Boolean> task = ListenableFutureTask.create(() -> {
             ScheduledFuture<?> totalCancellationFuture = null;
             if (timeLimits.hasTotalTimeLimit())
-                totalCancellationFuture = controlThreadService.schedule(totalCanceller, timeLimits.getTotalTimeLimit()
-                                                                                                  .toMillis(), TimeUnit.MILLISECONDS);
+                totalCancellationFuture = timeoutExecutorService.schedule(totalCanceller, timeLimits.getTotalTimeLimit()
+                                                                                                    .toMillis(), TimeUnit.MILLISECONDS);
 
             masterComputation.markStarted();
             oc.markStarted();
             specpp.start();
 
+            ScheduledFuture<?> discoveryCancellationFuture = null;
             try {
+                workerExecutorService.execute(discoveryFuture);
 
-                ScheduledFuture<?> discoveryCancellationFuture = null;
                 if (timeLimits.hasDiscoveryTimeLimit())
-                    discoveryCancellationFuture = controlThreadService.schedule(discoveryCanceller, timeLimits.getDiscoveryTimeLimit()
-                                                                                                              .toMillis(), TimeUnit.MILLISECONDS);
+                    discoveryCancellationFuture = timeoutExecutorService.schedule(discoveryCanceller, timeLimits.getDiscoveryTimeLimit()
+                                                                                                                .toMillis(), TimeUnit.MILLISECONDS);
 
-                discoveryFuture.run();
-                discoveryFuture.get();
+                if (timeLimits.hasTotalTimeLimit())
+                    discoveryFuture.get(timeLimits.getTotalTimeLimit().toMillis(), TimeUnit.MILLISECONDS);
+                else discoveryFuture.get();
 
                 oc.markEnded();
-                if (discoveryCancellationFuture != null) discoveryCancellationFuture.cancel(true);
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
                 specpp.stop();
                 oc.markForciblyCancelled();
                 oc.markEnded();
-                postProcessingFuture.cancel(true);
+                postProcessingFuture.cancel(false);
+            } finally {
+                if (discoveryCancellationFuture != null) discoveryCancellationFuture.cancel(true);
             }
 
             osc.markStarted();
-            try {
 
-                postProcessingFuture.run();
+            ScheduledFuture<?> postProcessingCancellationFuture = null;
+            try {
+                workerExecutorService.execute(postProcessingFuture);
+
+                if (timeLimits.hasPostProcessingTimeLimit())
+                    postProcessingCancellationFuture = timeoutExecutorService.schedule(postProcessingCanceller, timeLimits.getPostProcessingTimeLimit()
+                                                                                                                          .toMillis(), TimeUnit.MILLISECONDS);
+
                 if (timeLimits.hasPostProcessingTimeLimit())
                     postProcessingFuture.get(timeLimits.getPostProcessingTimeLimit().toMillis(), TimeUnit.MILLISECONDS);
                 else postProcessingFuture.get();
@@ -192,12 +223,13 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
                 osc.markEnded();
                 specpp.stop();
 
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            } catch (ExecutionException | InterruptedException | TimeoutException | CancellationException e) {
                 osc.markForciblyCancelled();
                 osc.markEnded();
                 specpp.stop();
                 masterComputation.markForciblyCancelled();
             } finally {
+                if (postProcessingCancellationFuture != null) postProcessingCancellationFuture.cancel(true);
                 if (totalCancellationFuture != null) totalCancellationFuture.cancel(true);
             }
 
@@ -207,7 +239,7 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
         });
         masterComputation.setComputationFuture(task);
 
-        executorService.submit(task);
+        managerExecutorService.execute(task);
         monitoredFutures.add(task);
 
         return execution;

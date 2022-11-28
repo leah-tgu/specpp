@@ -24,7 +24,6 @@ public class CSVWriter<O extends Observation> implements AsyncObserver<O>, Buffe
         buffer = new ConcurrentBuffer<>();
         csvWriter = new com.opencsv.CSVWriter(FileUtils.createOutputFileWriter(filePath), ';', '"', '\\', "\n");
         csvWriter.writeNext(columnLabels);
-
     }
 
     private void handleObservation(O observation) {

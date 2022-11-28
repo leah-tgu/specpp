@@ -37,9 +37,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -54,7 +51,8 @@ public class Evaluation {
                                                             .addOption("pec_tout", "pec_timeout", true, "pec timeout in s")
                                                             .addOption("pp_tout", "pp_timeout", true, "postprocessing timeout in s")
                                                             .addOption("total_tout", "total_timeout", true, "total timeout in s")
-                                                            .addOption("l", "label", true, "label identifying this evaluation");
+                                                            .addOption("lb", "label", true, "label identifying this evaluation")
+                                                            .addOption("nt", "num_threads", true, "targeted number of threads");
 
     public static void main(String[] args) {
         DefaultParser defaultParser = new DefaultParser(false);
@@ -67,6 +65,10 @@ public class Evaluation {
 
         String labelValue = parsedArgs.getOptionValue("label");
         String attemptLabel = labelValue != null ? labelValue : ATTEMPT_IDENTIFIER;
+
+        String num_threadsValue = parsedArgs.getOptionValue("num_threads");
+        int num_threads = num_threadsValue != null ? Integer.parseInt(num_threadsValue) : Math.max(1, Runtime.getRuntime()
+                                                                                                             .availableProcessors() - 1);
 
         String outValue = parsedArgs.getOptionValue("out");
         String outFolder = outValue != null ? outValue : PathTools.join("evaluation", ATTEMPT_IDENTIFIER) + PathTools.PATH_FOLDER_SEPARATOR;
@@ -104,6 +106,7 @@ public class Evaluation {
 
         EvaluationContext ec = new EvaluationContext();
         ec.attempt_identifier = attemptLabel;
+        ec.num_threads = num_threads;
         ec.logPath = logPath;
         ec.outputFolder = outFolder;
         ec.parameterVariations = parameterVariations;
@@ -117,7 +120,7 @@ public class Evaluation {
         InputDataBundle inputData = InputDataBundle.load(ec.logPath, inputProcessingConfig);
         System.out.println("Finished preparing input data.");
 
-        int num_threads = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+        int num_threads = ec.num_threads;
         int num_replications = 1;
 
         String meta_string = "Evaluation Attempt: " + ec.attempt_identifier + " @" + LocalDateTime.now() + "\n" + "Per run Timeouts: " + executionParameters.getTimeLimits() + "\n" + "Number of Threads: " + num_threads + ", " + "Number of Replications per Config: " + num_replications + "\n" + "Log Path: " + ec.logPath + "\n" + "Input Processing Parameters:\n\t" + inputProcessingConfig + "\n" + "Base Parameters:\n\t" + configBundle.getAlgorithmParameterConfig();
@@ -146,9 +149,7 @@ public class Evaluation {
         FileUtils.saveString(ec.inOutputFolder("meta_info.txt"), meta_string);
         FileUtils.saveString(ec.inOutputFolder("input_data_info.txt"), data_string);
 
-        ScheduledExecutorService controlThreadsService = Executors.newScheduledThreadPool(1);
-        ExecutorService executorService = Executors.newFixedThreadPool(num_threads - 1);
-        ExecutionEnvironment executionEnvironment = new ExecutionEnvironment(executorService, controlThreadsService);
+        ExecutionEnvironment executionEnvironment = new ExecutionEnvironment(num_threads);
 
         List<Tuple2<String, SPECppConfigBundle>> configurations = new ArrayList<>();
         for (int i = 0; i < ec.parameterVariations.size(); i++) {
@@ -159,7 +160,7 @@ public class Evaluation {
             }
         }
 
-        ec.perfWriter = new CSVWriter<>(ec.inOutputFolder("perf.csv"), new String[]{"runIdentifier", "pec cycling", "post processing", "total"}, SPECppFinished::toCSVRow);
+        ec.perfWriter = new CSVWriter<>(ec.inOutputFolder("perf.csv"), SPECppFinished.COLUMN_NAMES, SPECppFinished::toCSVRow);
 
         System.out.printf("Commencing evaluation run of %d configurations with %d replications each over %d threads.%n", configurations.size(), num_replications, num_threads);
         List<Tuple2<String, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>>> submittedExecutions = new ArrayList<>(configurations.size());
@@ -199,6 +200,7 @@ public class Evaluation {
     private static class EvaluationContext {
 
         public List<ProvidesParameters> parameterVariations;
+        public int num_threads;
         private String attempt_identifier, outputFolder, logPath;
         private CSVWriter<SPECppFinished> perfWriter;
 
@@ -209,6 +211,8 @@ public class Evaluation {
     }
 
     public static class SPECppFinished implements Observation {
+
+        public static final String[] COLUMN_NAMES = new String[]{"run identifier", "started", "completed", "pec cycling [ms]", "post processing [ms]", "total [ms]", "was cancelled?"};
 
         private final String runIdentifier;
         private final ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution;
@@ -232,13 +236,15 @@ public class Evaluation {
         }
 
         public String[] toCSVRow() {
-            return new String[]{runIdentifier, Long.toString(execution.getDiscoveryComputation()
-                                                                      .calculateRuntime()
-                                                                      .toMillis()), Long.toString(execution.getPostProcessingComputation()
-                                                                                                           .calculateRuntime()
-                                                                                                           .toMillis()), Long.toString(execution.getMasterComputation()
-                                                                                                                                                .calculateRuntime()
-                                                                                                                                                .toMillis())};
+            return new String[]{runIdentifier, execution.getMasterComputation()
+                                                        .getStart().toString(), execution.getMasterComputation()
+                                                                                         .getEnd().toString(), Long.toString(execution.getDiscoveryComputation()
+                                                                                                                                      .calculateRuntime()
+                                                                                                                                      .toMillis()), Long.toString(execution.getPostProcessingComputation()
+                                                                                                                                                                           .calculateRuntime()
+                                                                                                                                                                           .toMillis()), Long.toString(execution.getMasterComputation()
+                                                                                                                                                                                                                .calculateRuntime()
+                                                                                                                                                                                                                .toMillis()), Boolean.toString(execution.hasTerminatedSuccessfully())};
         }
 
         @Override
@@ -262,17 +268,19 @@ public class Evaluation {
 
     public static void handleCompletion(EvaluationContext ec, String runIdentifier, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
         SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = execution.getSPECpp();
+        ec.perfWriter.observe(new SPECppFinished(runIdentifier, execution));
         if (execution.hasTerminatedSuccessfully()) {
-            ec.perfWriter.observe(new SPECppFinished(runIdentifier, execution));
             String s = runIdentifier + " completed successfully." + "\n" + printComputationStatuses(execution);
             System.out.println(s);
 
             ProMPetrinetWrapper pn = specpp.getPostProcessedResult();
             //VizUtils.showVisualization(PetrinetVisualization.of(pn));
+            /*
             FileUtils.savePetrinetToPnml(ec.outputFolder + "model_" + runIdentifier, pn);
             FileUtils.saveString(ec.outputFolder + "parameters_" + runIdentifier + ".txt", specpp.getGlobalComponentRepository()
                                                                                                  .parameters()
                                                                                                  .toString());
+        */
         } else {
             String s = runIdentifier + " completed unsuccessfully." + "\n" + printComputationStatuses(execution);
             System.out.println(s);
@@ -280,7 +288,7 @@ public class Evaluation {
     }
 
     private static String printComputationStatuses(ExecutionEnvironment.SPECppExecution<?, ?, ?, ?> execution) {
-        return "Computation Statuses:" + "\n\t" + execution.getDiscoveryComputation() + "\n" + "\t" + execution.getPostProcessingComputation() + "\n\t" + execution.getMasterComputation();
+        return "Computation Statuses:" + "\n\t" + "PEC-cycling" + execution.getDiscoveryComputation() + "\n" + "\t" + "Post Processing: " + execution.getPostProcessingComputation() + "\n\t" + "Overall: " + execution.getMasterComputation();
     }
 
     public static SPECppConfigBundle createRunConfiguration(String runIdentifier, EvaluationContext ec, SPECppConfigBundle baseConfigBundle, int variationId) {
