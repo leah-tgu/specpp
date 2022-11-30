@@ -9,6 +9,7 @@ import org.processmining.specpp.composition.ConstrainingPlaceCollection;
 import org.processmining.specpp.composition.LightweightPlaceComposition;
 import org.processmining.specpp.composition.StatefulPlaceComposition;
 import org.processmining.specpp.composition.composers.*;
+import org.processmining.specpp.config.InputProcessingConfig;
 import org.processmining.specpp.config.components.*;
 import org.processmining.specpp.config.parameters.*;
 import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
@@ -48,7 +49,7 @@ public class ConfigurationController extends AbstractStageController {
         super(parentController);
     }
 
-    public static SPECppConfigBundle convertToFullConfig(ProMConfig pc) {
+    public static SPECppConfigBundle convertToFullConfig(InputProcessingConfig inputProcessingConfig, ProMConfig pc) {
         // BUILDING CONFIGURATORS
 
         // ** SUPERVISION ** //
@@ -166,7 +167,7 @@ public class ConfigurationController extends AbstractStageController {
 
 
         ComponentConfigImpl cc = new ComponentConfigImpl(svCfg, pcCfg, evCfg, etCfg, ppCfg);
-        return ConfigFactory.create(null, cc, ConfigFactory.create(pp));
+        return ConfigFactory.create(inputProcessingConfig, cc, ConfigFactory.create(pp));
     }
 
     @Override
@@ -180,7 +181,7 @@ public class ConfigurationController extends AbstractStageController {
     }
 
     public void basicConfigCompleted(ProMConfig basicConfig) {
-        SPECppConfigBundle fullConfig = convertToFullConfig(basicConfig);
+        SPECppConfigBundle fullConfig = convertToFullConfig(parentController.getInputProcessingConfig(), basicConfig);
         parentController.configCompleted(basicConfig, fullConfig);
     }
 

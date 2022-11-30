@@ -6,13 +6,11 @@ import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.specpp.base.Result;
 import org.processmining.specpp.componenting.data.DataSourceCollection;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
-import org.processmining.specpp.config.DataExtractionParameters;
 import org.processmining.specpp.config.InputProcessingConfig;
+import org.processmining.specpp.config.SPECppConfigBundle;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.util.Pair;
-import org.processmining.specpp.config.PreProcessingParameters;
-import org.processmining.specpp.config.SPECppConfigBundle;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.prom.mvc.config.ConfigurationController;
 import org.processmining.specpp.prom.mvc.config.ProMConfig;
@@ -70,8 +68,7 @@ public class SPECppController {
            .provide(staticDataSource("last_prom_petrinet_result", ProMPetrinetWrapper.class, result))
            .provide(staticDataSource("last_intermediate_post_processing_results", JavaTypingUtils.castClass(List.class), intermediatePostProcessingResults))
            .provide(staticDataSource("last_activity_selection", JavaTypingUtils.castClass(Pair.class), activitySelection))
-           .provide(staticDataSource("last_pre_processing_parameters", PreProcessingParameters.class, inputProcessingConfig.getPreProcessingParameters()))
-           .provide(staticDataSource("last_data_extraction_parameters", DataExtractionParameters.class, inputProcessingConfig.getDataExtractionParameters()));
+           .provide(staticDataSource("last_input_processing_parameters", InputProcessingConfig.class, inputProcessingConfig));
         if (loadedProMSPECppConfig != null)
             gcr.provide(staticDataSource("loaded_prom_specpp_config", ProMSPECppConfig.class, loadedProMSPECppConfig))
                .provide(dataSource("loaded_prom_config", ProMConfig.class, loadedProMSPECppConfig::getProMConfig))

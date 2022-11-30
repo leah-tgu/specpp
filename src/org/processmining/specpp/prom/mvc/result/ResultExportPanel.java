@@ -41,14 +41,14 @@ public class ResultExportPanel extends AbstractStagePanel<ResultController> {
 
     private void saveProMPetri() {
         ProMPetrinetWrapper result = controller.getResult();
-        context.getProvidedObjectManager().createProvidedObject("Petrinet", result.getNet(), Petrinet.class, context);
+        Petrinet net = result.getNet();
+        ProvidedObjectHelper.publish(context, "Petrinet", net, Petrinet.class, true);
         context.getConnectionManager().addConnection(new InitialMarkingConnection(result, result.getInitialMarking()));
         context.getConnectionManager()
                .addConnection(new FinalMarkingConnection(result, result.getFinalMarkings()
                                                                        .stream()
                                                                        .findFirst()
                                                                        .orElse(new Marking())));
-        ProvidedObjectHelper.setFavorite(context, result);
         saveProMPetriButton.setEnabled(false);
     }
 
@@ -56,15 +56,13 @@ public class ResultExportPanel extends AbstractStagePanel<ResultController> {
         ProMConfig proMConfig = controller.getParentController().getProMConfig();
         InputProcessingConfig inputProcessingConfig = controller.getParentController().getInputProcessingConfig();
         ProMSPECppConfig config = new ProMSPECppConfig(inputProcessingConfig, proMConfig);
-        context.getProvidedObjectManager().createProvidedObject("Config", config, ProMSPECppConfig.class, context);
-        ProvidedObjectHelper.setFavorite(context, config);
+        ProvidedObjectHelper.publish(context, "SPECpp Config", config, ProMSPECppConfig.class, true);
         saveConfigButton.setEnabled(false);
     }
 
     private void saveEvalLog() {
         XLog evalLog = controller.getEvalLog();
-        context.getProvidedObjectManager().createProvidedObject("Evaluation Log", evalLog, XLog.class, context);
-        ProvidedObjectHelper.setFavorite(context, evalLog);
+        ProvidedObjectHelper.publish(context, "Evaluation Log", evalLog, XLog.class, true);
         saveEvalLogButton.setEnabled(false);
     }
 

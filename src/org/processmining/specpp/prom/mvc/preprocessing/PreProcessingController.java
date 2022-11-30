@@ -91,6 +91,7 @@ public class PreProcessingController extends AbstractStageController {
                                                                                                                                                                                          .getActivityOrderingStrategy());
 
                 lastDataConfig = collectedParameters;
+                lastComparators = orderings;
                 return orderings;
             }
 
