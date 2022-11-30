@@ -1,4 +1,4 @@
-package org.processmining.specpp.headless.local;
+package org.processmining.specpp.headless;
 
 import com.google.common.collect.Lists;
 import org.deckfour.xes.classification.XEventNameClassifier;

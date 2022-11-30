@@ -32,7 +32,7 @@ import org.processmining.specpp.datastructures.vectorization.VariantMarkingHisto
 import org.processmining.specpp.evaluation.fitness.AbstractBasicFitnessEvaluator;
 import org.processmining.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
-import org.processmining.specpp.headless.local.SampleData;
+import org.processmining.specpp.headless.SampleData;
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.specpp.preprocessing.*;
 import org.processmining.specpp.preprocessing.orderings.*;

@@ -1,4 +1,4 @@
-package org.processmining.specpp.headless.local;
+package org.processmining.specpp.headless;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -25,14 +25,16 @@ import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.petri.*;
 import org.processmining.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.specpp.datastructures.util.Tuple2;
+import org.processmining.specpp.headless.local.PrivatePaths;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
 import org.processmining.specpp.preprocessing.InputDataBundle;
+import org.processmining.specpp.prom.computations.OngoingComputation;
+import org.processmining.specpp.prom.computations.OngoingStagedComputation;
 import org.processmining.specpp.supervision.CSVWriter;
 import org.processmining.specpp.supervision.observations.Observation;
 import org.processmining.specpp.util.FileUtils;
 import org.processmining.specpp.util.PathTools;
 import org.processmining.specpp.util.VizUtils;
-import sun.misc.GC;
 
 import java.io.File;
 import java.time.Duration;
@@ -200,6 +202,8 @@ public class Evaluation {
         FileUtils.saveStrings(ec.inOutputFolder("successes.txt"), successful);
         FileUtils.saveStrings(ec.inOutputFolder("failures.txt"), unsuccessful);
 
+        System.exit(0);
+
     }
 
     private static class EvaluationContext {
@@ -241,15 +245,24 @@ public class Evaluation {
         }
 
         public String[] toCSVRow() {
-            return new String[]{runIdentifier, execution.getMasterComputation()
-                                                        .getStart().toString(), execution.getMasterComputation()
-                                                                                         .getEnd().toString(), Long.toString(execution.getDiscoveryComputation()
-                                                                                                                                      .calculateRuntime()
-                                                                                                                                      .toMillis()), Long.toString(execution.getPostProcessingComputation()
-                                                                                                                                                                           .calculateRuntime()
-                                                                                                                                                                           .toMillis()), Long.toString(execution.getMasterComputation()
-                                                                                                                                                                                                                .calculateRuntime()
-                                                                                                                                                                                                                .toMillis()), Boolean.toString(execution.hasTerminatedSuccessfully())};
+            OngoingComputation mc = execution.getMasterComputation();
+            OngoingComputation dc = execution.getDiscoveryComputation();
+            OngoingStagedComputation ppc = execution.getPostProcessingComputation();
+            return new String[]{runIdentifier,
+                    Objects.toString(mc
+                            .getStart()),
+                    Objects.toString(mc
+                            .getEnd()),
+                    dc.hasTerminated() ? Long.toString(dc
+                            .calculateRuntime()
+                            .toMillis()) : "dnf",
+                    ppc.hasTerminated() ? Long.toString(ppc
+                            .calculateRuntime()
+                            .toMillis()) : "dnf",
+                    mc.hasTerminated() ? Long.toString(mc
+                            .calculateRuntime()
+                            .toMillis()) : "dnf",
+                    Boolean.toString(execution.hasTerminatedSuccessfully())};
         }
 
         @Override

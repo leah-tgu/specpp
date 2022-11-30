@@ -1,4 +1,4 @@
-package org.processmining.specpp.headless.local;
+package org.processmining.specpp.headless;
 
 import org.processmining.specpp.config.ConfigFactory;
 import org.processmining.specpp.config.DataExtractionParameters;

@@ -198,7 +198,7 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
 
             ScheduledFuture<?> discoveryCancellationFuture = null;
             try {
-                workerExecutorService.execute(discoveryFuture);
+                workerExecutorService.submit(discoveryFuture);
 
                 if (discoveryComputation.getTimeLimit() != null)
                     discoveryCancellationFuture = timeoutExecutorService.schedule(discoveryCanceller, discoveryComputation.getTimeLimit()
@@ -223,7 +223,7 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
             postProcessingComputation.markStarted();
 
             try {
-                workerExecutorService.execute(postProcessingFuture);
+                workerExecutorService.submit(postProcessingFuture);
 
                 Duration ppLimit = postProcessingComputation.getTimeLimit();
                 Duration totalRemaining = masterComputation.calculateRemainingTime();

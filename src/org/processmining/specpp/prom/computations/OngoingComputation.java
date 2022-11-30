@@ -127,4 +127,7 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
         return deadline;
     }
 
+    public boolean hasTerminated() {
+        return hasStarted() && hasEnded();
+    }
 }
