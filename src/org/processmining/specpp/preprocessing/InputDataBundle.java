@@ -2,7 +2,7 @@ package org.processmining.specpp.preprocessing;
 
 import org.apache.commons.collections4.BidiMap;
 import org.deckfour.xes.model.XLog;
-import org.processmining.specpp.orchestra.InputProcessingConfig;
+import org.processmining.specpp.config.InputProcessingConfig;
 import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;

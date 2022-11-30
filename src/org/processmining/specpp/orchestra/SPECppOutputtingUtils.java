@@ -6,6 +6,7 @@ import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.data.DataSourceCollection;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.system.GlobalComponentRepository;
+import org.processmining.specpp.config.SPECppConfigBundle;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;

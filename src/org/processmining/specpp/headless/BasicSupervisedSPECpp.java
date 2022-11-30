@@ -7,7 +7,7 @@ import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
-import org.processmining.specpp.orchestra.SPECppConfigBundle;
+import org.processmining.specpp.config.SPECppConfigBundle;
 import org.processmining.specpp.orchestra.SPECppOutputtingUtils;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.util.PublicPaths;

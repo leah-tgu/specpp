@@ -10,26 +10,29 @@ import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.specpp.composition.BasePlaceComposition;
+import org.processmining.specpp.config.AlgorithmParameterConfig;
+import org.processmining.specpp.config.ConfigFactory;
+import org.processmining.specpp.config.InputProcessingConfig;
+import org.processmining.specpp.config.SPECppConfigBundle;
 import org.processmining.specpp.config.parameters.ExecutionParameters;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.config.parameters.ParameterProvider;
+import org.processmining.specpp.config.parsing.ConfigurationParsing;
+import org.processmining.specpp.config.parsing.ParameterVariationsParsing;
 import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;
-import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
-import org.processmining.specpp.datastructures.petri.Place;
-import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
-import org.processmining.specpp.datastructures.petri.Transition;
+import org.processmining.specpp.datastructures.petri.*;
 import org.processmining.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.specpp.datastructures.util.Tuple2;
-import org.processmining.specpp.orchestra.*;
+import org.processmining.specpp.orchestra.ExecutionEnvironment;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.supervision.CSVWriter;
 import org.processmining.specpp.supervision.observations.Observation;
-import org.processmining.specpp.util.ConfigurationParsing;
 import org.processmining.specpp.util.FileUtils;
-import org.processmining.specpp.util.ParameterVariationsParsing;
 import org.processmining.specpp.util.PathTools;
+import org.processmining.specpp.util.VizUtils;
+import sun.misc.GC;
 
 import java.io.File;
 import java.time.Duration;
@@ -73,7 +76,7 @@ public class Evaluation {
             outFolder = outValue + PathTools.PATH_FOLDER_SEPARATOR;
 
         String labelValue = parsedArgs.getOptionValue("label");
-        if(labelValue != null) outFolder += labelValue + PathTools.PATH_FOLDER_SEPARATOR;
+        if (labelValue != null) outFolder += labelValue + PathTools.PATH_FOLDER_SEPARATOR;
         String attemptLabel = labelValue != null ? labelValue : ATTEMPT_IDENTIFIER;
 
         String logValue = parsedArgs.getOptionValue("log");
@@ -119,6 +122,7 @@ public class Evaluation {
         InputProcessingConfig inputProcessingConfig = configBundle.getInputProcessingConfig();
         System.out.printf("Loading and preprocessing input log from \"%s\".%n", ec.logPath);
         InputDataBundle inputData = InputDataBundle.load(ec.logPath, inputProcessingConfig);
+        System.gc();
         System.out.println("Finished preparing input data.");
 
         int num_threads = ec.num_threads;
@@ -163,7 +167,7 @@ public class Evaluation {
 
         ec.perfWriter = new CSVWriter<>(ec.inOutputFolder("perf.csv"), SPECppFinished.COLUMN_NAMES, SPECppFinished::toCSVRow);
 
-        System.out.printf("Commencing evaluation run of %d configurations with %d replications each over %d threads.%n", configurations.size(), num_replications, num_threads);
+        System.out.printf("Commencing evaluation run of %d configurations with %d replications each over %d worker threads @%s.%n", configurations.size(), num_replications, num_threads, LocalDateTime.now());
         List<Tuple2<String, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>>> submittedExecutions = new ArrayList<>(configurations.size());
         for (Tuple2<String, SPECppConfigBundle> tup : configurations) {
             String runIdentifier = tup.getT1();
@@ -192,7 +196,7 @@ public class Evaluation {
                                                        .map(Tuple2::getT1)
                                                        .collect(Collectors.toList());
         long count = successful.size();
-        System.out.printf("Completed evaluation. %d/%d executions terminated successfully.%n", count, configurations.size());
+        System.out.printf("Completed evaluation @%s. %d/%d executions terminated successfully.%n", LocalDateTime.now(), count, configurations.size());
         FileUtils.saveStrings(ec.inOutputFolder("successes.txt"), successful);
         FileUtils.saveStrings(ec.inOutputFolder("failures.txt"), unsuccessful);
 
@@ -213,7 +217,7 @@ public class Evaluation {
 
     public static class SPECppFinished implements Observation {
 
-        public static final String[] COLUMN_NAMES = new String[]{"run identifier", "started", "completed", "pec cycling [ms]", "post processing [ms]", "total [ms]", "was cancelled?"};
+        public static final String[] COLUMN_NAMES = new String[]{"run identifier", "started", "completed", "pec cycling [ms]", "post processing [ms]", "total [ms]", "terminated successfully?"};
 
         private final String runIdentifier;
         private final ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution;
@@ -271,25 +275,24 @@ public class Evaluation {
         SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = execution.getSPECpp();
         ec.perfWriter.observe(new SPECppFinished(runIdentifier, execution));
         if (execution.hasTerminatedSuccessfully()) {
-            String s = runIdentifier + " completed successfully." + "\n" + printComputationStatuses(execution);
+            String s = runIdentifier + " completed successfully:" + "\n" + printComputationStatuses(execution);
             System.out.println(s);
 
             ProMPetrinetWrapper pn = specpp.getPostProcessedResult();
-            //VizUtils.showVisualization(PetrinetVisualization.of(pn));
-            /*
-            FileUtils.savePetrinetToPnml(ec.outputFolder + "model_" + runIdentifier, pn);
+            VizUtils.showVisualization(PetrinetVisualization.of("Result of " + runIdentifier, pn));
+
             FileUtils.saveString(ec.outputFolder + "parameters_" + runIdentifier + ".txt", specpp.getGlobalComponentRepository()
                                                                                                  .parameters()
                                                                                                  .toString());
-        */
+            FileUtils.savePetrinetToPnml(ec.outputFolder + "model_" + runIdentifier, pn);
         } else {
-            String s = runIdentifier + " completed unsuccessfully." + "\n" + printComputationStatuses(execution);
+            String s = runIdentifier + " completed unsuccessfully:" + "\n" + printComputationStatuses(execution);
             System.out.println(s);
         }
     }
 
     private static String printComputationStatuses(ExecutionEnvironment.SPECppExecution<?, ?, ?, ?> execution) {
-        return "Computation Statuses:" + "\n\t" + "PEC-cycling" + execution.getDiscoveryComputation() + "\n" + "\t" + "Post Processing: " + execution.getPostProcessingComputation() + "\n\t" + "Overall: " + execution.getMasterComputation();
+        return "\t" + "PEC-cycling: " + execution.getDiscoveryComputation() + "\n" + "\t" + "Post Processing: " + execution.getPostProcessingComputation() + "\n\t" + "Overall: " + execution.getMasterComputation();
     }
 
     public static SPECppConfigBundle createRunConfiguration(String runIdentifier, EvaluationContext ec, SPECppConfigBundle baseConfigBundle, int variationId) {

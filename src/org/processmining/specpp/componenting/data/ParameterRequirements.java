@@ -1,7 +1,7 @@
 package org.processmining.specpp.componenting.data;
 
 import org.processmining.specpp.config.parameters.DeltaComposerParameters;
-import org.processmining.specpp.config.ExternalInitializationParameters;
+import org.processmining.specpp.config.components.ExternalInitializationParameters;
 import org.processmining.specpp.config.parameters.*;
 import org.processmining.specpp.config.parameters.ReplayComputationParameters;
 import org.processmining.specpp.evaluation.heuristics.TreeHeuristicThreshold;

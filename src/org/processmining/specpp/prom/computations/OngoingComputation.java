@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 
 public class OngoingComputation extends AbstractAsyncAwareObservable<ComputationEvent> {
 
-    private LocalDateTime start, end;
-    private Duration timeLimit;
+    private LocalDateTime start, end, deadline;
+    private Duration duration, timeLimit;
     private boolean gracefullyCancelled, forciblyCancelled;
     private ListenableFuture<?> computationFuture;
     private Runnable cancellationCallback;
@@ -106,7 +106,11 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
     }
 
     public Duration calculateRuntime() {
-        return Duration.between(start, end);
+        if (!hasStarted()) return null;
+        if (hasEnded()) {
+            duration = Duration.between(start, end);
+            return duration;
+        } else return Duration.between(start, LocalDateTime.now());
     }
 
     public boolean hasTerminatedSuccessfully() {
@@ -115,6 +119,12 @@ public class OngoingComputation extends AbstractAsyncAwareObservable<Computation
 
     @Override
     public String toString() {
-        return String.format("OngoingComputation{Started: %s, Finished: %s, Duration: %s/ Limit: %s, Cancelled: %s%s}", getStart() != null ? getStart() : "n/a", getEnd() != null ? getEnd() : "n/a", hasEnded() ? calculateRuntime() : "n/a", hasTimeLimit() ? getTimeLimit() : "n/a", isCancelled(), isGracefullyCancelled() ? " (gracefully)" : "");
+        return String.format("OngoingComputation{Started: %s, Finished: %s, Duration: %s/ Limit: %s, Cancelled: %s%s}", getStart() != null ? getStart() : "n/a", getEnd() != null ? getEnd() : "n/a", calculateRuntime(), hasTimeLimit() ? getTimeLimit() : "n/a", isCancelled(), isGracefullyCancelled() ? " (gracefully)" : "");
     }
+
+    public LocalDateTime getDeadline() {
+        if (deadline == null) deadline = start.plus(timeLimit);
+        return deadline;
+    }
+
 }

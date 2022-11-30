@@ -8,7 +8,7 @@ import org.processmining.models.connections.petrinets.behavioral.InitialMarkingC
 import org.processmining.models.graphbased.directed.petrinet.Petrinet;
 import org.processmining.models.semantics.petrinet.Marking;
 import org.processmining.plugins.utils.ProvidedObjectHelper;
-import org.processmining.specpp.orchestra.InputProcessingConfig;
+import org.processmining.specpp.config.InputProcessingConfig;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.prom.mvc.AbstractStagePanel;
 import org.processmining.specpp.prom.mvc.config.ProMConfig;

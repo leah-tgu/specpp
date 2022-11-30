@@ -1,8 +1,8 @@
 package org.processmining.specpp.headless.local;
 
-import org.processmining.specpp.orchestra.ConfigFactory;
-import org.processmining.specpp.orchestra.DataExtractionParameters;
-import org.processmining.specpp.orchestra.PreProcessingParameters;
+import org.processmining.specpp.config.ConfigFactory;
+import org.processmining.specpp.config.DataExtractionParameters;
+import org.processmining.specpp.config.PreProcessingParameters;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.util.PublicPaths;
 

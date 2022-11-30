@@ -4,7 +4,7 @@
     <module name="specpp" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="org.processmining.specpp.orchestra.presets.*" />
+        <option name="PATTERN" value="org.processmining.specpp.config.presets.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

@@ -1,6 +1,6 @@
 package org.processmining.specpp.prom.plugins;
 
-import org.processmining.specpp.orchestra.InputProcessingConfig;
+import org.processmining.specpp.config.InputProcessingConfig;
 import org.processmining.specpp.prom.mvc.config.ProMConfig;
 
 import java.util.Objects;

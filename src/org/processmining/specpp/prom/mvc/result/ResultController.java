@@ -20,7 +20,7 @@ import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.vectorization.IntVector;
 import org.processmining.specpp.datastructures.vectorization.VariantMarkingHistories;
 import org.processmining.specpp.evaluation.fitness.DetailedFitnessEvaluation;
-import org.processmining.specpp.orchestra.SPECppConfigBundle;
+import org.processmining.specpp.config.SPECppConfigBundle;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.prom.mvc.AbstractStageController;
 import org.processmining.specpp.prom.mvc.SPECppController;

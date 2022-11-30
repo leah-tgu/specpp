@@ -64,7 +64,7 @@ See below for an example configuration.
     ]
   },
   "Parameters": {
-    "base": (org.processmining.specpp.orchestra.presets)"BaseParameters",
+    "base": (org.processmining.specpp.config.presets)"BaseParameters",
     "extensions": [
       {
         "label": "placegenerator.parameters",
