@@ -63,17 +63,18 @@ public class Evaluation {
             throw new RuntimeException(e);
         }
 
-        String labelValue = parsedArgs.getOptionValue("label");
-        String attemptLabel = labelValue != null ? labelValue : ATTEMPT_IDENTIFIER;
-
         String num_threadsValue = parsedArgs.getOptionValue("num_threads");
         int num_threads = num_threadsValue != null ? Integer.parseInt(num_threadsValue) : Math.max(1, Runtime.getRuntime()
                                                                                                              .availableProcessors() - 1);
 
         String outValue = parsedArgs.getOptionValue("out");
-        String outFolder = outValue != null ? outValue : PathTools.join("evaluation", ATTEMPT_IDENTIFIER) + PathTools.PATH_FOLDER_SEPARATOR;
+        String outFolder = outValue != null ? outValue : "evaluation" + PathTools.PATH_FOLDER_SEPARATOR;
         if (!outFolder.endsWith(PathTools.PATH_FOLDER_SEPARATOR))
             outFolder = outValue + PathTools.PATH_FOLDER_SEPARATOR;
+
+        String labelValue = parsedArgs.getOptionValue("label");
+        if(labelValue != null) outFolder += labelValue + PathTools.PATH_FOLDER_SEPARATOR;
+        String attemptLabel = labelValue != null ? labelValue : ATTEMPT_IDENTIFIER;
 
         String logValue = parsedArgs.getOptionValue("log");
         String logPath = logValue != null ? logValue : PrivatePaths.toAbsolutePath(PrivatePaths.ROAD_TRAFFIC_FINE_MANAGEMENT_PROCESS);
