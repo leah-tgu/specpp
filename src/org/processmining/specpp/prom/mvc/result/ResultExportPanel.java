@@ -43,9 +43,9 @@ public class ResultExportPanel extends AbstractStagePanel<ResultController> {
         ProMPetrinetWrapper result = controller.getResult();
         Petrinet net = result.getNet();
         ProvidedObjectHelper.publish(context, "Petrinet", net, Petrinet.class, true);
-        context.getConnectionManager().addConnection(new InitialMarkingConnection(result, result.getInitialMarking()));
+        context.getConnectionManager().addConnection(new InitialMarkingConnection(net, result.getInitialMarking()));
         context.getConnectionManager()
-               .addConnection(new FinalMarkingConnection(result, result.getFinalMarkings()
+               .addConnection(new FinalMarkingConnection(net, result.getFinalMarkings()
                                                                        .stream()
                                                                        .findFirst()
                                                                        .orElse(new Marking())));

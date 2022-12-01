@@ -10,11 +10,11 @@ Provides a command line interface for batch evaluation of parameter variations.
 * `-o`/`-output` path to the desired output directory
 * `-lb`/`-label` (optional) label of this evaluation attempt (a sub folder is created in the output directory)
 * `-nt`/`-num_threads` (optional) targeted parallelism level
-* `-pec_tout`/`-pec_timeout` (optional) timeout in seconds for PEC cycling (graceful cancellation, i.e., the
+* `-pec_tout`/`-pec_timeout` (optional) timeout in seconds for PEC-cycling (graceful cancellation, i.e., the
   intermediate result is used for post-processing)
 * `-pp_tout`/`-pp_timeout` (optional) timeout in seconds for post-processing (hard cancellation, i.e., no result is
   produced)
-* `-total_tout`/`-total_timeout` (optional) timeout in seconds for an entire (hard cancellation, i.e., no result is
+* `-total_tout`/`-total_timeout` (optional) timeout in seconds for an entire run (hard cancellation, i.e., no result is
   produced)
 
 ### Configuration file format
@@ -101,13 +101,13 @@ We support two ways of going this.
 1. directly naming the implementation class
 2. naming a class that conforms to the function interface of `Supplier<'implementation we want to specify'>`
 
-When the implementation class (henceforth `I`) can be meaningfully instantiated by a no-argument constructor, we can
-simply use (1). In the background, we assign a supplier to a `newInstance()` reflection call to the given type.
+When the implementation class can be meaningfully instantiated by a no-argument constructor, we can
+simply use 1). In the background, we assign a supplier to a `newInstance()` reflection call to the given type.
 A constructed class can still use the requirement-management-system to request parameters objects or offer observables,
 etc.
 For classes which come from outside the framework, i.e. don't use the aforementioned system for parameters or required
 sub-objects, or where a stricter separation of computation logic and make-it-work-framework is intended, we may specify
-a specific builder class.
+a specific builder class. This is option 2).
 Some components implemented in the framework use this pattern with internal classes.
 See `ConstrainablePlaceProposer$Builder` as an example. `$Builder` specifies the inner class `Builder`
 of `ConstrainablePlaceProposer`.
