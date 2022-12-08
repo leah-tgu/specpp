@@ -90,7 +90,8 @@ See below for an example configuration.
 Before we go into detail on the structure and various blocks contained within it, we briefly digress into a technical
 aspect of this which is mostly relevant for developers.
 
----
+----
+
 To be more precise with "specifying an implementation", we actually intend to specify no-argument suppliers of fixed- to
 no-argument (though parameterizable via the framework's requirement-management-system) builders of the specific
 implementing class.
@@ -102,18 +103,20 @@ We support two ways of going this.
 2. naming a class that conforms to the function interface of `Supplier<'implementation we want to specify'>`
 
 When the implementation class can be meaningfully instantiated by a no-argument constructor, we can
-simply use 1). In the background, we assign a supplier to a `newInstance()` reflection call to the given type.
-A constructed class can still use the requirement-management-system to request parameters objects or offer observables,
+simply use (1). In the background, we assign a supplier to a `newInstance()` reflection call to the given type.
+A constructed class can still use the requirement-management-system to request parameter objects or offer observables,
 etc.
 For classes which come from outside the framework, i.e. don't use the aforementioned system for parameters or required
 sub-objects, or where a stricter separation of computation logic and make-it-work-framework is intended, we may specify
-a specific builder class. This is option 2).
+a specific builder class. This is option (2).
 Some components implemented in the framework use this pattern with internal classes.
 See `ConstrainablePlaceProposer$Builder` as an example. `$Builder` specifies the inner class `Builder`
 of `ConstrainablePlaceProposer`.
 The builder class has a no-argument constructor in which it requests another component configuration which it uses in
 its `get()` equivalent to construct a `ConstrainablePlaceProposer` instance.
----
+
+----
+
 The structure is divided into input processing config, algorithm component config and algorithm parameter config. We'll
 name here the programmatic equivalents for the benefit of developers.
 

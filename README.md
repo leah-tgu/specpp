@@ -7,7 +7,7 @@ An acronym for:
 - **C**omposition
 - **P**ost-**P**rocessing
 
-It is intended as a standalone (with ivy dependencies) runnable framework (see package /headless), however an interactive ProM plugin making use of this framework is included here (see package /prom).
+It is intended as a standalone (with ivy dependencies) runnable framework (see package /headless, most importantly [batch CLI info](src/org/processmining/specpp/headless/help.md)), however an interactive ProM plugin making use of this framework is included here (see package /prom).
 This piece of software provides some structure, common implementations and extensive "supervision" as well as "inter component dependency and data management" support for interested developers who want to play around with evolutions of the original [eST-Miner](http://dx.doi.org/10.1007/978-3-030-21571-2_15) by L. Mannel et al.
 
 The logical structure of the discovery approach is looping proposal, evaluation & composition, with post-processing at the end.
@@ -28,6 +28,11 @@ Particularly for the _ProMless_ execution format, visualization components such 
 3. Setup ivy facet in IDE (IvyIDEA-like plugin installation may be required)
    1. Mark ivysettings.xml as settings file
 4. Resolve dependencies
-5. Run
-   1. If using IntelliJ, you can use the configurations in specpp/.run/
-   2. If using Eclipse, you can alternatively use the ProM .launch files
+5. Run entry points
+   1. You can use the configurations in specpp/.run/ (IntelliJ) and the  ProM .launch files (Eclipse(r)) 
+   2. ProMPackageManager has to be run first to resolve ProM dependencies
+   3. ProM launches this local ProM instance with the plugin in the package prom/
+   4. ProMLessSPECpp contains the basic 'event log in - Petri net out' command line interface
+   5. BasicSupervisedSPECpp is deprecated but provides lots of output for experimentation
+   6. CodeDefinedConfigurationSample has a hard-coded execution setup that exemplifies the code defined framework configuration options
+   7. Evaluation provides an extensive command line interface for batch execution and automatic parameter variation (see [help](src/org/processmining/specpp/headless/help.md))
