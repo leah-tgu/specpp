@@ -72,7 +72,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
      * That is, first {@see connectLocalComponentSystem} collects and requirements from the leafs to the respective proposer/composer root and continuously fulfills them on the way.
      * At the end of this step, all requirements and provisions are collected in {@code proposerLcr} and {@code composerLcr}.
      * These are then fulfilled by each other and finally fulfilled by this component.
-     * The tree structure will typically look something like this, if all implementations in this chain properly register their subcomponents
+     * The tree structure will typically look something like this, if all implementations in this chain properly register their subcomponents:
      * place proposer -> enumerating tree -> child generation logic
      * -> tree expansion strategy
      * rec. composer 1 -> .. -> rec. composer n -> terminal composer -> rec. composition 1 -> .. -> rec. composition n -> terminal composition
