@@ -12,9 +12,9 @@ import org.processmining.specpp.componenting.system.link.AbstractBaseClass;
 import org.processmining.specpp.componenting.system.link.ComposerComponent;
 import org.processmining.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.specpp.componenting.system.link.ProposerComponent;
+import org.processmining.specpp.config.SPECppConfigBundle;
 import org.processmining.specpp.config.components.Configuration;
 import org.processmining.specpp.orchestra.ExternalInitializer;
-import org.processmining.specpp.config.SPECppConfigBundle;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.supervision.Supervisor;
 import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
@@ -67,6 +67,16 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         registerSubComponent(composer);
     }
 
+    /**
+     * Connects the transitive local component systems of composer subcomponents and proposer subcomponents.
+     * That is, first {@see connectLocalComponentSystem} collects and requirements from the leafs to the respective proposer/composer root and continuously fulfills them on the way.
+     * At the end of this step, all requirements and provisions are collected in {@code proposerLcr} and {@code composerLcr}.
+     * These are then fulfilled by each other and finally fulfilled by this component.
+     * The tree structure will typically look something like this, if all implementations in this chain properly register their subcomponents
+     * place proposer -> enumerating tree -> child generation logic
+     * -> tree expansion strategy
+     * rec. composer 1 -> .. -> rec. composer n -> terminal composer -> rec. composition 1 -> .. -> rec. composition n -> terminal composition
+     */
     public static <C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> SPECpp<C, I, R, F> build(SPECppConfigBundle configBundle, InputDataBundle dataBundle) {
         GlobalComponentRepository cr = new GlobalComponentRepository();
 

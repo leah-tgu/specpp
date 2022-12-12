@@ -40,6 +40,11 @@ public class EvaluatorConfiguration extends Configuration {
         return evaluatorProviderBuilders.stream().map(this::createPossiblyInstrumented).collect(Collectors.toList());
     }
 
+    public List<ProvidesEvaluators> reCheckoutEvaluators(List<ProvidesEvaluators> list) {
+        if (list == null) return null;
+        return list.stream().map(this::checkout).collect(Collectors.toList());
+    }
+
     public static class Configurator implements ComponentInitializerBuilder<EvaluatorConfiguration> {
         private final List<SimpleBuilder<? extends ProvidesEvaluators>> evaluatorProviderBuilders;
 
