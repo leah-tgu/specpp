@@ -1,6 +1,6 @@
-# Command Line Batch Evaluation Tool
+# Command Line Batch Execution & Evaluation Tool
 
-Provides a command line interface for batch evaluation of parameter variations.
+Provides a command line interface for batch execution and optionally evaluation of parameter variations.
 
 ### CLI arguments
 
@@ -8,14 +8,16 @@ Provides a command line interface for batch evaluation of parameter variations.
 * `-c`/`-config` path to the configuration file [(.json, view format)](#Configuration-file-format)
 * `-v`/`-variations` path to the parameter variations file [(.json, view format)](#Parameter-variations-file-format)
 * `-o`/`-output` path to the desired output directory
+* `-ev`/`evaluate` whether to automatically compute quality metrics on resulting models 
 * `-lb`/`-label` (optional) label of this evaluation attempt (a sub folder is created in the output directory)
 * `-nt`/`-num_threads` (optional) targeted parallelism level
-* `-pec_tout`/`-pec_timeout` (optional) timeout in seconds for PEC-cycling (graceful cancellation, i.e., the
+* `-pec_time`/`-pec_timeout` (optional) timeout in seconds for PEC-cycling (graceful cancellation, i.e., the
   intermediate result is used for post-processing)
-* `-pp_tout`/`-pp_timeout` (optional) timeout in seconds for post-processing (hard cancellation, i.e., no result is
+* `-pp_time`/`-pp_timeout` (optional) timeout in seconds for post-processing (hard cancellation, i.e., no result is
   produced)
-* `-total_tout`/`-total_timeout` (optional) timeout in seconds for an entire run (hard cancellation, i.e., no result is
+* `-total_time`/`-total_timeout` (optional) timeout in seconds for an entire run (hard cancellation, i.e., no result is
   produced)
+* `ev_time`/`-evaluation_timeout` (optional) timeout in seconds for evaluation computations if requested
 
 ### Configuration file format
 

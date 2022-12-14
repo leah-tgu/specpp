@@ -17,7 +17,7 @@ public class BasicSupervisedSPECpp {
     public static void main(String[] args) throws InterruptedException {
         String path = PublicPaths.SAMPLE_EVENTLOG_2;
         SPECppConfigBundle cfg = CodeDefinedConfigurationSample.createConfiguration();
-        InputDataBundle data = InputDataBundle.load(path, cfg.getInputProcessingConfig());
+        InputDataBundle data = InputDataBundle.loadAndProcess(path, cfg.getInputProcessingConfig());
         SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = null;
         try (ExecutionEnvironment ee = new ExecutionEnvironment()) {
             SPECppOutputtingUtils.preSetup(cfg, data, true);

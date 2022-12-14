@@ -1,8 +1,8 @@
 {
   "Input Processing": {
     "eventClassifier": "XEventNameClassifier",
-    "addStartEndTransitions": false,
-    "activityOrderingStrategy": "RandomOrdering"
+    "addStartEndTransitions": true,
+    "activityOrderingStrategy": "AverageFirstOccurrenceIndex"
   },
   "Components": {
     "Supervisors": [],
@@ -15,7 +15,7 @@
       "Proposer": "ConstrainablePlaceProposer$Builder",
       "Tree Structure": {
         "Tree": "EnumeratingTree",
-        "Expansion Strategy": "heuristic.EventingHeuristicTreeExpansion",
+        "Expansion Strategy": "heuristic.HeuristicTreeExpansion",
         "Node Generation Logic": "MonotonousPlaceGenerationLogic$Builder",
         "Heuristic": "EventuallyFollowsTreeHeuristic$Builder"
       }
@@ -40,7 +40,7 @@
         "label": "placegenerator.parameters",
         "type": "PlaceGeneratorParameters",
         "args": {
-          "maxTreeDepth": 5
+          "maxTreeDepth": 6
         }
       },
       {

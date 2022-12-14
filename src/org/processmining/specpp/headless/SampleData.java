@@ -9,7 +9,7 @@ import org.processmining.specpp.util.PublicPaths;
 public class SampleData {
 
     public static InputDataBundle sample_1() {
-        return InputDataBundle.load(PublicPaths.SAMPLE_EVENTLOG_2, ConfigFactory.create(PreProcessingParameters.getDefault(), DataExtractionParameters.getDefault()));
+        return InputDataBundle.loadAndProcess(PublicPaths.SAMPLE_EVENTLOG_2, ConfigFactory.create(PreProcessingParameters.getDefault(), DataExtractionParameters.getDefault()));
     }
 
 

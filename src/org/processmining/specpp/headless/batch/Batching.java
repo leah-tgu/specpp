@@ -1,4 +1,4 @@
-package org.processmining.specpp.headless;
+package org.processmining.specpp.headless.batch;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -6,14 +6,16 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.deckfour.xes.classification.XEventClass;
+import org.deckfour.xes.model.XLog;
+import org.processmining.plugins.connectionfactories.logpetrinet.TransEvClassMapping;
+import org.processmining.plugins.etconformance.ETCResults;
+import org.processmining.plugins.petrinet.replayresult.PNRepResult;
 import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.data.ParameterRequirements;
 import org.processmining.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.specpp.composition.BasePlaceComposition;
-import org.processmining.specpp.config.AlgorithmParameterConfig;
-import org.processmining.specpp.config.ConfigFactory;
-import org.processmining.specpp.config.InputProcessingConfig;
-import org.processmining.specpp.config.SPECppConfigBundle;
+import org.processmining.specpp.config.*;
 import org.processmining.specpp.config.parameters.ExecutionParameters;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.config.parameters.ParameterProvider;
@@ -25,27 +27,24 @@ import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.petri.*;
 import org.processmining.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.specpp.datastructures.util.Tuple2;
+import org.processmining.specpp.headless.CodeDefinedEvaluationConfig;
 import org.processmining.specpp.headless.local.PrivatePaths;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
 import org.processmining.specpp.preprocessing.InputDataBundle;
-import org.processmining.specpp.prom.computations.OngoingComputation;
-import org.processmining.specpp.prom.computations.OngoingStagedComputation;
+import org.processmining.specpp.preprocessing.XLogParser;
 import org.processmining.specpp.supervision.CSVWriter;
-import org.processmining.specpp.supervision.observations.Observation;
-import org.processmining.specpp.util.FileUtils;
-import org.processmining.specpp.util.PathTools;
-import org.processmining.specpp.util.VizUtils;
+import org.processmining.specpp.util.*;
 
 import java.io.File;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class Evaluation {
+public class Batching {
 
 
     public static final String ATTEMPT_IDENTIFIER = "attempt_0";
@@ -53,9 +52,11 @@ public class Evaluation {
                                                             .addOption("c", "config", true, "path to a json base configuration file")
                                                             .addOption("v", "variations", true, "path to a json parameter variation configuration file")
                                                             .addOption("o", "out", true, "path to the output directory")
-                                                            .addOption("pec_tout", "pec_timeout", true, "pec timeout in s")
-                                                            .addOption("pp_tout", "pp_timeout", true, "postprocessing timeout in s")
-                                                            .addOption("total_tout", "total_timeout", true, "total timeout in s")
+                                                            .addOption("ev", "evaluate", false, "whether to compute model quality metrics")
+                                                            .addOption("pec_time", "pec_timeout", true, "pec timeout in s")
+                                                            .addOption("pp_time", "pp_timeout", true, "postprocessing timeout in s")
+                                                            .addOption("total_time", "total_timeout", true, "total timeout in s")
+                                                            .addOption("ev_time", "evaluation_timeout", true, "evaluation timeout in s")
                                                             .addOption("lb", "label", true, "label identifying this evaluation")
                                                             .addOption("nt", "num_threads", true, "targeted number of threads");
 
@@ -65,7 +66,8 @@ public class Evaluation {
         try {
             parsedArgs = defaultParser.parse(CLI_OPTIONS, args);
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return;
         }
 
         String num_threadsValue = parsedArgs.getOptionValue("num_threads");
@@ -73,7 +75,7 @@ public class Evaluation {
                                                                                                              .availableProcessors() - 1);
 
         String outValue = parsedArgs.getOptionValue("out");
-        String outFolder = outValue != null ? outValue : "evaluation" + PathTools.PATH_FOLDER_SEPARATOR;
+        String outFolder = outValue != null ? outValue : "batch" + PathTools.PATH_FOLDER_SEPARATOR;
         if (!outFolder.endsWith(PathTools.PATH_FOLDER_SEPARATOR))
             outFolder = outValue + PathTools.PATH_FOLDER_SEPARATOR;
 
@@ -95,8 +97,10 @@ public class Evaluation {
         if (variationsValue != null)
             parameterVariations = FileUtils.readCustomJson(variationsValue, ParameterVariationsParsing.getTypeAdapter());
         else parameterVariations = CodeDefinedEvaluationConfig.createParameterVariations();
-        System.out.println("Parameter Variations");
-        for (ProvidesParameters pv : parameterVariations) {
+
+        int maxParameterVariationsToPrint = 50;
+        System.out.printf("Batching %d Parameter Variations (printing first %d)%n", parameterVariations.size(), maxParameterVariationsToPrint);
+        for (ProvidesParameters pv : parameterVariations.subList(0, Math.min(maxParameterVariationsToPrint, parameterVariations.size()))) {
             System.out.println(pv);
         }
 
@@ -110,27 +114,47 @@ public class Evaluation {
         ExecutionParameters.ExecutionTimeLimits timeLimits = new ExecutionParameters.ExecutionTimeLimits(pecTimeout, ppTimeout, totalTimeout);
         ExecutionParameters executionParameters = ExecutionParameters.timeouts(timeLimits);
 
-        EvaluationContext ec = new EvaluationContext();
-        ec.attempt_identifier = attemptLabel;
-        ec.num_threads = num_threads;
-        ec.logPath = logPath;
-        ec.outputFolder = outFolder;
-        ec.parameterVariations = parameterVariations;
+        BatchContext bc = new BatchContext();
+        bc.attempt_identifier = attemptLabel;
+        bc.num_threads = num_threads;
+        bc.logPath = logPath;
+        bc.outputFolder = outFolder;
+        bc.parameterVariations = parameterVariations;
 
-        run(configBundle, executionParameters, ec);
+        if (parsedArgs.hasOption("evaluate")) {
+            Duration evalTimeout = null;
+            String evtValue = parsedArgs.getOptionValue("evaluation_timeout");
+            if (evtValue != null) evalTimeout = Duration.ofSeconds(Long.parseLong(evtValue));
+
+            EvalContext evalContext = new EvalContext();
+            evalContext.timeout = evalTimeout;
+            bc.evalContext = evalContext;
+        }
+
+        run(configBundle, executionParameters, bc);
     }
 
-    private static void run(SPECppConfigBundle configBundle, ExecutionParameters executionParameters, EvaluationContext ec) {
+    private static void run(SPECppConfigBundle configBundle, ExecutionParameters executionParameters, BatchContext bc) {
         InputProcessingConfig inputProcessingConfig = configBundle.getInputProcessingConfig();
-        System.out.printf("Loading and preprocessing input log from \"%s\".%n", ec.logPath);
-        InputDataBundle inputData = InputDataBundle.load(ec.logPath, inputProcessingConfig);
+        System.out.printf("Loading and preprocessing input log from \"%s\".%n", bc.logPath);
+        XLog inputLog = XLogParser.readLog(bc.logPath);
+        InputDataBundle inputData = InputDataBundle.process(inputLog, inputProcessingConfig);
+
+        if (bc.evalContext != null) {
+            PreProcessingParameters preProcessingParameters = inputProcessingConfig.getPreProcessingParameters();
+            XLog evalLog = EvalUtils.createEvalLog(inputLog, preProcessingParameters);
+            Set<XEventClass> eventClasses = EvalUtils.createEventClasses(preProcessingParameters.getEventClassifier(), evalLog);
+            bc.evalContext.evaluationLogData = new EvaluationLogData(evalLog, preProcessingParameters.getEventClassifier(), eventClasses);
+        }
+
+        inputLog = null;
         System.gc();
         System.out.println("Finished preparing input data.");
 
-        int num_threads = ec.num_threads;
+        int num_threads = bc.num_threads;
         int num_replications = 1;
 
-        String meta_string = "Evaluation Attempt: " + ec.attempt_identifier + " @" + LocalDateTime.now() + "\n" + "Per run Timeouts: " + executionParameters.getTimeLimits() + "\n" + "Number of Threads: " + num_threads + ", " + "Number of Replications per Config: " + num_replications + "\n" + "Log Path: " + ec.logPath + "\n" + "Input Processing Parameters:\n\t" + inputProcessingConfig + "\n" + "Base Parameters:\n\t" + configBundle.getAlgorithmParameterConfig();
+        String meta_string = "Batching Attempt: " + bc.attempt_identifier + " @" + LocalDateTime.now() + "\n" + "Per run Timeouts: " + executionParameters.getTimeLimits() + "\n" + "Number of Threads: " + num_threads + ", " + "Number of Replications per Config: " + num_replications + "\n" + "Log Path: " + bc.logPath + "\n" + "Input Processing Parameters:\n\t" + inputProcessingConfig + "\n" + "Base Parameters:\n\t" + configBundle.getAlgorithmParameterConfig();
 
 
         Log log = inputData.getLog();
@@ -148,45 +172,54 @@ public class Evaluation {
                                                                                                                                                         .toString();
         String data_string = log_info + "\n" + enc_info;
 
-        // save evaluation attempt strings
 
-        File file = new File(ec.outputFolder);
+        List<String> parameterVariationStrings = bc.parameterVariations.stream()
+                                                                       .map(ProvidesParameters::toString)
+                                                                       .collect(Collectors.toList());
+
+        File file = new File(bc.outputFolder);
         if (!file.exists() && !file.mkdirs()) return;
 
-        FileUtils.saveString(ec.inOutputFolder("meta_info.txt"), meta_string);
-        FileUtils.saveString(ec.inOutputFolder("input_data_info.txt"), data_string);
-
-        ExecutionEnvironment executionEnvironment = new ExecutionEnvironment(num_threads);
+        FileUtils.saveStrings(bc.inOutputFolder("parameter_variations.txt"), parameterVariationStrings);
+        FileUtils.saveString(bc.inOutputFolder("meta_info.txt"), meta_string);
+        FileUtils.saveString(bc.inOutputFolder("input_data_info.txt"), data_string);
 
         List<Tuple2<String, SPECppConfigBundle>> configurations = new ArrayList<>();
-        for (int i = 0; i < ec.parameterVariations.size(); i++) {
+        for (int i = 0; i < bc.parameterVariations.size(); i++) {
             for (int r = 0; r < num_replications; r++) {
                 String rid = createRunIdentifier(i, r);
-                SPECppConfigBundle rc = createRunConfiguration(rid, ec, configBundle, i);
+                SPECppConfigBundle rc = createRunConfiguration(rid, bc, configBundle, i);
                 configurations.add(new ImmutableTuple2<>(rid, rc));
             }
         }
+        bc.perfWriter = new CSVWriter<>(bc.inOutputFolder("perf.csv"), SPECppFinished.COLUMN_NAMES, SPECppFinished::toRow);
+        if (bc.evalContext != null)
+            bc.evalContext.evalWriter = new CSVWriter<>(bc.inOutputFolder("eval.csv"), SPECppEvaluated.COLUMN_NAMES, SPECppEvaluated::toRow);
 
-        ec.perfWriter = new CSVWriter<>(ec.inOutputFolder("perf.csv"), SPECppFinished.COLUMN_NAMES, SPECppFinished::toCSVRow);
-
-        System.out.printf("Commencing evaluation run of %d configurations with %d replications each over %d worker threads @%s.%n", configurations.size(), num_replications, num_threads, LocalDateTime.now());
         List<Tuple2<String, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>>> submittedExecutions = new ArrayList<>(configurations.size());
-        for (Tuple2<String, SPECppConfigBundle> tup : configurations) {
-            String runIdentifier = tup.getT1();
-            SPECppConfigBundle cfg = tup.getT2();
+        try (ExecutionEnvironment executionEnvironment = new ExecutionEnvironment(num_threads)) {
 
-            SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECpp.build(cfg, inputData);
-            ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution = executionEnvironment.execute(specpp, executionParameters);
-            System.out.println("queued " + runIdentifier + ".");
-            executionEnvironment.addCompletionCallback(execution, ex -> handleCompletion(ec, runIdentifier, ex));
-            submittedExecutions.add(new ImmutableTuple2<>(runIdentifier, execution));
-        }
+            System.out.printf("Commencing batching run of %d configurations with %d replications each over %d worker threads @%s.%n", configurations.size(), num_replications, num_threads, LocalDateTime.now());
+            for (Tuple2<String, SPECppConfigBundle> tup : configurations) {
+                String runIdentifier = tup.getT1();
+                SPECppConfigBundle cfg = tup.getT2();
 
-        try {
-            executionEnvironment.join();
-            ec.perfWriter.stop();
+                SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECpp.build(cfg, inputData);
+                ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution = executionEnvironment.execute(specpp, executionParameters);
+                System.out.println("queued " + runIdentifier + ".");
+                if (bc.evalContext != null && bc.evalContext.timeout != null)
+                    executionEnvironment.addTimeLimitedCompletionCallback(execution, ex -> handleCompletion(bc, runIdentifier, cfg, ex), bc.evalContext.timeout);
+                else
+                    executionEnvironment.addCompletionCallback(execution, ex -> handleCompletion(bc, runIdentifier, cfg, ex));
+                submittedExecutions.add(new ImmutableTuple2<>(runIdentifier, execution));
+            }
+
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            e.fillInStackTrace();
+            System.out.println("Execution was interrupted\n" + e);
+        } finally {
+            bc.perfWriter.stop();
+            if (bc.evalContext != null) bc.evalContext.evalWriter.stop();
         }
 
         List<String> successful = submittedExecutions.stream()
@@ -199,116 +232,52 @@ public class Evaluation {
                                                        .collect(Collectors.toList());
         long count = successful.size();
         System.out.printf("Completed evaluation @%s. %d/%d executions terminated successfully.%n", LocalDateTime.now(), count, configurations.size());
-        FileUtils.saveStrings(ec.inOutputFolder("successes.txt"), successful);
-        FileUtils.saveStrings(ec.inOutputFolder("failures.txt"), unsuccessful);
+        FileUtils.saveStrings(bc.inOutputFolder("successes.txt"), successful);
+        FileUtils.saveStrings(bc.inOutputFolder("failures.txt"), unsuccessful);
 
         System.exit(0);
-
     }
 
-    private static class EvaluationContext {
-
-        public List<ProvidesParameters> parameterVariations;
-        public int num_threads;
-        private String attempt_identifier, outputFolder, logPath;
-        private CSVWriter<SPECppFinished> perfWriter;
-
-        public String inOutputFolder(String filename) {
-            return outputFolder + filename;
-        }
-
-    }
-
-    public static class SPECppFinished implements Observation {
-
-        public static final String[] COLUMN_NAMES = new String[]{"run identifier", "started", "completed", "pec cycling [ms]", "post processing [ms]", "total [ms]", "terminated successfully?"};
-
-        private final String runIdentifier;
-        private final ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution;
-
-        public SPECppFinished(String runIdentifier, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
-            this.runIdentifier = runIdentifier;
-            this.execution = execution;
-        }
-
-        public ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> getExecution() {
-            return execution;
-        }
-
-        public String getRunIdentifier() {
-            return runIdentifier;
-        }
-
-        @Override
-        public String toString() {
-            return "SPECppFinished{" + runIdentifier + ": " + execution + '}';
-        }
-
-        public String[] toCSVRow() {
-            OngoingComputation mc = execution.getMasterComputation();
-            OngoingComputation dc = execution.getDiscoveryComputation();
-            OngoingStagedComputation ppc = execution.getPostProcessingComputation();
-            return new String[]{runIdentifier,
-                    Objects.toString(mc
-                            .getStart()),
-                    Objects.toString(mc
-                            .getEnd()),
-                    dc.hasTerminated() ? Long.toString(dc
-                            .calculateRuntime()
-                            .toMillis()) : "dnf",
-                    ppc.hasTerminated() ? Long.toString(ppc
-                            .calculateRuntime()
-                            .toMillis()) : "dnf",
-                    mc.hasTerminated() ? Long.toString(mc
-                            .calculateRuntime()
-                            .toMillis()) : "dnf",
-                    Boolean.toString(execution.hasTerminatedSuccessfully())};
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            SPECppFinished that = (SPECppFinished) o;
-
-            if (!Objects.equals(runIdentifier, that.runIdentifier)) return false;
-            return Objects.equals(execution, that.execution);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = runIdentifier != null ? runIdentifier.hashCode() : 0;
-            result = 31 * result + (execution != null ? execution.hashCode() : 0);
-            return result;
-        }
-    }
-
-    public static void handleCompletion(EvaluationContext ec, String runIdentifier, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
+    public static void handleCompletion(BatchContext bc, String runIdentifier, SPECppConfigBundle cfg, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
         SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = execution.getSPECpp();
-        ec.perfWriter.observe(new SPECppFinished(runIdentifier, execution));
+        bc.perfWriter.observe(new SPECppFinished(runIdentifier, execution));
         if (execution.hasTerminatedSuccessfully()) {
-            String s = runIdentifier + " completed successfully:" + "\n" + printComputationStatuses(execution);
+            String s = runIdentifier + " completed successfully:" + "\n" + PrintingUtils.stringifyComputationStatuses(execution);
             System.out.println(s);
 
             ProMPetrinetWrapper pn = specpp.getPostProcessedResult();
             VizUtils.showVisualization(PetrinetVisualization.of("Result of " + runIdentifier, pn));
 
-            FileUtils.saveString(ec.outputFolder + "parameters_" + runIdentifier + ".txt", specpp.getGlobalComponentRepository()
+            FileUtils.saveString(bc.outputFolder + "parameters_" + runIdentifier + ".txt", specpp.getGlobalComponentRepository()
                                                                                                  .parameters()
                                                                                                  .toString());
-            FileUtils.savePetrinetToPnml(ec.outputFolder + "model_" + runIdentifier, pn);
+            FileUtils.savePetrinetToPnml(bc.outputFolder + "model_" + runIdentifier, pn);
+
+            if (bc.evalContext != null) performEvaluation(bc.evalContext, runIdentifier, cfg, execution);
         } else {
-            String s = runIdentifier + " completed unsuccessfully:" + "\n" + printComputationStatuses(execution);
+            String s = runIdentifier + " completed unsuccessfully:" + "\n" + PrintingUtils.stringifyComputationStatuses(execution);
             System.out.println(s);
         }
     }
 
-    private static String printComputationStatuses(ExecutionEnvironment.SPECppExecution<?, ?, ?, ?> execution) {
-        return "\t" + "PEC-cycling: " + execution.getDiscoveryComputation() + "\n" + "\t" + "Post Processing: " + execution.getPostProcessingComputation() + "\n\t" + "Overall: " + execution.getMasterComputation();
+    public static void performEvaluation(EvalContext ec, String runIdentifier, SPECppConfigBundle cfg, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
+        EvaluationLogData evaluationLogData = ec.evaluationLogData;
+        ProMPetrinetWrapper pn = execution.getSPECpp().getPostProcessedResult();
+        TransEvClassMapping evClassMapping = EvalUtils.createTransEvClassMapping(evaluationLogData.getEventClassifier(), evaluationLogData.getEventClasses(), pn);
+        try {
+            PNRepResult pnRepResult = EvalUtils.computeAlignmentBasedReplay(null, evaluationLogData, evClassMapping, pn);
+            double fraction = EvalUtils.derivePerfectlyFitting(evaluationLogData, pnRepResult);
+            double fitness = EvalUtils.deriveAlignmentBasedFitness(pnRepResult);
+            ETCResults etcResults = EvalUtils.computeETC(null, evaluationLogData, evClassMapping, pn);
+            double precision = EvalUtils.deriveETCPrecision(etcResults);
+            ec.evalWriter.observe(new SPECppEvaluated(runIdentifier, fraction, fitness, precision));
+        } catch (Exception e) {
+            e.fillInStackTrace();
+            System.out.printf("evaluation computations of %s failed.%n" + e, runIdentifier);
+        }
     }
 
-    public static SPECppConfigBundle createRunConfiguration(String runIdentifier, EvaluationContext ec, SPECppConfigBundle baseConfigBundle, int variationId) {
+    public static SPECppConfigBundle createRunConfiguration(String runIdentifier, BatchContext ec, SPECppConfigBundle baseConfigBundle, int variationId) {
         ProvidesParameters parameterization = ec.parameterVariations.get(variationId);
         ParameterProvider custom = new ParameterProvider() {
             @Override

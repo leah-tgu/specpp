@@ -47,7 +47,7 @@ public class CodeDefinedConfigurationSample {
     public static void main(String[] args) {
         String path = PublicPaths.SAMPLE_EVENTLOG_2;
         SPECppConfigBundle cfg = createConfiguration();
-        InputDataBundle data = InputDataBundle.load(path, cfg.getInputProcessingConfig());
+        InputDataBundle data = InputDataBundle.loadAndProcess(path, cfg.getInputProcessingConfig());
         try (ExecutionEnvironment ee = new ExecutionEnvironment()) {
             ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution = ee.execute(SPECpp.build(cfg, data), ExecutionParameters.noTimeouts());
             ee.addCompletionCallback(execution, ex -> {

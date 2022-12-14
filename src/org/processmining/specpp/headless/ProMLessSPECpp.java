@@ -22,7 +22,7 @@ public class ProMLessSPECpp {
 
     public static ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> run(String logPath, String resultPath) {
         SPECppConfigBundle cfg = CodeDefinedConfigurationSample.createConfiguration();
-        InputDataBundle data = InputDataBundle.load(logPath, cfg.getInputProcessingConfig());
+        InputDataBundle data = InputDataBundle.loadAndProcess(logPath, cfg.getInputProcessingConfig());
         SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECpp.build(cfg, data);
 
         ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution;

@@ -80,6 +80,7 @@ public class ProMConfig {
         pc.compositionStrategy = CompositionStrategy.Uniwired;
         pc.respectWiring = true;
         pc.initiallyWireSelfLoops = true;
+        pc.ciprVariant = CIPRVariant.None;
         pc.ppPipeline = ImmutableList.of(FrameworkBridge.BridgedPostProcessors.UniwiredSelfLoopAddition.getBridge(), FrameworkBridge.BridgedPostProcessors.LPBasedImplicitPlaceRemoval.getBridge(), FrameworkBridge.BridgedPostProcessors.ProMPetrinetConversion.getBridge());
         return pc;
     }
