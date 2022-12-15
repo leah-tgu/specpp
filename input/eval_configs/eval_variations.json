@@ -8,20 +8,19 @@
         "ReplayBased",
         "LPBased"
       ],
-      "subLogRestriction": [
-        "None"
-      ]
+      "subLogRestriction": "None"
     }
   },
   {
     "label": "placegenerator.parameters",
     "type": "PlaceGeneratorParameters",
-    "vary args independently": false,
+    "vary args independently": true,
     "args": {
       "maxTreeDepth": [
         5,
         8
-      ]
+      ],
+      "acceptSubtreeCutoffConstraints": true
     }
   },
   {

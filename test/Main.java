@@ -19,6 +19,7 @@ import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.Transition;
 import org.processmining.specpp.datastructures.tree.base.BiDiTree;
+import org.processmining.specpp.datastructures.tree.base.Tree;
 import org.processmining.specpp.datastructures.tree.base.impls.*;
 import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
@@ -36,8 +37,10 @@ import org.processmining.specpp.headless.SampleData;
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.specpp.preprocessing.*;
 import org.processmining.specpp.preprocessing.orderings.*;
+import org.processmining.specpp.proposal.PlaceProposer;
 import org.processmining.specpp.supervision.observations.Observation;
 import org.processmining.specpp.supervision.piping.PipeWorks;
+import org.processmining.specpp.supervision.piping.TreeDrawer;
 import org.processmining.specpp.util.*;
 
 import java.io.File;
@@ -88,8 +91,8 @@ public class Main {
     @Test
     public void tree() {
 
-        Transition start = new Transition("\u25B7");
-        Transition end = new Transition("\u2610");
+        Transition start = new Transition(Factory.UNIQUE_START_LABEL);
+        Transition end = new Transition(Factory.UNIQUE_END_LABEL);
         Transition a = new Transition("a");
         Transition b = new Transition("b");
         Transition c = new Transition("c");
@@ -101,7 +104,7 @@ public class Main {
         FixedOrdering<Transition> postsetOrdering = new FixedOrdering<>(a, b, c, end);
 
         MonotonousPlaceGenerationLogic pg = new MonotonousPlaceGenerationLogic(new IntEncodings<>(HashmapEncoding.ofComparableSet(presetTransitions, presetOrdering), HashmapEncoding.ofComparableSet(postsetTransitions, postsetOrdering)));
-        EnumeratingTree<PlaceNode> tree = new EnumeratingTree<>(pg.generateRoot(), new VariableExpansion<>());
+        EnumeratingTree<PlaceNode> tree = new EnumeratingTree<>(pg.generateRoot(), VariableExpansion.bfs());
 
         System.out.println(tree);
 
@@ -381,6 +384,12 @@ public class Main {
             File file = new File(filePath);
             file.createNewFile();
         }
+    }
+
+    public void building() {
+
+
+
     }
 
 }

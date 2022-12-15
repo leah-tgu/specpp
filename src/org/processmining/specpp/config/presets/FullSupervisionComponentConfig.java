@@ -5,7 +5,7 @@ import org.processmining.specpp.config.components.Configurators;
 import org.processmining.specpp.config.components.SupervisionConfiguration;
 import org.processmining.specpp.supervision.supervisors.*;
 
-public class ExpansiveComponentConfig extends BaseComponentConfig {
+public class FullSupervisionComponentConfig extends BaseComponentConfig {
 
     @Override
     public SupervisionConfiguration getSupervisionConfiguration(GlobalComponentRepository gcr) {

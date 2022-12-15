@@ -40,7 +40,8 @@
         "label": "placegenerator.parameters",
         "type": "PlaceGeneratorParameters",
         "args": {
-          "maxTreeDepth": 6
+          "maxTreeDepth": 6,
+          "acceptSubtreeCutoffConstraints": true
         }
       },
       {
