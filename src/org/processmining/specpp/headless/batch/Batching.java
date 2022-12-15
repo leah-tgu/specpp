@@ -30,6 +30,7 @@ import org.processmining.specpp.datastructures.util.Tuple2;
 import org.processmining.specpp.headless.CodeDefinedEvaluationConfig;
 import org.processmining.specpp.headless.local.PrivatePaths;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
+import org.processmining.specpp.orchestra.SPECppOutputtingUtils;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.preprocessing.XLogParser;
 import org.processmining.specpp.supervision.CSVWriter;
@@ -53,6 +54,7 @@ public class Batching {
                                                             .addOption("v", "variations", true, "path to a json parameter variation configuration file")
                                                             .addOption("o", "out", true, "path to the output directory")
                                                             .addOption("ev", "evaluate", false, "whether to compute model quality metrics")
+                                                            .addOption("m", "monitor", false, "whether to save monitoring results of supervisors")
                                                             .addOption("pec_time", "pec_timeout", true, "pec timeout in s")
                                                             .addOption("pp_time", "pp_timeout", true, "postprocessing timeout in s")
                                                             .addOption("total_time", "total_timeout", true, "total timeout in s")
@@ -115,6 +117,7 @@ public class Batching {
         ExecutionParameters executionParameters = ExecutionParameters.timeouts(timeLimits);
 
         BatchContext bc = new BatchContext();
+        bc.options.add(BatchOptions.ShowResultingPetrinet);
         bc.attempt_identifier = attemptLabel;
         bc.num_threads = num_threads;
         bc.logPath = logPath;
@@ -129,7 +132,11 @@ public class Batching {
             EvalContext evalContext = new EvalContext();
             evalContext.timeout = evalTimeout;
             bc.evalContext = evalContext;
+            bc.options.add(BatchOptions.Evaluate);
         }
+
+        if (parsedArgs.hasOption("monitor"))
+            bc.options.add(BatchOptions.SaveMonitoring);
 
         run(configBundle, executionParameters, bc);
     }
@@ -246,14 +253,23 @@ public class Batching {
             System.out.println(s);
 
             ProMPetrinetWrapper pn = specpp.getPostProcessedResult();
-            VizUtils.showVisualization(PetrinetVisualization.of("Result of " + runIdentifier, pn));
+            if (bc.options.contains(BatchOptions.ShowResultingPetrinet))
+                VizUtils.showVisualization(PetrinetVisualization.of("Result of " + runIdentifier, pn));
 
             FileUtils.saveString(bc.outputFolder + "parameters_" + runIdentifier + ".txt", specpp.getGlobalComponentRepository()
                                                                                                  .parameters()
                                                                                                  .toString());
             FileUtils.savePetrinetToPnml(bc.outputFolder + "model_" + runIdentifier, pn);
 
-            if (bc.evalContext != null) performEvaluation(bc.evalContext, runIdentifier, cfg, execution);
+            // EXPERIMENTAL
+            if (bc.options.contains(BatchOptions.SaveMonitoring)) {
+                List<String> resultingStrings = SPECppOutputtingUtils.getResultingStrings(SPECppOutputtingUtils.getMonitors(specpp)
+                                                                                                               .stream());
+                FileUtils.saveStrings(bc.outputFolder + "monitoring_" + runIdentifier + ".txt", resultingStrings);
+            }
+
+            if (bc.options.contains(BatchOptions.Evaluate))
+                performEvaluation(bc.evalContext, runIdentifier, cfg, execution);
         } else {
             String s = runIdentifier + " completed unsuccessfully:" + "\n" + PrintingUtils.stringifyComputationStatuses(execution);
             System.out.println(s);

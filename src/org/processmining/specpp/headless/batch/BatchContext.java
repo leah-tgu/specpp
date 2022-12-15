@@ -3,9 +3,12 @@ package org.processmining.specpp.headless.batch;
 import org.processmining.specpp.componenting.traits.ProvidesParameters;
 import org.processmining.specpp.supervision.CSVWriter;
 
+import java.util.EnumSet;
 import java.util.List;
 
 class BatchContext {
+
+    EnumSet<BatchOptions> options = EnumSet.noneOf(BatchOptions.class);
 
     List<ProvidesParameters> parameterVariations;
     int num_threads;
