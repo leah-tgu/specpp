@@ -17,7 +17,7 @@ public class HardcodedInput {
 
     public static void main(String[] args) {
         SPECppConfigBundle cfg = ConfigPresets.SUPERVISED_EXHAUSTIVE;
-        InputDataBundle data = input_two();
+        InputDataBundle data = input_one();
 
         SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = null;
         try (ExecutionEnvironment ee = new ExecutionEnvironment()) {
@@ -50,5 +50,6 @@ public class HardcodedInput {
         mb.addPostsetOrdering(mb.artificialEndLabel(), "E", "D", "C", "B", "A");
         return mb.createInputDataBundle();
     }
+
 
 }
