@@ -26,7 +26,6 @@ import org.processmining.pnetreplayer.utils.TransEvClassMappingUtils;
 import org.processmining.specpp.config.PreProcessingParameters;
 import org.processmining.specpp.datastructures.log.impls.Factory;
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
-import org.processmining.specpp.headless.batch.EvaluationLogData;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -127,5 +126,42 @@ public class EvalUtils {
     public static double computeF1(double fitness, double precision) {
         double denominator = fitness + precision;
         return denominator == 0 ? Double.NaN : 2 * (fitness * precision) / denominator;
+    }
+
+    public static class EvaluationLogData {
+
+        private XLog evalLog;
+        private XEventClassifier eventClassifier;
+        private Set<XEventClass> eventClasses;
+
+        public EvaluationLogData(XLog evalLog, XEventClassifier eventClassifier, Set<XEventClass> eventClasses) {
+            this.evalLog = evalLog;
+            this.eventClassifier = eventClassifier;
+            this.eventClasses = eventClasses;
+        }
+
+        public Set<XEventClass> getEventClasses() {
+            return eventClasses;
+        }
+
+        public void setEventClasses(Set<XEventClass> eventClasses) {
+            this.eventClasses = eventClasses;
+        }
+
+        public XLog getEvalLog() {
+            return evalLog;
+        }
+
+        public void setEvalLog(XLog evalLog) {
+            this.evalLog = evalLog;
+        }
+
+        public XEventClassifier getEventClassifier() {
+            return eventClassifier;
+        }
+
+        public void setEventClassifier(XEventClassifier eventClassifier) {
+            this.eventClassifier = eventClassifier;
+        }
     }
 }

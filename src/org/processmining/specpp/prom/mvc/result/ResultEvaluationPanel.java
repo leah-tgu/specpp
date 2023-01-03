@@ -9,7 +9,6 @@ import org.processmining.plugins.connectionfactories.logpetrinet.TransEvClassMap
 import org.processmining.specpp.datastructures.petri.ProMPetrinetWrapper;
 import org.processmining.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.specpp.datastructures.util.Tuple2;
-import org.processmining.specpp.headless.batch.EvaluationLogData;
 import org.processmining.specpp.prom.mvc.AbstractStagePanel;
 import org.processmining.specpp.supervision.supervisors.DebuggingSupervisor;
 import org.processmining.specpp.util.EvalUtils;
@@ -23,7 +22,7 @@ public class ResultEvaluationPanel extends AbstractStagePanel<ResultController> 
     private final JLabel fitnessLabel, precisionLabel;
     private SwingWorker<Double, Void> precisionWorker;
     private SwingWorker<Double, Void> fitnessWorker;
-    private final SwingWorker<Tuple2<EvaluationLogData, TransEvClassMapping>, Void> dataWorker;
+    private final SwingWorker<Tuple2<EvalUtils.EvaluationLogData, TransEvClassMapping>, Void> dataWorker;
     private final Timer timer;
 
     public ResultEvaluationPanel(ResultController resultController, ProMPetrinetWrapper proMPetrinetWrapper) {
@@ -42,21 +41,21 @@ public class ResultEvaluationPanel extends AbstractStagePanel<ResultController> 
         precisionLabel = SlickerFactory.instance().createLabel("ETC Precision: ?");
         add(precisionLabel);
 
-        dataWorker = new SwingWorker<Tuple2<EvaluationLogData, TransEvClassMapping>, Void>() {
+        dataWorker = new SwingWorker<Tuple2<EvalUtils.EvaluationLogData, TransEvClassMapping>, Void>() {
 
             @Override
-            protected Tuple2<EvaluationLogData, TransEvClassMapping> doInBackground() throws Exception {
+            protected Tuple2<EvalUtils.EvaluationLogData, TransEvClassMapping> doInBackground() throws Exception {
                 XLog evalLog = resultController.createEvalLog();
                 XEventClassifier eventClassifier = resultController.getEventClassifier();
                 Set<XEventClass> eventClasses = EvalUtils.createEventClasses(eventClassifier, evalLog);
-                return new ImmutableTuple2<>(new EvaluationLogData(evalLog, eventClassifier, eventClasses), EvalUtils.createTransEvClassMapping(eventClassifier, evalLog, proMPetrinetWrapper));
+                return new ImmutableTuple2<>(new EvalUtils.EvaluationLogData(evalLog, eventClassifier, eventClasses), EvalUtils.createTransEvClassMapping(eventClassifier, evalLog, proMPetrinetWrapper));
             }
 
             @Override
             protected void done() {
                 try {
-                    Tuple2<EvaluationLogData, TransEvClassMapping> tuple2 = get();
-                    EvaluationLogData evaluationLogData = tuple2.getT1();
+                    Tuple2<EvalUtils.EvaluationLogData, TransEvClassMapping> tuple2 = get();
+                    EvalUtils.EvaluationLogData evaluationLogData = tuple2.getT1();
                     TransEvClassMapping evClassMapping = tuple2.getT2();
                     fitnessWorker = new SwingWorker<Double, Void>() {
                         @Override

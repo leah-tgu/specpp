@@ -28,7 +28,6 @@ import org.processmining.specpp.datastructures.petri.*;
 import org.processmining.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.specpp.datastructures.util.Tuple2;
 import org.processmining.specpp.headless.CodeDefinedEvaluationConfig;
-import org.processmining.specpp.headless.local.PrivatePaths;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
 import org.processmining.specpp.orchestra.SPECppOutputtingUtils;
 import org.processmining.specpp.preprocessing.InputDataBundle;
@@ -86,7 +85,11 @@ public class Batching {
         String attemptLabel = labelValue != null ? labelValue : ATTEMPT_IDENTIFIER;
 
         String logValue = parsedArgs.getOptionValue("log");
-        String logPath = logValue != null ? logValue : PrivatePaths.toAbsolutePath(PrivatePaths.ROAD_TRAFFIC_FINE_MANAGEMENT_PROCESS);
+        if (logValue == null) {
+            System.out.println("no input log was configured!");
+            return;
+        }
+        String logPath = logValue;
 
         SPECppConfigBundle configBundle;
         String configValue = parsedArgs.getOptionValue("config");
@@ -151,7 +154,7 @@ public class Batching {
             PreProcessingParameters preProcessingParameters = inputProcessingConfig.getPreProcessingParameters();
             XLog evalLog = EvalUtils.createEvalLog(inputLog, preProcessingParameters);
             Set<XEventClass> eventClasses = EvalUtils.createEventClasses(preProcessingParameters.getEventClassifier(), evalLog);
-            bc.evalContext.evaluationLogData = new EvaluationLogData(evalLog, preProcessingParameters.getEventClassifier(), eventClasses);
+            bc.evalContext.evaluationLogData = new EvalUtils.EvaluationLogData(evalLog, preProcessingParameters.getEventClassifier(), eventClasses);
         }
 
         inputLog = null;
@@ -277,7 +280,7 @@ public class Batching {
     }
 
     public static void performEvaluation(EvalContext ec, String runIdentifier, SPECppConfigBundle cfg, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
-        EvaluationLogData evaluationLogData = ec.evaluationLogData;
+        EvalUtils.EvaluationLogData evaluationLogData = ec.evaluationLogData;
         ProMPetrinetWrapper pn = execution.getSPECpp().getPostProcessedResult();
         TransEvClassMapping evClassMapping = EvalUtils.createTransEvClassMapping(evaluationLogData.getEventClassifier(), evaluationLogData.getEventClasses(), pn);
         try {
