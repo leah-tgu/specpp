@@ -8,8 +8,9 @@ import org.processmining.specpp.componenting.evaluation.EvaluatorConfiguration;
 import org.processmining.specpp.composition.BasePlaceComposition;
 import org.processmining.specpp.composition.ConstrainingPlaceCollection;
 import org.processmining.specpp.composition.StatefulPlaceComposition;
-import org.processmining.specpp.composition.composers.PlaceComposerWithCIPR;
+import org.processmining.specpp.composition.composers.PlaceAccepter;
 import org.processmining.specpp.composition.composers.PlaceFitnessFilter;
+import org.processmining.specpp.composition.composers.UniwiredComposer;
 import org.processmining.specpp.config.*;
 import org.processmining.specpp.config.components.*;
 import org.processmining.specpp.config.parameters.*;
@@ -27,25 +28,25 @@ import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEval
 import org.processmining.specpp.evaluation.heuristics.DirectlyFollowsHeuristic;
 import org.processmining.specpp.evaluation.heuristics.EventuallyFollowsTreeHeuristic;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
-import org.processmining.specpp.orchestra.*;
+import org.processmining.specpp.headless.local.PrivatePaths;
+import org.processmining.specpp.orchestra.ExecutionEnvironment;
 import org.processmining.specpp.postprocessing.LPBasedImplicitnessPostProcessing;
+import org.processmining.specpp.postprocessing.NaiveUniwiredSelfLoopAdditionPostProcessing;
 import org.processmining.specpp.postprocessing.ProMConverter;
-import org.processmining.specpp.postprocessing.ReplayBasedImplicitnessPostProcessing;
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
 import org.processmining.specpp.preprocessing.InputDataBundle;
-import org.processmining.specpp.preprocessing.orderings.AverageTraceOccurrence;
+import org.processmining.specpp.preprocessing.orderings.Lexicographic;
 import org.processmining.specpp.proposal.ConstrainablePlaceProposer;
 import org.processmining.specpp.supervision.supervisors.AltEventCountsSupervisor;
 import org.processmining.specpp.supervision.supervisors.BaseSupervisor;
 import org.processmining.specpp.supervision.supervisors.PerformanceSupervisor;
 import org.processmining.specpp.supervision.supervisors.TerminalSupervisor;
-import org.processmining.specpp.util.PublicPaths;
 import org.processmining.specpp.util.VizUtils;
 
 public class CodeDefinedConfigurationSample {
 
     public static void main(String[] args) {
-        String path = PublicPaths.SAMPLE_EVENTLOG_2;
+        String path = PrivatePaths.toAbsolutePath(PrivatePaths.Teleclaims);
         SPECppConfigBundle cfg = createConfiguration();
         InputDataBundle data = InputDataBundle.loadAndProcess(path, cfg.getInputProcessingConfig());
         try (ExecutionEnvironment ee = new ExecutionEnvironment()) {
@@ -59,7 +60,7 @@ public class CodeDefinedConfigurationSample {
     }
 
     public static SPECppConfigBundle createConfiguration() {
-        return ConfigFactory.create(new PreProcessingParameters(new XEventNameClassifier(), true), new DataExtractionParameters(AverageTraceOccurrence.class), createComponentConfiguration(), new DefaultParameters(), createSpecificParameters());
+        return ConfigFactory.create(new PreProcessingParameters(new XEventNameClassifier(), true), new DataExtractionParameters(Lexicographic.class), createComponentConfiguration(), new DefaultParameters(), createSpecificParameters());
     }
 
 
@@ -96,7 +97,8 @@ public class CodeDefinedConfigurationSample {
                                                                                                                                   .recursiveCompositions(ConstrainingPlaceCollection::new)
                                                                                                                                   .proposer(new ConstrainablePlaceProposer.Builder());
 
-        pcConfig.terminalComposer(PlaceComposerWithCIPR::new).recursiveComposers(PlaceFitnessFilter::new);
+        pcConfig.terminalComposer(PlaceAccepter::new)
+                .recursiveComposers(PlaceFitnessFilter::new, UniwiredComposer::new);
         // without concurrent implicit place removal
         // pcConfig.terminalComposer(PlaceAccepter::new);
         // pcConfig.composerChain(PlaceFitnessFilter::new, UniwiredComposer::new);
@@ -105,10 +107,9 @@ public class CodeDefinedConfigurationSample {
         // ** Post Processing ** //
 
         PostProcessingConfiguration.Configurator<CollectionOfPlaces, CollectionOfPlaces> temp_ppConfig = Configurators.postProcessing();
-        // ppConfig.processor(new UniwiredSelfLoopAdditionPostProcessing.Builder());
+        temp_ppConfig.addPostProcessor(new NaiveUniwiredSelfLoopAdditionPostProcessing.Builder());
         // ppConfig.processor(SelfLoopPlaceMerger::new);
-        temp_ppConfig.addPostProcessor(new ReplayBasedImplicitnessPostProcessing.Builder())
-                     .addPostProcessor(new LPBasedImplicitnessPostProcessing.Builder())
+        temp_ppConfig.addPostProcessor(new LPBasedImplicitnessPostProcessing.Builder())
                      .addPostProcessor(SelfLoopPlaceMerger::new);
         PostProcessingConfiguration.Configurator<CollectionOfPlaces, ProMPetrinetWrapper> ppConfig = temp_ppConfig.addPostProcessor(ProMConverter::new);
 
@@ -125,8 +126,8 @@ public class CodeDefinedConfigurationSample {
             public void init() {
                 globalComponentSystem()
                         //.provide(ParameterRequirements.DELTA_PARAMETERS.fulfilWithStatic(DeltaParameters.delta(0.75)))
-                        .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(new PlaceGeneratorParameters(6, true, false, false, false)))
-                        .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(SupervisionParameters.instrumentNone(true, false)));
+                        .provide(ParameterRequirements.PLACE_GENERATOR_PARAMETERS.fulfilWithStatic(new PlaceGeneratorParameters(12, true, true, false, false)))
+                        .provide(ParameterRequirements.SUPERVISION_PARAMETERS.fulfilWithStatic(SupervisionParameters.instrumentNone(false, false)));
             }
         };
     }

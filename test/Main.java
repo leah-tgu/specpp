@@ -19,10 +19,10 @@ import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.Transition;
 import org.processmining.specpp.datastructures.tree.base.BiDiTree;
-import org.processmining.specpp.datastructures.tree.base.Tree;
 import org.processmining.specpp.datastructures.tree.base.impls.*;
 import org.processmining.specpp.datastructures.tree.nodegen.MonotonousPlaceGenerationLogic;
 import org.processmining.specpp.datastructures.tree.nodegen.PlaceNode;
+import org.processmining.specpp.datastructures.tree.nodegen.UnWiringMatrix;
 import org.processmining.specpp.datastructures.util.Label;
 import org.processmining.specpp.datastructures.util.RegexLabel;
 import org.processmining.specpp.datastructures.util.Tuple2;
@@ -35,12 +35,10 @@ import org.processmining.specpp.evaluation.fitness.BasicFitnessEvaluation;
 import org.processmining.specpp.evaluation.fitness.MarkingHistoryBasedFitnessEvaluator;
 import org.processmining.specpp.headless.SampleData;
 import org.processmining.specpp.postprocessing.SelfLoopPlaceMerger;
-import org.processmining.specpp.preprocessing.*;
+import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.preprocessing.orderings.*;
-import org.processmining.specpp.proposal.PlaceProposer;
 import org.processmining.specpp.supervision.observations.Observation;
 import org.processmining.specpp.supervision.piping.PipeWorks;
-import org.processmining.specpp.supervision.piping.TreeDrawer;
 import org.processmining.specpp.util.*;
 
 import java.io.File;
@@ -268,7 +266,6 @@ public class Main {
     }
 
 
-
     @Test
     public void labels() {
 
@@ -344,7 +341,7 @@ public class Main {
         log.stream().limit(10).forEach(System.out::println);
 
         for (Class<? extends ActivityOrderingStrategy> aClass : classes) {
-            ActivityOrderingStrategy instance = Reflection.instance(aClass, log, activityMap, mapping);
+            ActivityOrderingStrategy instance = Reflection.instance(aClass, log, activityMap);
             System.out.println(aClass);
             System.out.println(instance);
             System.out.println(instance.build());
@@ -386,9 +383,38 @@ public class Main {
         }
     }
 
-    public void building() {
+    @Test
+    public void wiring() {
+        Tuple2<IntEncodings<Transition>, Map<String, Transition>> tuple2 = HardcodedTestInput.setupTransitions(Factory.UNIQUE_START_LABEL, Factory.UNIQUE_END_LABEL, "incoming", "B check", "S check", "B register", "S register", "end", "determine");
+        IntEncodings<Transition> encodings = tuple2.getT1();
+        Map<String, Transition> map = tuple2.getT2();
+        System.out.println("encodings = " + encodings);
+        UnWiringMatrix wiringMatrix = new UnWiringMatrix(encodings);
 
+        NaivePlaceMaker pm = new NaivePlaceMaker(encodings);
+        wiringMatrix.wire(pm.preset(Factory.UNIQUE_START_LABEL).postset("incoming").get());
+        wiringMatrix.wire(pm.preset("incoming").postset("B check", "S check").get());
+        wiringMatrix.wire(pm.preset("B check", "S check").postset("end").get());
+        wiringMatrix.wire(pm.preset("end").postset(Factory.UNIQUE_END_LABEL).get());
+        wiringMatrix.wire(pm.preset("B register", "S register").postset("determine").get());
 
+        System.out.println("wiringMatrix = " + wiringMatrix);
+
+        Place parent = pm.preset("incoming", "determine")
+                         .postset("B register").get();
+        BitEncodedSet<Transition> exp = BitEncodedSet.empty(encodings.post());
+        exp.addAll(map.get("B register"), map.get("S register"), map.get("determine"));
+        System.out.println("parent = " + parent.preset().getBitMask());
+        System.out.println(exp);
+        System.out.println(exp.getBitMask());
+        wiringMatrix.filterPotentialSetExpansions(parent, exp.getBitMask(), MonotonousPlaceGenerationLogic.ExpansionType.Postset);
+        System.out.println(exp);
+
+        Place test = pm.preset("incoming claim", "determine likelihood of claim")
+                       .postset("B register claim", "S register claim", "end").get();
+        System.out.println(test);
+        System.out.println(test.hashCode());
+        System.out.println(wiringMatrix.isWired(test));
 
     }
 
