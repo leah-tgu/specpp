@@ -63,6 +63,7 @@ public class SPECppFinished implements CSVRowEvent {
         OngoingStagedComputation ppc = execution.getPostProcessingComputation();
         return new String[]{runIdentifier, Objects.toString(mc.getStart()), Objects.toString(mc.getEnd()), dc.hasTerminated() ? Long.toString(dc.calculateRuntime()
                                                                                                                                                 .toMillis()) : "dnf", ppc.hasTerminated() ? Long.toString(ppc.calculateRuntime()
-                                                                                                                                                                                                             .toMillis()) : "dnf", mc.hasTerminated() ? Long.toString(mc.calculateRuntime().toMillis()) : "dnf", Boolean.toString(execution.hasTerminatedSuccessfully())};
+                                                                                                                                                                                                             .toMillis()) : "dnf", mc.hasTerminated() ? Long.toString(mc.calculateRuntime()
+                                                                                                                                                                                                                                                                        .toMillis()) : "dnf", Boolean.toString(execution.hasTerminatedSuccessfully())};
     }
 }

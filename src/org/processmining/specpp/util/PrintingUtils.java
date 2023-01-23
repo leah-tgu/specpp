@@ -1,9 +1,7 @@
 package org.processmining.specpp.util;
 
-import org.jbpt.petri.querying.IStructuralQuerying;
 import org.processmining.specpp.componenting.data.DataSourceCollection;
 import org.processmining.specpp.componenting.data.FulfilledDataRequirement;
-import org.processmining.specpp.datastructures.encoding.IntEncoding;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
 
 import java.util.stream.Collectors;

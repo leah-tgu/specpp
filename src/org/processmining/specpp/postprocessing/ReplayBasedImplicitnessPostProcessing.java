@@ -3,6 +3,7 @@ package org.processmining.specpp.postprocessing;
 import org.processmining.specpp.base.Evaluator;
 import org.processmining.specpp.componenting.delegators.DelegatingEvaluator;
 import org.processmining.specpp.componenting.evaluation.EvaluationRequirements;
+import org.processmining.specpp.config.parameters.ImplicitnessTestingParameters;
 import org.processmining.specpp.datastructures.encoding.BitMask;
 import org.processmining.specpp.datastructures.encoding.NonMutatingSetOperations;
 import org.processmining.specpp.datastructures.petri.CollectionOfPlaces;
@@ -10,7 +11,6 @@ import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.util.ImmutableTuple2;
 import org.processmining.specpp.datastructures.util.Tuple2;
 import org.processmining.specpp.datastructures.vectorization.VariantMarkingHistories;
-import org.processmining.specpp.config.parameters.ImplicitnessTestingParameters;
 import org.python.google.common.collect.Maps;
 
 import java.util.HashSet;
