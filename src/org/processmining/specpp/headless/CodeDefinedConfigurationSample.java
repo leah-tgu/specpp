@@ -41,12 +41,13 @@ import org.processmining.specpp.supervision.supervisors.AltEventCountsSupervisor
 import org.processmining.specpp.supervision.supervisors.BaseSupervisor;
 import org.processmining.specpp.supervision.supervisors.PerformanceSupervisor;
 import org.processmining.specpp.supervision.supervisors.TerminalSupervisor;
+import org.processmining.specpp.util.PublicPaths;
 import org.processmining.specpp.util.VizUtils;
 
 public class CodeDefinedConfigurationSample {
 
     public static void main(String[] args) {
-        String path = PrivatePaths.toAbsolutePath(PrivatePaths.Teleclaims);
+        String path = PublicPaths.SAMPLE_EVENTLOG_2;
         SPECppConfigBundle cfg = createConfiguration();
         InputDataBundle data = InputDataBundle.loadAndProcess(path, cfg.getInputProcessingConfig());
         try (ExecutionEnvironment ee = new ExecutionEnvironment()) {
