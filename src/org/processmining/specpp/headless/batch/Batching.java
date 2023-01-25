@@ -20,6 +20,7 @@ import org.processmining.specpp.config.parameters.ExecutionParameters;
 import org.processmining.specpp.config.parameters.OutputPathParameters;
 import org.processmining.specpp.config.parameters.ParameterProvider;
 import org.processmining.specpp.config.parsing.ConfigurationParsing;
+import org.processmining.specpp.config.parsing.InformalParameterVariationsParsing;
 import org.processmining.specpp.config.parsing.ParameterVariationsParsing;
 import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.log.Activity;
@@ -32,7 +33,7 @@ import org.processmining.specpp.orchestra.ExecutionEnvironment;
 import org.processmining.specpp.orchestra.SPECppOutputtingUtils;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.preprocessing.XLogParser;
-import org.processmining.specpp.supervision.CSVWriter;
+import org.processmining.specpp.supervision.DirectCSVWriter;
 import org.processmining.specpp.util.*;
 
 import java.io.File;
@@ -46,23 +47,24 @@ import java.util.stream.StreamSupport;
 
 public class Batching {
 
-
     public static final String ATTEMPT_IDENTIFIER = "attempt_0";
     private static final Options CLI_OPTIONS = new Options().addOption("l", "log", true, "path to the input event log")
                                                             .addOption("c", "config", true, "path to a json base configuration file")
                                                             .addOption("v", "variations", true, "path to a json parameter variation configuration file")
                                                             .addOption("o", "out", true, "path to the output directory")
                                                             .addOption("ev", "evaluate", false, "whether to compute model quality metrics")
-                                                            .addOption("m", "monitor", false, "whether to save monitoring results of supervisors")
+                                                            .addOption("m", "monitor", false, "whether to save the output of data monitors to files")
+                                                            .addOption("viz", "visualize", false, "whether to visualize and thus layout the resulting petri nets")
                                                             .addOption("pec_time", "pec_timeout", true, "pec timeout in s")
                                                             .addOption("pp_time", "pp_timeout", true, "postprocessing timeout in s")
                                                             .addOption("total_time", "total_timeout", true, "total timeout in s")
                                                             .addOption("ev_time", "evaluation_timeout", true, "evaluation timeout in s")
-                                                            .addOption("lb", "label", true, "label identifying this evaluation")
-                                                            .addOption("nt", "num_threads", true, "targeted number of threads");
+                                                            .addOption("lb", "label", true, "label identifying this batch execution")
+                                                            .addOption("nt", "num_threads", true, "targeted number of concurrent threads")
+                                                            .addOption("dry", "dry_run", false, "to test the configuration variation setup");
 
     public static void main(String[] args) {
-        DefaultParser defaultParser = new DefaultParser(false);
+        DefaultParser defaultParser = new DefaultParser();
         CommandLine parsedArgs;
         try {
             parsedArgs = defaultParser.parse(CLI_OPTIONS, args);
@@ -98,16 +100,25 @@ public class Batching {
         else configBundle = new CodeDefinedEvaluationConfig();
 
         List<ProvidesParameters> parameterVariations;
+        List<Tuple2<String, List<String>>> informalParameterVariations = null;
         String variationsValue = parsedArgs.getOptionValue("variations");
-        if (variationsValue != null)
+        if (variationsValue != null) {
             parameterVariations = FileUtils.readCustomJson(variationsValue, ParameterVariationsParsing.getTypeAdapter());
-        else parameterVariations = CodeDefinedEvaluationConfig.createParameterVariations();
+            informalParameterVariations = FileUtils.readCustomJson(variationsValue, InformalParameterVariationsParsing.getTypeAdapter());
+        } else parameterVariations = CodeDefinedEvaluationConfig.createParameterVariations();
 
+        /*
         int maxParameterVariationsToPrint = 50;
-        System.out.printf("Batching %d Parameter Variations (printing first %d)%n", parameterVariations.size(), maxParameterVariationsToPrint);
-        for (ProvidesParameters pv : parameterVariations.subList(0, Math.min(maxParameterVariationsToPrint, parameterVariations.size()))) {
+        int V = parameterVariations.size();
+        System.out.printf("Batching %d Parameter Variations (printing first and last %d)%n", V, maxParameterVariationsToPrint / 2);
+        for (ProvidesParameters pv : parameterVariations.subList(0, Math.min(maxParameterVariationsToPrint / 2, V))) {
             System.out.println(pv);
         }
+        System.out.println("...");
+        for (ProvidesParameters pv : parameterVariations.subList(V - Math.min(maxParameterVariationsToPrint / 2, V), V)) {
+            System.out.println(pv);
+        }
+         */
 
         Duration pecTimeout = null, ppTimeout = null, totalTimeout = null;
         String pecValue = parsedArgs.getOptionValue("pec_timeout");
@@ -126,6 +137,7 @@ public class Batching {
         bc.logPath = logPath;
         bc.outputFolder = outFolder;
         bc.parameterVariations = parameterVariations;
+        bc.informalParameterVariations = informalParameterVariations;
 
         if (parsedArgs.hasOption("evaluate")) {
             Duration evalTimeout = null;
@@ -138,8 +150,11 @@ public class Batching {
             bc.options.add(BatchOptions.Evaluate);
         }
 
-        if (parsedArgs.hasOption("monitor"))
-            bc.options.add(BatchOptions.SaveMonitoring);
+        if (parsedArgs.hasOption("visualize")) bc.options.add(BatchOptions.ShowResultingPetrinet);
+
+        if (parsedArgs.hasOption("dry")) bc.options.add(BatchOptions.DryRun);
+
+        if (parsedArgs.hasOption("monitor")) bc.options.add(BatchOptions.SaveMonitoring);
 
         run(configBundle, executionParameters, bc);
     }
@@ -150,7 +165,7 @@ public class Batching {
         XLog inputLog = XLogParser.readLog(bc.logPath);
         InputDataBundle inputData = InputDataBundle.process(inputLog, inputProcessingConfig);
 
-        if (bc.evalContext != null) {
+        if (bc.options.contains(BatchOptions.Evaluate)) {
             PreProcessingParameters preProcessingParameters = inputProcessingConfig.getPreProcessingParameters();
             XLog evalLog = EvalUtils.createEvalLog(inputLog, preProcessingParameters);
             Set<XEventClass> eventClasses = EvalUtils.createEventClasses(preProcessingParameters.getEventClassifier(), evalLog);
@@ -194,6 +209,7 @@ public class Batching {
         FileUtils.saveString(bc.inOutputFolder("meta_info.txt"), meta_string);
         FileUtils.saveString(bc.inOutputFolder("input_data_info.txt"), data_string);
 
+
         List<Tuple2<String, SPECppConfigBundle>> configurations = new ArrayList<>();
         for (int i = 0; i < bc.parameterVariations.size(); i++) {
             for (int r = 0; r < num_replications; r++) {
@@ -202,12 +218,46 @@ public class Batching {
                 configurations.add(new ImmutableTuple2<>(rid, rc));
             }
         }
-        bc.perfWriter = new CSVWriter<>(bc.inOutputFolder("perf.csv"), SPECppFinished.COLUMN_NAMES, SPECppFinished::toRow);
-        if (bc.evalContext != null)
-            bc.evalContext.evalWriter = new CSVWriter<>(bc.inOutputFolder("eval.csv"), SPECppEvaluated.COLUMN_NAMES, SPECppEvaluated::toRow);
+
+
+        if (bc.informalParameterVariations != null) {
+            int variationCount = bc.informalParameterVariations.stream()
+                                                               .map(Tuple2::getT2)
+                                                               .mapToInt(List::size)
+                                                               .min()
+                                                               .orElse(0);
+
+            List<Tuple2<String, List<String>>> columnBasedData = new ArrayList<>();
+
+            List<String> runIdentifiers = new ArrayList<>(variationCount * num_replications);
+            for (Tuple2<String, List<String>> tuple2 : bc.informalParameterVariations) {
+                columnBasedData.add(new ImmutableTuple2<>(tuple2.getT1(), new ArrayList<>()));
+            }
+
+            for (int i = 0; i < variationCount; i++) {
+                for (int r = 0; r < num_replications; r++) {
+                    runIdentifiers.add(createRunIdentifier(i, r));
+                    for (int c = 0; c < columnBasedData.size(); c++) {
+                        String s = bc.informalParameterVariations.get(c).getT2().get(i);
+                        columnBasedData.get(c).getT2().add(s);
+                    }
+                }
+            }
+
+            columnBasedData.add(0, new ImmutableTuple2<>("run identifier", runIdentifiers));
+
+            FileUtils.saveAsCSV(bc.inOutputFolder("varied_parameters_informal.csv"), columnBasedData);
+        }
+
+        if (bc.options.contains(BatchOptions.DryRun)) return;
+
+        bc.perfWriter = new DirectCSVWriter<>(bc.inOutputFolder("perf.csv"), SPECppFinished.COLUMN_NAMES, SPECppFinished::toRow);
+        if (bc.options.contains(BatchOptions.Evaluate))
+            bc.evalContext.evalWriter = new DirectCSVWriter<>(bc.inOutputFolder("eval.csv"), SPECppEvaluated.COLUMN_NAMES, SPECppEvaluated::toRow);
 
         List<Tuple2<String, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>>> submittedExecutions = new ArrayList<>(configurations.size());
-        try (ExecutionEnvironment executionEnvironment = new ExecutionEnvironment(num_threads)) {
+        try (
+                ExecutionEnvironment executionEnvironment = new ExecutionEnvironment(num_threads)) {
 
             System.out.printf("Commencing batching run of %d configurations with %d replications each over %d worker threads @%s.%n", configurations.size(), num_replications, num_threads, LocalDateTime.now());
             for (Tuple2<String, SPECppConfigBundle> tup : configurations) {
@@ -217,19 +267,20 @@ public class Batching {
                 SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECpp.build(cfg, inputData);
                 ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution = executionEnvironment.execute(specpp, executionParameters);
                 System.out.println("queued " + runIdentifier + ".");
-                if (bc.evalContext != null && bc.evalContext.timeout != null)
+                if (bc.options.contains(BatchOptions.Evaluate) && bc.evalContext.timeout != null)
                     executionEnvironment.addTimeLimitedCompletionCallback(execution, ex -> handleCompletion(bc, runIdentifier, cfg, ex), bc.evalContext.timeout);
                 else
                     executionEnvironment.addCompletionCallback(execution, ex -> handleCompletion(bc, runIdentifier, cfg, ex));
                 submittedExecutions.add(new ImmutableTuple2<>(runIdentifier, execution));
             }
 
-        } catch (InterruptedException e) {
+        } catch (
+                InterruptedException e) {
             e.fillInStackTrace();
             System.out.println("Execution was interrupted\n" + e);
         } finally {
             bc.perfWriter.stop();
-            if (bc.evalContext != null) bc.evalContext.evalWriter.stop();
+            if (bc.options.contains(BatchOptions.Evaluate)) bc.evalContext.evalWriter.stop();
         }
 
         List<String> successful = submittedExecutions.stream()
@@ -256,6 +307,7 @@ public class Batching {
             System.out.println(s);
 
             ProMPetrinetWrapper pn = specpp.getPostProcessedResult();
+
             if (bc.options.contains(BatchOptions.ShowResultingPetrinet))
                 VizUtils.showVisualization(PetrinetVisualization.of("Result of " + runIdentifier, pn));
 

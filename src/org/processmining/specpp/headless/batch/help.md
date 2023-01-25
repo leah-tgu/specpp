@@ -8,8 +8,11 @@ Provides a command line interface for batch execution and optionally evaluation 
 * `-c`/`-config` path to the configuration file [(.json, view format)](#Configuration-file-format)
 * `-v`/`-variations` path to the parameter variations file [(.json, view format)](#Parameter-variations-file-format)
 * `-o`/`-output` path to the desired output directory
-* `-ev`/`evaluate` whether to automatically compute quality metrics on resulting models
-* `-lb`/`-label` (optional) label of this evaluation attempt (a sub folder is created in the output directory)
+* `-ev`/`-evaluate` whether to automatically compute quality metrics on resulting models 
+* `-m`/`-monitor` whether to save the output of data monitors to files 
+* `-viz`/`-visualize` whether to visualize and thus layout the resulting petri nets
+* `-dry`/`-dry_run` to test the configuration, no executions will be launched
+* `-lb`/`-label` (optional) label of this batch execution (a sub folder is created in the output directory)
 * `-nt`/`-num_threads` (optional) targeted parallelism level
 * `-pec_time`/`-pec_timeout` (optional) timeout in seconds for PEC-cycling (graceful cancellation, i.e., the
   intermediate result is used for post-processing)
