@@ -41,7 +41,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     private final Configuration configuration;
     private int cycleCount;
     private C lastCandidate;
-    private boolean computationCancelled;
+    private boolean pecCyclingCancelledPrematurely;
 
     private final AtomicBoolean active;
     private R result;
@@ -58,10 +58,10 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         cycleCount = 0;
         active = new AtomicBoolean(false);
         lastCandidate = null;
-        computationCancelled = false;
+        pecCyclingCancelledPrematurely = false;
         configuration = new Configuration(cr);
 
-        globalComponentSystem().provide(DataRequirements.dataSource("cancel_gracefully", Runnable.class, StaticDataSource.of(this::cancelGracefully)));
+        globalComponentSystem().provide(DataRequirements.dataSource("cancel_gracefully", Runnable.class, StaticDataSource.of(this::cancelPECCyclingGracefully)));
         localComponentSystem().provide(DataRequirements.dataSource("update_local_component_system", Runnable.class, StaticDataSource.of(this::updateLocalComponentSystem)));
         registerSubComponent(proposer);
         registerSubComponent(composer);
@@ -141,7 +141,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
     public boolean executePECCycle() {
         if (composer.isFinished()) return true;
         C c = proposer.proposeCandidate();
-        if (computationCancelled || c == null) {
+        if (pecCyclingCancelledPrematurely || c == null) {
             composer.candidatesAreExhausted();
             return true;
         }
@@ -150,8 +150,8 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         return false;
     }
 
-    public void cancelGracefully() {
-        computationCancelled = true;
+    public void cancelPECCyclingGracefully() {
+        pecCyclingCancelledPrematurely = true;
     }
 
     protected void executeAllPECCycles() {

@@ -131,7 +131,6 @@ public class Batching {
         ExecutionParameters executionParameters = ExecutionParameters.timeouts(timeLimits);
 
         BatchContext bc = new BatchContext();
-        bc.options.add(BatchOptions.ShowResultingPetrinet);
         bc.attempt_identifier = attemptLabel;
         bc.num_threads = num_threads;
         bc.logPath = logPath;
@@ -256,31 +255,46 @@ public class Batching {
             bc.evalContext.evalWriter = new DirectCSVWriter<>(bc.inOutputFolder("eval.csv"), SPECppEvaluated.COLUMN_NAMES, SPECppEvaluated::toRow);
 
         List<Tuple2<String, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>>> submittedExecutions = new ArrayList<>(configurations.size());
-        try (
-                ExecutionEnvironment executionEnvironment = new ExecutionEnvironment(num_threads)) {
 
-            System.out.printf("Commencing batching run of %d configurations with %d replications each over %d worker threads @%s.%n", configurations.size(), num_replications, num_threads, LocalDateTime.now());
+        ExecutionEnvironment.EnvironmentSettings envs = ExecutionEnvironment.EnvironmentSettings.targetParallelism(num_threads / 2 + num_threads % 2, num_threads / 2);
+        Thread wrap = ExecutionEnvironment.wrap(envs, exe -> {
+            System.out.printf("Commencing batching run of %d configurations with %d replications each with a parallelism target of %d threads @%s.%n", configurations.size(), num_replications, num_threads, LocalDateTime.now());
             for (Tuple2<String, SPECppConfigBundle> tup : configurations) {
                 String runIdentifier = tup.getT1();
                 SPECppConfigBundle cfg = tup.getT2();
 
                 SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = SPECpp.build(cfg, inputData);
-                ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution = executionEnvironment.execute(specpp, executionParameters);
-                System.out.println("queued " + runIdentifier + ".");
+                ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution = exe.execute(specpp, executionParameters);
+                System.out.println("Queued " + runIdentifier + ".");
+                exe.addLightweightCompletionCallback(execution, ex -> handleCompletion(bc, runIdentifier, cfg, ex));
+
                 if (bc.options.contains(BatchOptions.Evaluate) && bc.evalContext.timeout != null)
-                    executionEnvironment.addTimeLimitedCompletionCallback(execution, ex -> handleCompletion(bc, runIdentifier, cfg, ex), bc.evalContext.timeout);
-                else
-                    executionEnvironment.addCompletionCallback(execution, ex -> handleCompletion(bc, runIdentifier, cfg, ex));
+                    exe.addTimeLimitedCompletionCallback(execution, ex -> handleEvaluation(bc, runIdentifier, cfg, ex), bc.evalContext.timeout);
+                else if (bc.options.contains(BatchOptions.Evaluate))
+                    exe.addCompletionCallback(execution, ex -> handleEvaluation(bc, runIdentifier, cfg, ex));
+
                 submittedExecutions.add(new ImmutableTuple2<>(runIdentifier, execution));
             }
-
-        } catch (
-                InterruptedException e) {
-            e.fillInStackTrace();
-            System.out.println("Execution was interrupted\n" + e);
-        } finally {
+        }, () -> {
             bc.perfWriter.stop();
             if (bc.options.contains(BatchOptions.Evaluate)) bc.evalContext.evalWriter.stop();
+        });
+
+        boolean cancelled = false;
+        try {
+            wrap.start();
+            while (wrap.isAlive() && !cancelled) {
+                wrap.join(1000);
+                if (System.console() != null) {
+                    String s = System.console().readLine();
+                    cancelled = s != null && s.contains("exit");
+                    if (cancelled) wrap.interrupt();
+
+                }
+            }
+        } catch (InterruptedException e) {
+            System.out.println("Batch execution was interrupted.");
+            e.printStackTrace();
         }
 
         List<String> successful = submittedExecutions.stream()
@@ -292,7 +306,7 @@ public class Batching {
                                                        .map(Tuple2::getT1)
                                                        .collect(Collectors.toList());
         long count = successful.size();
-        System.out.printf("Completed evaluation @%s. %d/%d executions terminated successfully.%n", LocalDateTime.now(), count, configurations.size());
+        System.out.printf("Completed batch execution @%s. %d/%d executions terminated successfully.%n", LocalDateTime.now(), count, configurations.size());
         FileUtils.saveStrings(bc.inOutputFolder("successes.txt"), successful);
         FileUtils.saveStrings(bc.inOutputFolder("failures.txt"), unsuccessful);
 
@@ -301,10 +315,10 @@ public class Batching {
 
     public static void handleCompletion(BatchContext bc, String runIdentifier, SPECppConfigBundle cfg, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
         SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = execution.getSPECpp();
-        bc.perfWriter.observe(new SPECppFinished(runIdentifier, execution));
+        SPECppFinished finished = new SPECppFinished(runIdentifier, execution);
+        bc.perfWriter.observe(finished);
         if (execution.hasTerminatedSuccessfully()) {
-            String s = runIdentifier + " completed successfully:" + "\n" + PrintingUtils.stringifyComputationStatuses(execution);
-            System.out.println(s);
+            System.out.println("Execution completed successfully:\n\t" + finished);
 
             ProMPetrinetWrapper pn = specpp.getPostProcessedResult();
 
@@ -316,35 +330,41 @@ public class Batching {
                                                                                                  .toString());
             FileUtils.savePetrinetToPnml(bc.outputFolder + "model_" + runIdentifier, pn);
 
-            // EXPERIMENTAL
             if (bc.options.contains(BatchOptions.SaveMonitoring)) {
                 List<String> resultingStrings = SPECppOutputtingUtils.getResultingStrings(SPECppOutputtingUtils.getMonitors(specpp)
                                                                                                                .stream());
                 FileUtils.saveStrings(bc.outputFolder + "monitoring_" + runIdentifier + ".txt", resultingStrings);
             }
 
-            if (bc.options.contains(BatchOptions.Evaluate))
-                performEvaluation(bc.evalContext, runIdentifier, cfg, execution);
         } else {
             String s = runIdentifier + " completed unsuccessfully:" + "\n" + PrintingUtils.stringifyComputationStatuses(execution);
             System.out.println(s);
         }
     }
 
+    public static void handleEvaluation(BatchContext bc, String runIdentifier, SPECppConfigBundle cfg, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
+        if (execution.hasTerminatedSuccessfully()) performEvaluation(bc.evalContext, runIdentifier, cfg, execution);
+    }
+
     public static void performEvaluation(EvalContext ec, String runIdentifier, SPECppConfigBundle cfg, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
         EvalUtils.EvaluationLogData evaluationLogData = ec.evaluationLogData;
         ProMPetrinetWrapper pn = execution.getSPECpp().getPostProcessedResult();
-        TransEvClassMapping evClassMapping = EvalUtils.createTransEvClassMapping(evaluationLogData.getEventClassifier(), evaluationLogData.getEventClasses(), pn);
         try {
+            long start = System.currentTimeMillis();
+            TransEvClassMapping evClassMapping = EvalUtils.createTransEvClassMapping(evaluationLogData.getEventClassifier(), evaluationLogData.getEventClasses(), pn);
             PNRepResult pnRepResult = EvalUtils.computeAlignmentBasedReplay(null, evaluationLogData, evClassMapping, pn);
             double fraction = EvalUtils.derivePerfectlyFitting(evaluationLogData, pnRepResult);
             double fitness = EvalUtils.deriveAlignmentBasedFitness(pnRepResult);
             ETCResults etcResults = EvalUtils.computeETC(null, evaluationLogData, evClassMapping, pn);
             double precision = EvalUtils.deriveETCPrecision(etcResults);
-            ec.evalWriter.observe(new SPECppEvaluated(runIdentifier, fraction, fitness, precision));
+            long end = System.currentTimeMillis();
+            long duration = end - start;
+            SPECppEvaluated evaluated = new SPECppEvaluated(runIdentifier, fraction, fitness, precision, duration);
+            ec.evalWriter.observe(evaluated);
+            System.out.println("Evaluation completed successfully:\n\t" + evaluated);
         } catch (Exception e) {
             e.fillInStackTrace();
-            System.out.printf("evaluation computations of %s failed.%n" + e, runIdentifier);
+            System.out.printf("Evaluation computation of %s failed.%n%s%n", runIdentifier, e);
         }
     }
 

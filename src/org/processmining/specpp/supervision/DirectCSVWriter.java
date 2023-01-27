@@ -24,6 +24,7 @@ public class DirectCSVWriter<O extends Observation> implements AsyncObserver<O>,
     private void handleObservation(O observation) {
         String[] row = rowMapper.apply(observation);
         csvWriter.writeNext(row);
+        csvWriter.flushQuietly(); // fuck you opencsv
     }
 
     @Override

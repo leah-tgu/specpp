@@ -28,7 +28,6 @@ import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEval
 import org.processmining.specpp.evaluation.heuristics.DirectlyFollowsHeuristic;
 import org.processmining.specpp.evaluation.heuristics.EventuallyFollowsTreeHeuristic;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
-import org.processmining.specpp.headless.local.PrivatePaths;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
 import org.processmining.specpp.postprocessing.LPBasedImplicitnessPostProcessing;
 import org.processmining.specpp.postprocessing.NaiveUniwiredSelfLoopAdditionPostProcessing;

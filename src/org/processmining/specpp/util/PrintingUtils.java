@@ -25,4 +25,14 @@ public class PrintingUtils {
     public static String stringifyComputationStatuses(ExecutionEnvironment.SPECppExecution<?, ?, ?, ?> execution) {
         return "\t" + "PEC-cycling: " + execution.getDiscoveryComputation() + "\n" + "\t" + "Post Processing: " + execution.getPostProcessingComputation() + "\n\t" + "Overall: " + execution.getMasterComputation();
     }
+
+    public static String stringifyRow(String[] columnLabels, String[] row) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        for (int i = 0; i < columnLabels.length; i++) {
+            sb.append(columnLabels[i]).append(": ").append(row[i]);
+            if (i < columnLabels.length - 1) sb.append(", ");
+        }
+        return sb.append("}").toString();
+    }
 }

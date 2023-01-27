@@ -8,12 +8,13 @@ import org.processmining.specpp.orchestra.ExecutionEnvironment;
 import org.processmining.specpp.prom.computations.OngoingComputation;
 import org.processmining.specpp.prom.computations.OngoingStagedComputation;
 import org.processmining.specpp.supervision.observations.CSVRowEvent;
+import org.processmining.specpp.util.PrintingUtils;
 
 import java.util.Objects;
 
 public class SPECppFinished implements CSVRowEvent {
 
-    public static final String[] COLUMN_NAMES = new String[]{"run identifier", "started", "completed", "pec cycling [ms]", "post processing [ms]", "total [ms]", "terminated successfully?"};
+    public static final String[] COLUMN_NAMES = new String[]{"run identifier", "started", "completed", "pec cycling [ms]", "post processing [ms]", "total [ms]", "pec cycling cancelled?", "terminated successfully?"};
 
     private final String runIdentifier;
     private final ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution;
@@ -33,7 +34,7 @@ public class SPECppFinished implements CSVRowEvent {
 
     @Override
     public String toString() {
-        return "SPECppFinished{" + runIdentifier + ": " + execution + '}';
+        return "SPECppFinished" + PrintingUtils.stringifyRow(getColumnNames(), toRow());
     }
 
     @Override
@@ -61,9 +62,10 @@ public class SPECppFinished implements CSVRowEvent {
         OngoingComputation mc = execution.getMasterComputation();
         OngoingComputation dc = execution.getDiscoveryComputation();
         OngoingStagedComputation ppc = execution.getPostProcessingComputation();
+
         return new String[]{runIdentifier, Objects.toString(mc.getStart()), Objects.toString(mc.getEnd()), dc.hasTerminated() ? Long.toString(dc.calculateRuntime()
                                                                                                                                                 .toMillis()) : "dnf", ppc.hasTerminated() ? Long.toString(ppc.calculateRuntime()
                                                                                                                                                                                                              .toMillis()) : "dnf", mc.hasTerminated() ? Long.toString(mc.calculateRuntime()
-                                                                                                                                                                                                                                                                        .toMillis()) : "dnf", Boolean.toString(execution.hasTerminatedSuccessfully())};
+                                                                                                                                                                                                                                                                        .toMillis()) : "dnf", Boolean.toString(execution.wasDiscoveryCancelledGracefully()), Boolean.toString(execution.hasTerminatedSuccessfully())};
     }
 }
