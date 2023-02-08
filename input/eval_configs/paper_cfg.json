@@ -9,7 +9,7 @@
     "Evaluators": [
       "fitness.AbsolutelyNoFrillsFitnessEvaluator$Builder",
       "markings.LogHistoryMaker",
-      "implicitness.LPBasedImplicitnessCalculator$Builder"
+      "implicitness.LPSolveBasedImplicitnessCalculator$Builder"
     ],
     "Proposing": {
       "Proposer": "ConstrainablePlaceProposer$Builder",
@@ -28,7 +28,8 @@
       ]
     },
     "Post Processors": [
-      "LPBasedImplicitnessPostProcessing$Builder",
+      "ReplayBasedImplicitnessPostProcessing$Interruptible$Builder",
+      "LPBasedImplicitnessPostProcessing$Interruptible$Builder",
       "SelfLoopPlaceMerger",
       "ProMConverter"
     ]

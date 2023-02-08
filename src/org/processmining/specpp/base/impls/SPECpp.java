@@ -158,8 +158,21 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         while (!executePECCycle()) ++cycleCount;
     }
 
+    protected void executeAllPECCyclesInterruptibly() throws InterruptedException {
+        while (!executePECCycle()) {
+            if (cycleCount % 1000 == 0 && Thread.interrupted()) throw new InterruptedException();
+            ++cycleCount;
+        }
+    }
+
     protected void generateResult() {
         result = composer.generateResult();
+    }
+
+    public final R executeDiscoveryInterruptibly() throws InterruptedException {
+        executeAllPECCyclesInterruptibly();
+        generateResult();
+        return result;
     }
 
     public final R executeDiscovery() {
@@ -172,8 +185,21 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         try {
             finalResult = postProcessor.postProcess(result);
         } catch (Exception e) {
-            DebuggingSupervisor.debug("Post Processing", "Post Processing failed with:");
-            e.printStackTrace();
+            e.fillInStackTrace();
+            String message = "Post Processing on " + Thread.currentThread() + " failed with:\n" + e;
+            DebuggingSupervisor.debug("Post Processing", message);
+            System.out.println(message);
+        }
+        return finalResult;
+    }
+
+    public final F executePostProcessingInterruptibly() throws InterruptedException {
+        try {
+            finalResult = postProcessor.postProcessInterruptibly(result);
+        } catch (Exception e) {
+            if (e instanceof InterruptedException) throw e;
+            e.fillInStackTrace();
+            DebuggingSupervisor.debug("Post Processing", "Post Processing on " + Thread.currentThread() + " failed with:\n" + e);
         }
         return finalResult;
     }
@@ -182,8 +208,8 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
         try {
             finalResult = postProcessor.postProcess(result, intermediateResultCallback);
         } catch (Exception e) {
-            DebuggingSupervisor.debug("Post Processing", "Post Processing failed with:");
-            e.printStackTrace();
+            e.fillInStackTrace();
+            DebuggingSupervisor.debug("Post Processing", "Post Processing on " + Thread.currentThread() + " failed with:\n" + e);
         }
         return finalResult;
     }
@@ -222,6 +248,7 @@ public class SPECpp<C extends Candidate, I extends CompositionComponent<C>, R ex
                     try {
                         ((Joinable) supervisor).join();
                     } catch (InterruptedException e) {
+                        // TODO swallowing interrupted exceptions
                         throw new RuntimeException(e);
                     }
                 }

@@ -97,7 +97,7 @@ public class StatefulPlaceComposition extends BasePlaceComposition implements Of
                 return rating;
             };
         } else if (params.getVersion() == ImplicitnessTestingParameters.CIPRVersion.LPBased)
-            implicitnessRater = p -> externalImplicitnessCalculator.eval(new EvaluationParameterTuple2<>(p, candidates));
+            implicitnessRater = p -> externalImplicitnessCalculator.eval(new EvaluationParameterTuple2<>(p, candidates)); // almost impossible to be less efficient with LP handling (by recreating the LP each call instead of managing the state here)
 
         resetCurrentlySupportedVariants(consideredVariants.getData());
     }

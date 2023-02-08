@@ -1,5 +1,6 @@
 package org.processmining.specpp.headless.batch;
 
+import lpsolve.LpSolve;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
@@ -26,7 +27,9 @@ import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.log.Activity;
 import org.processmining.specpp.datastructures.log.Log;
 import org.processmining.specpp.datastructures.petri.*;
+import org.processmining.specpp.datastructures.util.ImmutablePair;
 import org.processmining.specpp.datastructures.util.ImmutableTuple2;
+import org.processmining.specpp.datastructures.util.Pair;
 import org.processmining.specpp.datastructures.util.Tuple2;
 import org.processmining.specpp.headless.CodeDefinedEvaluationConfig;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
@@ -34,7 +37,10 @@ import org.processmining.specpp.orchestra.SPECppOutputtingUtils;
 import org.processmining.specpp.preprocessing.InputDataBundle;
 import org.processmining.specpp.preprocessing.XLogParser;
 import org.processmining.specpp.supervision.DirectCSVWriter;
-import org.processmining.specpp.util.*;
+import org.processmining.specpp.util.EvalUtils;
+import org.processmining.specpp.util.FileUtils;
+import org.processmining.specpp.util.PathTools;
+import org.processmining.specpp.util.VizUtils;
 
 import java.io.File;
 import java.time.Duration;
@@ -42,7 +48,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 public class Batching {
@@ -51,6 +60,7 @@ public class Batching {
     private static final Options CLI_OPTIONS = new Options().addOption("l", "log", true, "path to the input event log")
                                                             .addOption("c", "config", true, "path to a json base configuration file")
                                                             .addOption("v", "variations", true, "path to a json parameter variation configuration file")
+                                                            .addOption("r", "range", true, "(optional) restrict execution a range of configuration variation indices [low, high) with low/high=integer|_")
                                                             .addOption("o", "out", true, "path to the output directory")
                                                             .addOption("ev", "evaluate", false, "whether to compute model quality metrics")
                                                             .addOption("m", "monitor", false, "whether to save the output of data monitors to files")
@@ -61,7 +71,8 @@ public class Batching {
                                                             .addOption("ev_time", "evaluation_timeout", true, "evaluation timeout in s")
                                                             .addOption("lb", "label", true, "label identifying this batch execution")
                                                             .addOption("nt", "num_threads", true, "targeted number of concurrent threads")
-                                                            .addOption("dry", "dry_run", false, "to test the configuration variation setup");
+                                                            .addOption("dry", "dry_run", false, "to test the configuration variation setup")
+                                                            .addOption("lpsolve", "lpsolve", false, "attempt to load external lpsolve55 library");
 
     public static void main(String[] args) {
         DefaultParser defaultParser = new DefaultParser();
@@ -72,6 +83,8 @@ public class Batching {
             e.printStackTrace();
             return;
         }
+
+        if (parsedArgs.hasOption("lpsolve")) System.out.println(LpSolve.lpSolveVersion());
 
         String num_threadsValue = parsedArgs.getOptionValue("num_threads");
         int num_threads = num_threadsValue != null ? Integer.parseInt(num_threadsValue) : Math.max(1, Runtime.getRuntime()
@@ -138,6 +151,18 @@ public class Batching {
         bc.parameterVariations = parameterVariations;
         bc.informalParameterVariations = informalParameterVariations;
 
+        if (parsedArgs.hasOption("range")) {
+            String rangeArg = parsedArgs.getOptionValue("range");
+            Matcher m = Pattern.compile("(_|\\d+),(_|\\d+)").matcher(rangeArg);
+            if (m.find()) {
+                String lowString = m.group(1);
+                int low = lowString.equals("_") ? 0 : Integer.parseInt(lowString);
+                String highString = m.group(2);
+                int high = highString.equals("_") ? parameterVariations.size() : Integer.parseInt(highString);
+                bc.variationsIndexRange = new ImmutablePair<>(low, high);
+            }
+        }
+
         if (parsedArgs.hasOption("evaluate")) {
             Duration evalTimeout = null;
             String evtValue = parsedArgs.getOptionValue("evaluation_timeout");
@@ -175,6 +200,17 @@ public class Batching {
         System.gc();
         System.out.println("Finished preparing input data.");
 
+        List<ProvidesParameters> parameterVariations = bc.parameterVariations;
+        List<Integer> parameterVariationIndices;
+
+        if (bc.variationsIndexRange != null) {
+            Pair<Integer> range = bc.variationsIndexRange;
+            parameterVariationIndices = IntStream.range(range.first(), range.second())
+                                                 .boxed()
+                                                 .collect(Collectors.toList());
+        } else parameterVariationIndices = IntStream.range(0, parameterVariations.size())
+                                                    .boxed()
+                                                    .collect(Collectors.toList());
         int num_threads = bc.num_threads;
         int num_replications = 1;
 
@@ -197,9 +233,10 @@ public class Batching {
         String data_string = log_info + "\n" + enc_info;
 
 
-        List<String> parameterVariationStrings = bc.parameterVariations.stream()
-                                                                       .map(ProvidesParameters::toString)
-                                                                       .collect(Collectors.toList());
+        List<String> parameterVariationStrings = parameterVariationIndices.stream()
+                                                                          .map(parameterVariations::get)
+                                                                          .map(ProvidesParameters::toString)
+                                                                          .collect(Collectors.toList());
 
         File file = new File(bc.outputFolder);
         if (!file.exists() && !file.mkdirs()) return;
@@ -210,7 +247,7 @@ public class Batching {
 
 
         List<Tuple2<String, SPECppConfigBundle>> configurations = new ArrayList<>();
-        for (int i = 0; i < bc.parameterVariations.size(); i++) {
+        for (Integer i : parameterVariationIndices) {
             for (int r = 0; r < num_replications; r++) {
                 String rid = createRunIdentifier(i, r);
                 SPECppConfigBundle rc = createRunConfiguration(rid, bc, configBundle, i);
@@ -220,24 +257,25 @@ public class Batching {
 
 
         if (bc.informalParameterVariations != null) {
-            int variationCount = bc.informalParameterVariations.stream()
-                                                               .map(Tuple2::getT2)
-                                                               .mapToInt(List::size)
-                                                               .min()
-                                                               .orElse(0);
+            List<Tuple2<String, List<String>>> informalParameterVariations = bc.informalParameterVariations;
+
+            assert informalParameterVariations.stream()
+                                              .map(Tuple2::getT2)
+                                              .mapToInt(List::size)
+                                              .allMatch(l -> l == configurations.size());
 
             List<Tuple2<String, List<String>>> columnBasedData = new ArrayList<>();
 
-            List<String> runIdentifiers = new ArrayList<>(variationCount * num_replications);
-            for (Tuple2<String, List<String>> tuple2 : bc.informalParameterVariations) {
+            List<String> runIdentifiers = new ArrayList<>(parameterVariationIndices.size() * num_replications);
+            for (Tuple2<String, List<String>> tuple2 : informalParameterVariations) {
                 columnBasedData.add(new ImmutableTuple2<>(tuple2.getT1(), new ArrayList<>()));
             }
 
-            for (int i = 0; i < variationCount; i++) {
+            for (Integer i : parameterVariationIndices) {
                 for (int r = 0; r < num_replications; r++) {
                     runIdentifiers.add(createRunIdentifier(i, r));
                     for (int c = 0; c < columnBasedData.size(); c++) {
-                        String s = bc.informalParameterVariations.get(c).getT2().get(i);
+                        String s = informalParameterVariations.get(c).getT2().get(i);
                         columnBasedData.get(c).getT2().add(s);
                     }
                 }
@@ -250,14 +288,15 @@ public class Batching {
 
         if (bc.options.contains(BatchOptions.DryRun)) return;
 
-        bc.perfWriter = new DirectCSVWriter<>(bc.inOutputFolder("perf.csv"), SPECppFinished.COLUMN_NAMES, SPECppFinished::toRow);
+        bc.perfWriter = new DirectCSVWriter<>(bc.inOutputFolder("perf.csv"), SPECppPerformanceInfo.COLUMN_NAMES, SPECppPerformanceInfo::toRow);
+        bc.modelWriter = new DirectCSVWriter<>(bc.inOutputFolder("models.csv"), SPECppModelInfo.COLUMN_NAMES, SPECppModelInfo::toRow);
         if (bc.options.contains(BatchOptions.Evaluate))
-            bc.evalContext.evalWriter = new DirectCSVWriter<>(bc.inOutputFolder("eval.csv"), SPECppEvaluated.COLUMN_NAMES, SPECppEvaluated::toRow);
+            bc.evalContext.evalWriter = new DirectCSVWriter<>(bc.inOutputFolder("eval.csv"), SPECppEvaluationInfo.COLUMN_NAMES, SPECppEvaluationInfo::toRow);
 
         List<Tuple2<String, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>>> submittedExecutions = new ArrayList<>(configurations.size());
 
         ExecutionEnvironment.EnvironmentSettings envs = ExecutionEnvironment.EnvironmentSettings.targetParallelism(num_threads / 2 + num_threads % 2, num_threads / 2);
-        Thread wrap = ExecutionEnvironment.wrap(envs, exe -> {
+        ExecutionEnvironment.ExecutionEvironmentThread wrap = ExecutionEnvironment.wrap(envs, exe -> {
             System.out.printf("Commencing batching run of %d configurations with %d replications each with a parallelism target of %d threads @%s.%n", configurations.size(), num_replications, num_threads, LocalDateTime.now());
             for (Tuple2<String, SPECppConfigBundle> tup : configurations) {
                 String runIdentifier = tup.getT1();
@@ -277,26 +316,40 @@ public class Batching {
             }
         }, () -> {
             bc.perfWriter.stop();
+            bc.modelWriter.stop();
             if (bc.options.contains(BatchOptions.Evaluate)) bc.evalContext.evalWriter.stop();
+
+            handleBatchingCompleted(bc, configurations, submittedExecutions);
         });
 
         boolean cancelled = false;
         try {
             wrap.start();
+            wrap.join();
+            /*
             while (wrap.isAlive() && !cancelled) {
                 wrap.join(1000);
                 if (System.console() != null) {
                     String s = System.console().readLine();
                     cancelled = s != null && s.contains("exit");
                     if (cancelled) wrap.interrupt();
-
+                    if (s != null && s.contains("info")) {
+                        ExecutionEnvironment ee = wrap.getExecutionEnvironment();
+                        if (ee != null) System.out.println(ee.threadPoolInfo());
+                    }
                 }
             }
+            */
         } catch (InterruptedException e) {
             System.out.println("Batch execution was interrupted.");
             e.printStackTrace();
+            if (wrap.isAlive()) wrap.interrupt();
         }
 
+        System.exit(0);
+    }
+
+    private static void handleBatchingCompleted(BatchContext bc, List<Tuple2<String, SPECppConfigBundle>> configurations, List<Tuple2<String, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>>> submittedExecutions) {
         List<String> successful = submittedExecutions.stream()
                                                      .filter(t -> t.getT2().hasTerminatedSuccessfully())
                                                      .map(Tuple2::getT1)
@@ -309,16 +362,16 @@ public class Batching {
         System.out.printf("Completed batch execution @%s. %d/%d executions terminated successfully.%n", LocalDateTime.now(), count, configurations.size());
         FileUtils.saveStrings(bc.inOutputFolder("successes.txt"), successful);
         FileUtils.saveStrings(bc.inOutputFolder("failures.txt"), unsuccessful);
-
-        System.exit(0);
     }
 
     public static void handleCompletion(BatchContext bc, String runIdentifier, SPECppConfigBundle cfg, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> execution) {
         SPECpp<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper> specpp = execution.getSPECpp();
-        SPECppFinished finished = new SPECppFinished(runIdentifier, execution);
-        bc.perfWriter.observe(finished);
+        SPECppPerformanceInfo perfInfo = new SPECppPerformanceInfo(runIdentifier, execution);
+        bc.perfWriter.observe(perfInfo);
+        SPECppModelInfo modelInfo = new SPECppModelInfo(runIdentifier, specpp);
+        bc.modelWriter.observe(modelInfo);
         if (execution.hasTerminatedSuccessfully()) {
-            System.out.println("Execution completed successfully:\n\t" + finished);
+            System.out.println("Execution completed successfully:\n\t" + perfInfo);
 
             ProMPetrinetWrapper pn = specpp.getPostProcessedResult();
 
@@ -337,8 +390,7 @@ public class Batching {
             }
 
         } else {
-            String s = runIdentifier + " completed unsuccessfully:" + "\n" + PrintingUtils.stringifyComputationStatuses(execution);
-            System.out.println(s);
+            System.out.println("Execution completed unsuccessfully:\n\t" + perfInfo);
         }
     }
 
@@ -352,14 +404,17 @@ public class Batching {
         try {
             long start = System.currentTimeMillis();
             TransEvClassMapping evClassMapping = EvalUtils.createTransEvClassMapping(evaluationLogData.getEventClassifier(), evaluationLogData.getEventClasses(), pn);
-            PNRepResult pnRepResult = EvalUtils.computeAlignmentBasedReplay(null, evaluationLogData, evClassMapping, pn);
+            Thread currentThread = Thread.currentThread();
+            // attempting with this canceller
+            PNRepResult pnRepResult = EvalUtils.computeAlignmentBasedReplay(null, evaluationLogData, evClassMapping, pn, currentThread::isInterrupted, true);
+            if (Thread.interrupted()) throw new InterruptedException();
             double fraction = EvalUtils.derivePerfectlyFitting(evaluationLogData, pnRepResult);
             double fitness = EvalUtils.deriveAlignmentBasedFitness(pnRepResult);
             ETCResults etcResults = EvalUtils.computeETC(null, evaluationLogData, evClassMapping, pn);
             double precision = EvalUtils.deriveETCPrecision(etcResults);
             long end = System.currentTimeMillis();
             long duration = end - start;
-            SPECppEvaluated evaluated = new SPECppEvaluated(runIdentifier, fraction, fitness, precision, duration);
+            SPECppEvaluationInfo evaluated = new SPECppEvaluationInfo(runIdentifier, fraction, fitness, precision, duration);
             ec.evalWriter.observe(evaluated);
             System.out.println("Evaluation completed successfully:\n\t" + evaluated);
         } catch (Exception e) {

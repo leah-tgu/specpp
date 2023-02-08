@@ -15,6 +15,7 @@ public class PrivatePaths {
     public static final String BPIC12_A_projection = PathTools.join("BPIC 2012", "A_projection.xes");
     public static final String BPIC12_O_projection = PathTools.join("BPIC 2012", "O_projection.xes");
     public static final String BPIC12_W_projection = PathTools.join("BPIC 2012", "W_projection.xes");
+    public static final String Teleclaims = PathTools.join("Felix", "Teleclaims.xes");
 
     public static String toAbsolutePath(String logName) {
         return LOG_PATH + logName;

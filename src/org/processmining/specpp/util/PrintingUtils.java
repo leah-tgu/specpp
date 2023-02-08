@@ -2,8 +2,10 @@ package org.processmining.specpp.util;
 
 import org.processmining.specpp.componenting.data.DataSourceCollection;
 import org.processmining.specpp.componenting.data.FulfilledDataRequirement;
+import org.processmining.specpp.headless.batch.MyThreadPoolExecutor;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
 
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 public class PrintingUtils {
@@ -12,14 +14,11 @@ public class PrintingUtils {
     }
 
     public static String parametersToPrettyString(DataSourceCollection parameters) {
-        return parameters
-                .fulfilledRequirements()
-                .stream()
-                .map(f -> (FulfilledDataRequirement<?>) f)
-                .map(f -> "\t" + f.getComparable().toString() + " = " + f.getContent()
-                                                                         .getData()
-                                                                         .toString())
-                .collect(Collectors.joining("\n", "Configured Parameters:\n", ""));
+        return parameters.fulfilledRequirements()
+                         .stream()
+                         .map(f -> (FulfilledDataRequirement<?>) f)
+                         .map(f -> "\t" + f.getComparable().toString() + " = " + f.getContent().getData().toString())
+                         .collect(Collectors.joining("\n", "Configured Parameters:\n", ""));
     }
 
     public static String stringifyComputationStatuses(ExecutionEnvironment.SPECppExecution<?, ?, ?, ?> execution) {
@@ -34,5 +33,10 @@ public class PrintingUtils {
             if (i < columnLabels.length - 1) sb.append(", ");
         }
         return sb.append("}").toString();
+    }
+
+    public static String stringifyThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor) {
+        return String.format("pool size: %d/%d(peak: %d), active threads: %d, queue length: %d", threadPoolExecutor.getPoolSize(), threadPoolExecutor.getMaximumPoolSize(), threadPoolExecutor.getLargestPoolSize(), threadPoolExecutor.getActiveCount(), threadPoolExecutor.getQueue()
+                                                                                                                                                                                                                                                                            .size());
     }
 }

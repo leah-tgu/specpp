@@ -9,6 +9,6 @@ class EvalContext {
 
     Duration timeout;
     EvalUtils.EvaluationLogData evaluationLogData;
-    DirectCSVWriter<SPECppEvaluated> evalWriter;
+    DirectCSVWriter<SPECppEvaluationInfo> evalWriter;
 
 }

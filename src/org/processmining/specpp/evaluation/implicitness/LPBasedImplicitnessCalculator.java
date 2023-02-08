@@ -42,10 +42,17 @@ public class LPBasedImplicitnessCalculator extends AbstractGlobalComponentSystem
     }
 
     protected final IntEncoding<Transition> combinedEncoding;
+    protected final IntEncodings<Transition> transitionEncodings;
 
     public LPBasedImplicitnessCalculator(IntEncodings<Transition> transitionEncodings) {
         combinedEncoding = transitionEncodings.unionizedEncoding();
+        this.transitionEncodings = transitionEncodings;
         globalComponentSystem().provide(EvaluationRequirements.evaluator(JavaTypingUtils.castClass(EvaluationParameterTuple2.class), BooleanImplicitness.class, this::compute));
+        provideSelf();
+    }
+
+    protected void provideSelf() {
+        globalComponentSystem().provide(DataRequirements.LP_BASED_IMPLICITNESS_CALCULATOR_DATA_REQUIREMENT.fulfilWithStatic(() -> new LPBasedImplicitnessCalculator(transitionEncodings)));
     }
 
     private BooleanImplicitness compute(EvaluationParameterTuple2<Place, Collection<Place>> input) {

@@ -2,16 +2,17 @@ package org.processmining.specpp.orchestra;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.processmining.specpp.base.Candidate;
 import org.processmining.specpp.base.Result;
 import org.processmining.specpp.base.impls.SPECpp;
 import org.processmining.specpp.componenting.system.link.CompositionComponent;
 import org.processmining.specpp.config.parameters.ExecutionParameters;
+import org.processmining.specpp.headless.batch.MyThreadPoolExecutor;
 import org.processmining.specpp.prom.computations.OngoingComputation;
 import org.processmining.specpp.prom.computations.OngoingStagedComputation;
 import org.processmining.specpp.traits.Joinable;
+import org.processmining.specpp.util.PrintingUtils;
 
 import java.time.Duration;
 import java.util.*;
@@ -20,13 +21,14 @@ import java.util.function.Consumer;
 
 public class ExecutionEnvironment implements Joinable, AutoCloseable {
 
-    private final ScheduledExecutorService timeoutExecutorService;
-    private final ThreadPoolExecutor managerExecutorService, workerExecutorService, callbackExecutorService;
+    private final ScheduledThreadPoolExecutor timeoutExecutorService;
+    private final MyThreadPoolExecutor managerExecutorService, workerExecutorService, callbackExecutorService;
     private final List<ListenableFuture<?>> monitoredFutures;
     private final List<ListenableFuture<?>> monitoredCallbackFutures;
     private final Map<Consumer<?>, ListenableFuture<?>> callbackFutures;
 
     private final EnvironmentSettings environmentSettings;
+    private MyThreadPoolExecutor miscExecutorService;
 
 
     public static class EnvironmentSettings {
@@ -62,7 +64,7 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
             }
         }
         workerExecutorService.shutdownNow();
-        callbackExecutorService.setMaximumPoolSize(environmentSettings.totalThreadCount);
+        callbackExecutorService.setNewFixedSize(environmentSettings.totalThreadCount);
         for (ListenableFuture<?> f : monitoredCallbackFutures) {
             try {
                 f.get();
@@ -74,10 +76,12 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
         }
         timeoutExecutorService.shutdownNow();
         callbackExecutorService.shutdownNow();
+        miscExecutorService.shutdown();
         timeoutExecutorService.awaitTermination(environmentSettings.MAX_TERMINATION_WAIT, TimeUnit.SECONDS);
         workerExecutorService.awaitTermination(environmentSettings.MAX_TERMINATION_WAIT, TimeUnit.SECONDS);
         managerExecutorService.awaitTermination(environmentSettings.MAX_TERMINATION_WAIT, TimeUnit.SECONDS);
         callbackExecutorService.awaitTermination(environmentSettings.MAX_TERMINATION_WAIT, TimeUnit.SECONDS);
+        miscExecutorService.awaitTermination(environmentSettings.MAX_TERMINATION_WAIT, TimeUnit.SECONDS);
     }
 
     @Override
@@ -131,13 +135,38 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
 
     }
 
-    public static Thread wrap(Consumer<ExecutionEnvironment> user, Runnable finallyClause) {
+    public static ExecutionEvironmentThread wrap(Consumer<ExecutionEnvironment> user, Runnable finallyClause) {
         return wrap(EnvironmentSettings.targetParallelism(3), user, finallyClause);
     }
 
-    public static Thread wrap(EnvironmentSettings envs, Consumer<ExecutionEnvironment> user, Runnable finallyClause) {
-        Runnable wrapped = () -> {
+    public static ExecutionEvironmentThread wrap(EnvironmentSettings envs, Consumer<ExecutionEnvironment> user, Runnable finallyClause) {
+        ExecutionEvironmentThread thread = new ExecutionEvironmentThread(envs, user, finallyClause);
+        thread.setPriority(Thread.MAX_PRIORITY);
+        return thread;
+    }
+
+    public static class ExecutionEvironmentThread extends Thread {
+        private final EnvironmentSettings envs;
+        private final Consumer<ExecutionEnvironment> user;
+        private final Runnable finallyClause;
+        private ExecutionEnvironment ee;
+
+        public ExecutionEvironmentThread(EnvironmentSettings envs, Consumer<ExecutionEnvironment> user, Runnable finallyClause) {
+            super("Execution Environment");
+            this.envs = envs;
+            this.user = user;
+            this.finallyClause = finallyClause;
+            setDaemon(true);
+        }
+
+        public ExecutionEnvironment getExecutionEnvironment() {
+            return ee;
+        }
+
+        @Override
+        public void run() {
             try (ExecutionEnvironment ee = new ExecutionEnvironment(envs)) {
+                this.ee = ee;
                 user.accept(ee);
             } catch (InterruptedException e) {
                 System.out.println("Execution Environment was interrupted.");
@@ -145,10 +174,7 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
             } finally {
                 finallyClause.run();
             }
-        };
-        Thread thread = new Thread(wrapped, "Execution Environment");
-        thread.setPriority(Thread.MAX_PRIORITY);
-        return thread;
+        }
     }
 
     public ExecutionEnvironment() {
@@ -163,13 +189,16 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
         environmentSettings = envs;
         managerExecutorService = createFixedThreadPoolExecutor(envs.workerThreadCount, "manager-pool-thread-%d");
 
-        ThreadPoolExecutor workerExecutor = createCachedThreadPoolExecutor(envs.workerThreadCount, "worker-pool-thread-%d");
+        MyThreadPoolExecutor workerExecutor = createFixedThreadPoolExecutor(envs.workerThreadCount, "worker-pool-thread-%d");
         workerExecutor.prestartAllCoreThreads();
         workerExecutorService = workerExecutor;
 
-        ThreadPoolExecutor callbackExecutor = createFixedThreadPoolExecutor(envs.callbackThreadCount, "callback-pool-thread-%d");
+        MyThreadPoolExecutor callbackExecutor = createFixedThreadPoolExecutor(envs.callbackThreadCount, "callback-pool-thread-%d");
         callbackExecutor.prestartAllCoreThreads();
         callbackExecutorService = callbackExecutor;
+
+        miscExecutorService = createFixedThreadPoolExecutor(1, "misc-pool-thread-%d");
+        miscExecutorService.prestartCoreThread();
 
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("timekeeper-pool-thread-%d")
                                                                                                                                .build());
@@ -184,14 +213,33 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
         callbackFutures = new HashMap<>();
     }
 
+    public String threadPoolInfo() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(managerExecutorService).append("\n");
+        sb.append(workerExecutorService).append("\n");
+        sb.append(callbackExecutorService).append("\n");
+        sb.append("timekeeper-pool{")
+          .append(PrintingUtils.stringifyThreadPoolExecutor(timeoutExecutorService))
+          .append("}")
+          .append("\n");
+        sb.append(miscExecutorService);
+        return sb.toString();
+    }
+
+
     private static ThreadPoolExecutor createCachedThreadPoolExecutor(int size, String threadNamingPattern) {
         return new ThreadPoolExecutor(size, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(true), new ThreadFactoryBuilder().setNameFormat(threadNamingPattern)
                                                                                                                                               .build());
     }
 
-    private static ThreadPoolExecutor createFixedThreadPoolExecutor(int size, String threadNamingPattern) {
-        return new ThreadPoolExecutor(size, size, 60L, TimeUnit.SECONDS, new LinkedBlockingDeque<>(), new ThreadFactoryBuilder().setNameFormat(threadNamingPattern)
-                                                                                                                                .build());
+    private static MyThreadPoolExecutor createSynchronousFixedThreadPoolExecutor(int size, String threadNamingPattern) {
+        return new MyThreadPoolExecutor(threadNamingPattern.substring(0, threadNamingPattern.indexOf("-thread")), size, new SynchronousQueue<>(), new ThreadFactoryBuilder().setNameFormat(threadNamingPattern)
+                                                                                                                                                                            .build());
+    }
+
+    private static MyThreadPoolExecutor createFixedThreadPoolExecutor(int size, String threadNamingPattern) {
+        return new MyThreadPoolExecutor(threadNamingPattern.substring(0, threadNamingPattern.indexOf("-thread")), size, new LinkedBlockingDeque<>(), new ThreadFactoryBuilder().setNameFormat(threadNamingPattern)
+                                                                                                                                                                               .build());
     }
 
     public static <C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> SPECppExecution<C, I, R, F> oneshotExecution(SPECpp<C, I, R, F> specpp, ExecutionParameters executionParameters) {
@@ -227,7 +275,7 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
     public <C extends Candidate, I extends CompositionComponent<C>, R extends Result, F extends Result> void addLightweightCompletionCallback(SPECppExecution<C, I, R, F> execution, Consumer<SPECppExecution<C, I, R, F>> callback) {
         execution.getMasterComputation()
                  .getComputationFuture()
-                 .addListener(() -> callback.accept(execution), MoreExecutors.sameThreadExecutor());
+                 .addListener(() -> callback.accept(execution), miscExecutorService);
     }
 
 
@@ -261,9 +309,9 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
         postProcessingComputation.setTimeLimit(timeLimits.getPostProcessingTimeLimit());
         masterComputation.setTimeLimit(timeLimits.getTotalTimeLimit());
 
-        ListenableFutureTask<R> discoveryFuture = ListenableFutureTask.create(specpp::executeDiscovery);
+        ListenableFutureTask<R> discoveryFuture = ListenableFutureTask.create(specpp::executeDiscoveryInterruptibly);
         discoveryComputation.setComputationFuture(discoveryFuture);
-        ListenableFutureTask<F> postProcessingFuture = ListenableFutureTask.create(specpp::executePostProcessing);
+        ListenableFutureTask<F> postProcessingFuture = ListenableFutureTask.create(specpp::executePostProcessingInterruptibly);
         postProcessingComputation.setComputationFuture(postProcessingFuture);
 
         ListenableFutureTask<Boolean> task = ListenableFutureTask.create(() -> {
@@ -292,7 +340,8 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
                 discoveryComputation.markEnded();
                 postProcessingFuture.cancel(false);
                 e.fillInStackTrace();
-                System.out.println("exception during discovery in " + specpp + " on " + Thread.currentThread() + ":\n\t" + e);
+                System.out.println("exception during discovery in " + specpp.hashCode() + " on " + Thread.currentThread()
+                                                                                                         .getName() + ":\n\t" + e);
             } finally {
                 if (discoveryCancellationFuture != null) discoveryCancellationFuture.cancel(true);
             }
@@ -319,7 +368,8 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
                 masterComputation.markForciblyCancelled();
                 workerExecutorService.purge();
                 e.fillInStackTrace();
-                System.out.println("exception during post processing in " + specpp + " on " + Thread.currentThread() + ":\n\t" + e);
+                System.out.println("exception during post processing in " + specpp.hashCode() + " on " + Thread.currentThread()
+                                                                                                               .getName() + ":\n\t" + e);
             } finally {
                 if (postProcessingCancellationFuture != null) postProcessingCancellationFuture.cancel(true);
                 if (totalCancellationFuture != null) totalCancellationFuture.cancel(true);
