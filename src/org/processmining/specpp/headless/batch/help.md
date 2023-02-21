@@ -21,7 +21,7 @@ Provides a command line interface for batch execution and optionally evaluation 
   produced)
 * `-total_time`/`-total_timeout` (optional) timeout in seconds for an entire run (hard cancellation, i.e., no result is
   produced)
-* `ev_time`/`-evaluation_timeout` (optional) timeout in seconds for evaluation computations if requested
+* `-ev_time`/`-evaluation_timeout` (optional) timeout in seconds for evaluation computations if requested
 
 ### Configuration file format
 
