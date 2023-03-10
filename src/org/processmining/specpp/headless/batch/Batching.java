@@ -295,7 +295,7 @@ public class Batching {
 
         List<Tuple2<String, ExecutionEnvironment.SPECppExecution<Place, BasePlaceComposition, CollectionOfPlaces, ProMPetrinetWrapper>>> submittedExecutions = new ArrayList<>(configurations.size());
 
-        ExecutionEnvironment.EnvironmentSettings envs = ExecutionEnvironment.EnvironmentSettings.targetParallelism(num_threads / 2 + num_threads % 2, num_threads / 2);
+        ExecutionEnvironment.EnvironmentSettings envs = ExecutionEnvironment.EnvironmentSettings.targetParallelism(Math.max(1, num_threads / 2 + num_threads % 2), Math.max(1, num_threads / 2));
         ExecutionEnvironment.ExecutionEvironmentThread wrap = ExecutionEnvironment.wrap(envs, exe -> {
             System.out.printf("Commencing batching run of %d configurations with %d replications each with a parallelism target of %d threads @%s.%n", configurations.size(), num_replications, num_threads, LocalDateTime.now());
             for (Tuple2<String, SPECppConfigBundle> tup : configurations) {

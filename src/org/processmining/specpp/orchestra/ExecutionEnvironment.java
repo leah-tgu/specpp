@@ -46,6 +46,7 @@ public class ExecutionEnvironment implements Joinable, AutoCloseable {
         }
 
         public static EnvironmentSettings targetParallelism(int workerThreadCount, int callbackThreadCount) {
+            assert workerThreadCount >= 1 && callbackThreadCount >= 1;
             return new EnvironmentSettings(workerThreadCount, callbackThreadCount);
         }
 
