@@ -1,4 +1,4 @@
-package org.processmining.specpp.headless.batch;
+package org.processmining.specpp.orchestra;
 
 import org.processmining.specpp.util.PrintingUtils;
 
