@@ -8,7 +8,6 @@ import org.processmining.specpp.datastructures.encoding.IntEncodings;
 import org.processmining.specpp.datastructures.petri.Place;
 import org.processmining.specpp.datastructures.petri.Transition;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.PrimitiveIterator;
 

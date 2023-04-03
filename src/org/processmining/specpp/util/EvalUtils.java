@@ -96,7 +96,7 @@ public class EvalUtils {
 
     public static double computeAlignmentBasedFitness(PluginContext context, EvaluationLogData evaluationLogData, TransEvClassMapping evClassMapping, ProMPetrinetWrapper proMPetrinetWrapper, AStarThread.Canceller canceller, boolean attemptILP) throws AStarException {
         return ((Double) computeAlignmentBasedReplay(context, evaluationLogData, evClassMapping, proMPetrinetWrapper, canceller, attemptILP).getInfo()
-                                                                                                                                .get(PNRepResult.TRACEFITNESS));
+                                                                                                                                            .get(PNRepResult.TRACEFITNESS));
     }
 
     public static double deriveAlignmentBasedFitness(PNRepResult replayResults) {

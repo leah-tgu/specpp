@@ -7,7 +7,8 @@ Provides a command line interface for batch execution and optionally evaluation 
 * `-l`/`-log` path to the input log in .xes format
 * `-c`/`-config` path to the configuration file [(.json, view format)](#Configuration-file-format)
 * `-v`/`-variations` path to the parameter variations file [(.json, view format)](#Parameter-variations-file-format)
-* `-r`/`-range` (optional) restrict execution a range of configuration variation indices format is `[low, high)` with `low/high = integer | _`
+* `-r`/`-range` (optional) restrict execution a range of configuration variation indices format is `[low, high)`
+  with `low/high = integer | _`
 * `-o`/`-output` path to the desired output directory
 * `-ev`/`-evaluate` whether to automatically compute quality metrics on resulting models
 * `-m`/`-monitor` whether to save the output of data monitors to files
