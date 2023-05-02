@@ -27,6 +27,7 @@ import org.processmining.specpp.datastructures.tree.nodegen.PlaceState;
 import org.processmining.specpp.evaluation.fitness.AbsolutelyNoFrillsFitnessEvaluator;
 import org.processmining.specpp.evaluation.heuristics.DirectlyFollowsHeuristic;
 import org.processmining.specpp.evaluation.heuristics.EventuallyFollowsTreeHeuristic;
+import org.processmining.specpp.evaluation.implicitness.LPBasedImplicitnessCalculator;
 import org.processmining.specpp.evaluation.markings.LogHistoryMaker;
 import org.processmining.specpp.orchestra.ExecutionEnvironment;
 import org.processmining.specpp.postprocessing.LPBasedImplicitnessPostProcessing;
@@ -77,6 +78,7 @@ public class CodeDefinedConfigurationSample {
 
         EvaluatorConfiguration.Configurator evConfig = Configurators.evaluators()
                                                                     .addEvaluatorProvider(new AbsolutelyNoFrillsFitnessEvaluator.Builder())
+                                                                    .addEvaluatorProvider(new LPBasedImplicitnessCalculator.Builder())
                                                                     .addEvaluatorProvider(new LogHistoryMaker.Builder());
         // delta adaptation function
         // evConfig.addEvaluatorProvider(new SigmoidDelta.Builder());
