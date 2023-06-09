@@ -100,6 +100,8 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     private final JCheckBox enforceHeuristicScoreThresholdCheckBox;
     private final ComboBoxAndTextBasedInputField<Double, OrderingRelation> heuristicThresholdInput;
     private final CheckboxedComboBox<ProMConfig.CIPRVariant> ciprVariantCheckboxedComboBox;
+    private final JCheckBox checkBoxETCBasedComposer;
+    private final TextBasedInputField<Double> rhoTextField;
     private final JCheckBox logHeuristicsCheckBox;
     private final JCheckBox initiallyWireSelfLoopsCheckBox = SwingFactory.labeledCheckBox("initially wire self loops", false);
     private final HorizontalJPanel deltaRelatedParametersPanel;
@@ -239,6 +241,19 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         ciprVariantCheckboxedComboBox.getComboBox()
                                      .setRenderer(createTooltippedListCellRenderer(ImmutableMap.of(ProMConfig.CIPRVariant.ReplayBased, "Uses subregion implicitness on the markings obtained from replay.", ProMConfig.CIPRVariant.LPBased, "Uses lp optimization based structural implicitness.")));
         composition.append(ciprVariantCheckboxedComboBox);
+        checkBoxETCBasedComposer = SwingFactory.labeledCheckBox("ETC-based Composer", false);
+        checkBoxETCBasedComposer.addItemListener(e -> updatedCompositionSettings());
+
+        //make cipr and ETC-based composer mutually exclusive
+        ciprVariantCheckboxedComboBox.getCheckBox().addActionListener(e -> checkBoxETCBasedComposer.setSelected(false));
+        checkBoxETCBasedComposer.addActionListener(e -> ciprVariantCheckboxedComboBox.getCheckBox().setSelected(false));
+
+        rhoTextField = SwingFactory.textBasedInputField("rho", zeroOneDoubleFunc, 10);
+        rhoTextField.setText("1.0");
+        rhoTextField.setToolTipText("precision threshold to abort the search prematurely: rho in [0,1].");
+        rhoTextField.setVisible(false);
+        composition.append(checkBoxETCBasedComposer);
+        composition.append(rhoTextField);
         composition.completeWithWhitespace();
 
         // ** POST PROCESSING ** //
@@ -397,6 +412,8 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         ciprVariantCheckboxedComboBox.getCheckBox().setSelected(pc.ciprVariant != ProMConfig.CIPRVariant.None);
         ciprVariantCheckboxedComboBox.getComboBox()
                                      .setSelectedItem(pc.ciprVariant != ProMConfig.CIPRVariant.None ? pc.ciprVariant : ProMConfig.CIPRVariant.ReplayBased);
+        checkBoxETCBasedComposer.setSelected(pc.useETCBasedComposer);
+        rhoTextField.setText(Double.toString(pc.rho));
         ppPipelineModel.clear();
         pc.ppPipeline.forEach(ppPipelineModel::append);
         tauInput.setText(Double.toString(pc.tau));
@@ -461,6 +478,8 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
         pc.ciprVariant = ciprVariantCheckboxedComboBox.getCheckBox()
                                                       .isSelected() ? (ProMConfig.CIPRVariant) ciprVariantCheckboxedComboBox.getComboBox()
                                                                                                                             .getSelectedItem() : ProMConfig.CIPRVariant.None;
+        pc.useETCBasedComposer = checkBoxETCBasedComposer.isSelected();
+        pc.rho = rhoTextField.getInput();
         if (!validatePostProcessingPipeline(ppPipelineModel)) return null;
         pc.ppPipeline = ImmutableList.copyOf(ppPipelineModel.iterator());
         Double rawTau = tauInput.getInput();
@@ -499,6 +518,7 @@ public class ConfigurationPanel extends AbstractStagePanel<ConfigurationControll
     }
 
     private void updatedCompositionSettings() {
+        rhoTextField.setVisible(checkBoxETCBasedComposer.isSelected());
         initiallyWireSelfLoopsCheckBox.setVisible(compositionStrategyComboBox.getSelectedItem() == ProMConfig.CompositionStrategy.Uniwired || respectWiringCheckBox.isSelected());
         ciprVariantCheckboxedComboBox.getComboBox()
                                      .setVisible(ciprVariantCheckboxedComboBox.getCheckBox().isSelected());
