@@ -98,13 +98,13 @@ public class ProMConfig {
     }
 
     public boolean validate() {
-        boolean outOfRange = tau < 0 || tau > 1.0 || rho < 0 || rho > 1.0;
+        boolean outOfRange = tau < 0 || tau > 1.0;
         boolean incomplete = (supervisionSetting == null | treeExpansionSetting == null | compositionStrategy == null);
         incomplete |= logHeuristics && (!logToFile || supervisionSetting != SupervisionSetting.PerformanceAndEvents);
         incomplete |= treeExpansionSetting == TreeExpansionSetting.Heuristic && treeHeuristic == null;
         incomplete |= treeExpansionSetting == TreeExpansionSetting.Heuristic && enforceHeuristicThreshold && (heuristicThreshold < 0 || heuristicThresholdRelation == null);
         incomplete |= compositionStrategy == CompositionStrategy.TauDelta && (deltaAdaptationFunction == null || (deltaAdaptationFunction != FrameworkBridge.BridgedDeltaAdaptationFunctions.None.getBridge() && delta < 0) || ((deltaAdaptationFunction == FrameworkBridge.BridgedDeltaAdaptationFunctions.Linear.getBridge() || deltaAdaptationFunction == FrameworkBridge.BridgedDeltaAdaptationFunctions.Sigmoid.getBridge()) && steepness < 0));
-        incomplete |= useETCBasedComposer && rho < 0;
+        incomplete |= useETCBasedComposer && (rho < 0 || rho > 1.0);
         return !outOfRange && !incomplete;
     }
 
