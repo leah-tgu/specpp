@@ -10,24 +10,26 @@ public class PATransition {
     /**
      * Activity.
      */
-    Activity activity;
+    private Activity activity;
 
     /**
      * Pointer to the state the transition is pointing to.
      */
-    PAState pointer;
+    private PAState pointer;
 
     /**
      * Creates a new transition with activity a.
+     *
      * @param a Activity.
      */
-    public PATransition(Activity a){
+    public PATransition(Activity a) {
         this.pointer = new PAState();
         this.activity = a;
     }
 
     /**
      * Returns the activity of the transition.
+     *
      * @return Activity.
      */
     public Activity getActivity() {
@@ -36,6 +38,7 @@ public class PATransition {
 
     /**
      * Sets the activity of the transition.
+     *
      * @param a Activity.
      */
     public void setActivity(Activity a) {
@@ -44,6 +47,7 @@ public class PATransition {
 
     /**
      * Returns the pointer to the state the transition is pointing to.
+     *
      * @return State.
      */
     public PAState getPointer() {
@@ -52,6 +56,7 @@ public class PATransition {
 
     /**
      * Sets the pointer to the state the transition is pointing to.
+     *
      * @param p Pointer.
      */
     public void setPointer(PAState p) {
@@ -60,9 +65,10 @@ public class PATransition {
 
     /**
      * Returns a String describing the transition.
+     *
      * @return String.
      */
     public String toString() {
-        return "Transition: " + this.activity.toString() +  " ) ";
+        return "Transition: " + this.activity.toString() + " ) ";
     }
 }

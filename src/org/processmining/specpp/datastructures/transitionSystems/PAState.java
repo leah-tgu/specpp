@@ -13,7 +13,7 @@ public class PAState {
     /**
      * List of outgoing transitions.
      */
-    private  LinkedList<PATransition> outgoingTrans;
+    private final LinkedList<PATransition> outgoingTrans;
 
     /**
      * Create a new prefix automaton state (empty List of Transitions).
@@ -24,6 +24,7 @@ public class PAState {
 
     /**
      * Create a new prefix automaton state.
+     *
      * @param outgoingTrans List of outgoing transitions.
      */
     public PAState(LinkedList<PATransition> outgoingTrans) {
@@ -33,14 +34,16 @@ public class PAState {
 
     /**
      * Check if state is final.
+     *
      * @return True if state has no outgoing transitions, i.e., is final. Otherwise false.
      */
-    public boolean isFinal(){
+    public boolean isFinal() {
         return this.outgoingTrans.isEmpty();
     }
 
     /**
      * Adds an outgoing transition to the state.
+     *
      * @param t Outgoing transition.
      */
     public void addOutgoingTrans(PATransition t) {
@@ -49,6 +52,7 @@ public class PAState {
 
     /**
      * Checks if the state has a given transition.
+     *
      * @param a Activity.
      * @return True, if state has an (outgoing) transition a. Otherwise, false.
      */
@@ -56,7 +60,7 @@ public class PAState {
         ListIterator<PATransition> it = outgoingTrans.listIterator();
         boolean contains = false;
 
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             PATransition next = it.next();
             if (next.getActivity().equals(a)) {
                 return true;
@@ -67,6 +71,7 @@ public class PAState {
 
     /**
      * Returns list of outgoing Transitions.
+     *
      * @return List of outgoing Transitions.
      */
     public LinkedList<PATransition> getOutgoingTrans() {
@@ -75,12 +80,13 @@ public class PAState {
 
     /**
      * Returns transition with activity a.
+     *
      * @param a Activity.
      * @return Transition.
      */
     public PATransition getTrans(Activity a) {
-        for(PATransition t : outgoingTrans) {
-            if(a.equals(t.getActivity())) {
+        for (PATransition t : outgoingTrans) {
+            if (a.equals(t.getActivity())) {
                 return t;
             }
         }

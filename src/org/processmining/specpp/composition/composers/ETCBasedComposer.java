@@ -21,6 +21,7 @@ import org.processmining.specpp.datastructures.petri.Transition;
 import org.processmining.specpp.datastructures.transitionSystems.PAState;
 import org.processmining.specpp.datastructures.transitionSystems.PrefixAutomaton;
 import org.processmining.specpp.datastructures.vectorization.VariantMarkingHistories;
+
 import java.nio.IntBuffer;
 import java.util.*;
 
@@ -29,7 +30,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
     // input: log and parameters (rho)
     private final DelegatingDataSource<Log> logSource = new DelegatingDataSource<>();
     private final DelegatingDataSource<ETCBasedComposerParameters> parameters = new DelegatingDataSource<>();
-    
+
     // resources: Mapping: activity<->transitions, Mapping: activity->ingoing places, markingHistoriesEvaluator
     private final DelegatingDataSource<BidiMap<Activity, Transition>> actTransMapping = new DelegatingDataSource<>();
     private final DelegatingEvaluator<Place, VariantMarkingHistories> markingHistoriesEvaluator = new DelegatingEvaluator<>();
@@ -47,6 +48,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Creates a new ETC-based Composer
+     *
      * @param composition Collection of places ("Intermediate Model")
      */
     public ETCBasedComposer(I composition) {
@@ -61,6 +63,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Deliberate, whether place should be added to the composition or not
+     *
      * @param candidate the candidate to decide acceptance for
      * @return true, if candidate should be added. Otherwise, false.
      */
@@ -80,10 +83,10 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
             BitEncodedSet<Transition> candidateOut = candidate.postset();
             Set<Activity> activitiesToReevaluate = new HashSet<>();
-            for (Transition t: candidateOut) {
+            for (Transition t : candidateOut) {
                 activitiesToReevaluate.add(actTransMapping.getData().getKey(t));
             }
-            for(Activity a : activitiesToReevaluate){
+            for (Activity a : activitiesToReevaluate) {
                 potImpl.addAll(activityToIngoingPlaces.get(a));
             }
 
@@ -97,7 +100,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
             }
 
             removeFromActivityPlacesMapping(candidate);
-            
+
             newAddition = true;
             return true;
         }
@@ -105,15 +108,16 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * check (tau=1) / approximate (tau<1) whether a place makes the intermediate result sufficiently more precise
+     *
      * @param p place
      * @return true, if p is not implicit / sufficiently improves precision. Otherwise, false.
      */
     public boolean checkPrecisionGain(Place p) {
-        
+
         // collect activities to reevaluate: p's outgoing activities
         BitEncodedSet<Transition> candidateOut = p.postset();
         Set<Activity> activitiesToReevaluate = new HashSet<>();
-        for (Transition t: candidateOut) {
+        for (Transition t : candidateOut) {
             activitiesToReevaluate.add(actTransMapping.getData().getKey(t));
         }
 
@@ -140,7 +144,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
         removeFromActivityPlacesMapping(p);
 
-        if(isMorePrecise) {
+        if (isMorePrecise) {
             // update activity mappings and current precision since we add p
             activityToEscapingEdges.putAll(tmpActivityToEscapingEdges);
             activityToAllowed.putAll(tmpActivityToAllowed);
@@ -152,6 +156,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * check (tau=1) / approximate (tau<1) whether a place is implicit (gamma=0) / insufficiently constrains precision (gamma>0)
+     *
      * @param p place
      * @return true, if p is implicit (gamma=0) / insufficiently constrains precision (gamma>0). Otherwise, false.
      */
@@ -160,7 +165,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
         // collect activities to reevaluate: p's outgoing activities
         BitEncodedSet<Transition> pPotImplOut = p.postset();
         Set<Activity> activitiesToReevaluatePPotImpl = new HashSet<>();
-        for (Transition t: pPotImplOut) {
+        for (Transition t : pPotImplOut) {
             activitiesToReevaluatePPotImpl.add(actTransMapping.getData().getKey(t));
         }
 
@@ -174,7 +179,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
             int newEE = evalRes[0];
             int newAllowed = evalRes[1];
 
-            if((newEE != activityToEscapingEdges.get(a)) || newAllowed != activityToAllowed.get(a)) {
+            if ((newEE != activityToEscapingEdges.get(a)) || newAllowed != activityToAllowed.get(a)) {
                 hasEqualValues = false;
                 break;
             }
@@ -187,6 +192,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Executed when candidate is revoked (is implicit (rho=0), insufficiently constrains precision (rho>0)).
+     *
      * @param candidate Revoked candidate.
      */
     @Override
@@ -199,6 +205,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Executed when candidate is accepted (its addition makes the intermediate model more precise (by gamma))-
+     *
      * @param candidate Accepted candidate.
      */
     @Override
@@ -208,6 +215,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Executed when a candidate is rejected (adding it would not make the intermediate model (sufficiently) more precise
+     *
      * @param candidate Rejected candidate.
      */
     @Override
@@ -231,21 +239,21 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
     protected void initSelf() {
         // Build Prefix-Automaton
         Log log = logSource.getData();
-        for(IndexedVariant indexedVariant : log) {
+        for (IndexedVariant indexedVariant : log) {
             prefixAutomaton.addVariant(indexedVariant.getVariant());
         }
 
         // Init ActivityPlaceMapping
         MapIterator<Activity, Transition> mapIterator = actTransMapping.get().mapIterator();
-        while(mapIterator.hasNext()) {
+        while (mapIterator.hasNext()) {
             Activity a = mapIterator.next();
             activityToIngoingPlaces.put(a, new HashSet<>());
         }
 
         // Init EscapingEdges
         Set<Activity> activities = actTransMapping.getData().keySet();
-        for(Activity a : activities) {
-            if(!a.equals(Factory.ARTIFICIAL_START)) {
+        for (Activity a : activities) {
+            if (!a.equals(Factory.ARTIFICIAL_START)) {
                 int[] evalRes = evaluatePrecision(a);
                 int EE = evalRes[0];
                 int allowed = evalRes[1];
@@ -257,10 +265,11 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Adds a place test-wise.
+     *
      * @param p Place.
      */
-    private void addToActivityPlacesMapping(Place p){
-        for(Transition t : p.postset()) {
+    private void addToActivityPlacesMapping(Place p) {
+        for (Transition t : p.postset()) {
             Activity a = actTransMapping.get().getKey(t);
             Set<Place> tIn = activityToIngoingPlaces.get(a);
             tIn.add(p);
@@ -269,10 +278,11 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Removes a place test-wise.
+     *
      * @param p Place.
      */
-    private void removeFromActivityPlacesMapping(Place p){
-        for(Transition t : p.postset()) {
+    private void removeFromActivityPlacesMapping(Place p) {
+        for (Transition t : p.postset()) {
             Activity a = actTransMapping.get().getKey(t);
             Set<Place> tIn = activityToIngoingPlaces.get(a);
             tIn.remove(p);
@@ -282,11 +292,12 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Checks whether search can be aborted prematurely.
+     *
      * @return true, if search can be aborted. Otherwise, false.
      */
     @Override
     public boolean isFinished() {
-        if(newAddition) {
+        if (newAddition) {
             newAddition = false;
             return checkPrecisionThreshold(parameters.get().getRho());
         } else {
@@ -296,6 +307,7 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Checks whether precision threshold rho has been met
+     *
      * @return true, if threshold is reached. Otherwise, false.
      */
     public boolean checkPrecisionThreshold(double p) {
@@ -304,8 +316,9 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
     /**
      * Calculates the (approximate) ETC-precision based on the given activity mappings (including/excluding test-wise added/removed places)
+     *
      * @param activityToEscapingEdges Mapping from activities to #EscapingEdges
-     * @param activityToAllowed Mapping from activities to #Allowed
+     * @param activityToAllowed       Mapping from activities to #Allowed
      * @return (approximate) ETC-precision
      */
     public double calcETCPrecision(Map<Activity, Integer> activityToEscapingEdges, Map<Activity, Integer> activityToAllowed) {
@@ -320,12 +333,13 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
         //for starting activity:
         allowed += logSource.getData().totalTraceCount();
 
-        return (1 - ((double)EE/allowed));
+        return (1 - ((double) EE / allowed));
     }
 
 
     /**
      * reevaluates (tau=1) / approximates (tau<1) the activity's mapping entries
+     *
      * @param a activity to evaluate
      * @return Integer-array of size two. [0]-#EscapingEdges a, [1]-#Allowed a
      */
@@ -340,13 +354,13 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
         // collect markingHistories
         LinkedList<VariantMarkingHistories> markingHistories = new LinkedList<>();
-        for(Place p : prerequisites) {
+        for (Place p : prerequisites) {
             markingHistories.add(markingHistoriesCache.get(p));
         }
 
         //iterate log: variant by variant, activity by activity
 
-        for(IndexedVariant variant : log) {
+        for (IndexedVariant variant : log) {
 
             int vIndex = variant.getIndex();
             int length = variant.getVariant().getLength();
@@ -362,18 +376,18 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
 
                 boolean isAllowedO = true;
 
-                for(VariantMarkingHistories h : markingHistories) {
+                for (VariantMarkingHistories h : markingHistories) {
                     //check if mh=1 f.a. p in *a --> activity a is allowed
                     IntBuffer buffer = h.getAt(vIndex);
                     int p = buffer.position();
 
-                    if(buffer.get(p + j) == 0) {
+                    if (buffer.get(p + j) == 0) {
                         isAllowedO = false;
                         break;
                     }
                 }
 
-                if(isAllowedO) {
+                if (isAllowedO) {
                     allowed += log.getVariantFrequency(vIndex);
 
                     //check if "a" reflected
@@ -386,7 +400,6 @@ public class ETCBasedComposer<I extends AdvancedComposition<Place>> extends Abst
         }
         return new int[]{escapingEdges, allowed};
     }
-
 
 
 }

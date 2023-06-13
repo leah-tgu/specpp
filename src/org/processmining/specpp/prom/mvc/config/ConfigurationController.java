@@ -91,7 +91,7 @@ public class ConfigurationController extends AbstractStageController {
             pcCfg.terminalComposer(ETCBasedComposer::new);
         } else if (pc.ciprVariant != ProMConfig.CIPRVariant.None) {
             pcCfg.terminalComposer(isSupervisingEvents ? EventingPlaceComposerWithCIPR::new : PlaceComposerWithCIPR::new);
-        }else {
+        } else {
             pcCfg.terminalComposer(PlaceAccepter::new);
         }
 

@@ -13,14 +13,14 @@ public class PrefixAutomaton {
     /**
      * Initial state.
      */
-    PAState initial;
+    private final PAState initial;
 
     /**
      * Creates a new Prefix Automaton with a given initial state.
      * @param initial Initial State.
      */
     public PrefixAutomaton(PAState initial) {
-        this.initial = new PAState();
+        this.initial = initial;
     }
 
     /**
